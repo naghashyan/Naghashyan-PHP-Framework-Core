@@ -9,7 +9,7 @@
  * @year 2014-2015
  * @package ngs.framework.routes
  * @version 2.1.1
- * 
+ *
  * This file is part of the NGS package.
  *
  * @copyright Naghashyan Solutions LLC
@@ -94,13 +94,11 @@ namespace ngs\framework\routes {
       if (($staticfilePos = strrpos(end($matches[2]), ".")) !== false) {
         $staticFile = true;
       }
-      
-      if($staticFile == true){
-        if(isset($matches[2][0]) && !NGS()->getModulesRoutesEngine()->isDefaultModule()){
-         // array_shift($matches[2]);
-        }
-      }
       $package = array_shift($matches[2]);
+      $fileUrl = $url;
+      if (isset($matches[2][0]) && !NGS()->getModulesRoutesEngine()->isDefaultModule()) {
+        $fileUrl = "/".implode("/", $matches[2]);
+      }
       $urlPartsArr = $matches[2];
       $type = "load";
       if (strpos(end($matches[2]), "do_") !== false) {
@@ -118,7 +116,6 @@ namespace ngs\framework\routes {
         }
         $loadsArr = $this->getDynRoutesLoad($url, $package, $urlPartsArr);
       }
-
       if ($loadsArr["matched"]) {
         $actionArr = $this->getLoadORActionByAction($loadsArr["action"]);
         $loadsArr["type"] = $actionArr["type"];
@@ -128,14 +125,13 @@ namespace ngs\framework\routes {
       if ($loadsArr["matched"] == false && $staticFile == true) {
         $loadsArr["type"] = "file";
         $loadsArr["file_type"] = pathinfo(end($matches[2]), PATHINFO_EXTENSION);
+        $filePices = explode("/", $fileUrl);
         //checking if css loaded from less
-        if(($matches[2][0] == NGS()->getDefinedValue("PUBLIC_OUTPUT_DIR") || 
-            $matches[2][0] == "dev".NGS()->getDefinedValue("PUBLIC_OUTPUT_DIR")) && 
-            $matches[2][1] == "less"){
-           $loadsArr["file_type"] = "less";
+        if(isset($filePices[2]) && $filePices[2] == "less"){
+          $loadsArr["file_type"] = "less";
         }
         $loadsArr["module"] = $package;
-        $loadsArr["file_url"] = implode("/", $matches[2]);
+        $loadsArr["file_url"] = $fileUrl;
         $loadsArr["matched"] = true;
       }
       $this->setPackage($package);
@@ -369,7 +365,7 @@ namespace ngs\framework\routes {
       }
       return $this->nestedRoutes[$ns];
     }
-    
+
     private function setContentLoad($contentLoad) {
       $this->contentLoad = $contentLoad;
     }

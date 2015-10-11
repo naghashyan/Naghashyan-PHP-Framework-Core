@@ -54,7 +54,11 @@ namespace ngs\framework\util {
       $this->lessParser->parse('@NGS_MODULE_PATH: "'.NGS()->getPublicHostByNS().'";');
       $this->setLessFiles($files);
       if($mode){
-        $outFile = $this->getOutputDir()."/".$files["output_file"];
+        $outFileName = $files["output_file"];
+        if($this->getOutputFileName() != null){
+          $outFileName = $this->getOutputFileName();
+        }
+        $outFile = $this->getOutputDir()."/".$outFileName;
         touch($outFile, fileatime($this->getBuilderFile()));
         file_put_contents($outFile, $this->lessParser->getCss());exit;
         return true;
@@ -96,6 +100,10 @@ namespace ngs\framework\util {
         $outDir = realpath($_outDir);
       }
       return $outDir;
+    }
+    
+    protected function getOutputFileName(){
+      return null;
     }
 
     public function doDevOutput() {

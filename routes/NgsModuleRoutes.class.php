@@ -9,7 +9,7 @@
  * @year 2015
  * @package ngs.framework.routes
  * @version 2.1.1
- * 
+ *
  * This file is part of the NGS package.
  *
  * @copyright Naghashyan Solutions LLC
@@ -22,6 +22,7 @@ namespace ngs\framework\routes {
   class NgsModuleRoutes {
 
     private $routes = array();
+    private $defaultNS = null;
     private $moduleArr = null;
     private $package = null;
     private $nestedRoutes = null;
@@ -75,11 +76,18 @@ namespace ngs\framework\routes {
     }
 
     public function getDefaultNS() {
+      if($this->defaultNS != null){
+        return $this->defaultNS;
+      }
       $routes = $this->getRouteConfig();
       if (isset($routes["default"]["default"])) {
-        return $routes["default"]["default"];
+        $defaultModule = $routes["default"]["default"];
+        $defaultMatched = $this->getMatchedModule($defaultModule, "", "default");
+        $this->defaultNS = $defaultMatched["ns"];
+      }else{
+        $this->defaultNS = NGS()->getDefinedValue("DEFAULT_NS");
       }
-      return NGS()->getDefinedValue("DEFAULT_NS");
+      return $this->defaultNS;
     }
 
     /**
@@ -135,7 +143,7 @@ namespace ngs\framework\routes {
       if ($this->moduleArr = $this->getModuleByURI($uri)) {
         return $this->moduleArr;
       }
-      $this->moduleArr = array("ns" => $modulePart["default"], "uri" => $uri, "type" => "default");
+      $this->moduleArr = $this->getMatchedModule($modulePart["default"], $uri, "default");
       return $this->moduleArr;
     }
 
@@ -211,11 +219,11 @@ namespace ngs\framework\routes {
       $extended = false;
       if (isset($matchedArr["dir"])) {
         $ns = $matchedArr["dir"];
-      }elseif (isset($matchedArr["namespace"])) {
+      } elseif (isset($matchedArr["namespace"])) {
         $ns = $matchedArr["namespace"];
-      }elseif (isset($matchedArr["extend"])) {
+      } elseif (isset($matchedArr["extend"])) {
         $ns = $matchedArr["extend"];
-      }else{
+      } else {
         throw NGS()->getDebugException("PLEASE ADD DIR OR NAMESPACE SECTION IN module.json");
       }
       /*TODO add global extend

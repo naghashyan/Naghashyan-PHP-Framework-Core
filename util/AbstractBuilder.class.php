@@ -27,7 +27,6 @@ namespace ngs\framework\util {
     private $builderJsonArr = array();
 
     public function streamFile($module, $file) {
-
       if (NGS()->getEnvironment() == "production") {
         $filePath = realpath(NGS()->getPublicDir()."/".$file);
         if (strpos($file, NGS()->getDefinedValue("PUBLIC_OUTPUT_DIR")) === false) {
@@ -60,7 +59,7 @@ namespace ngs\framework\util {
       
       $files = $this->getBuilderArr($this->getBuilderJsonArr(), $file);
       if (count($files) == 0) {
-        throw NGS()->getDebugException("Please add css file in builder under section ".$file);
+        throw NGS()->getDebugException("Please add file in builder under section ".$file);
       }
       $this->doDevOutput($files);
     }
