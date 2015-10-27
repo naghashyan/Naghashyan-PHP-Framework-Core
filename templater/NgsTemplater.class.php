@@ -8,7 +8,7 @@
  * @package ngs.framework.templater
  * @version 2.1.1
  * @year 2010-2015
- * 
+ *
  * This file is part of the NGS package.
  *
  * @copyright Naghashyan Solutions LLC
@@ -176,8 +176,6 @@ namespace ngs\framework\templater {
     }
 
     public function add_dyn_header($tpl_output, $template) {
-
-      $jsString = "";
       $jsString = '<meta name="generator" content="Naghashyan Framework '.NGS()->getNGSVersion().'" />';
       if (NGS()->isJsFrameworkEnable() == false) {
         $tpl_output = str_replace('</head>', $jsString, $tpl_output)."\n";
@@ -187,8 +185,16 @@ namespace ngs\framework\templater {
       $jsString .= "NGS.setInitialLoad('".NGS()->getRoutesEngine()->getContentLoad()."', '".json_encode($this->params)."');";
       $jsString .= 'NGS.setModule("'.NGS()->getModulesRoutesEngine()->getModuleNS().'");';
       $jsString .= 'NGS.setTmst("'.time().'");';
-      $jsString .= 'var NGS_URL = "'.NGS()->getHttpUtils()->getHttpHost().'";';
-      $jsString .= 'var NGS_PATH = "'.NGS()->getHttpUtils()->getHttpHost(true).'";';
+      $httpHost = NGS()->getHttpUtils()->getHttpHostByNs("", true);
+      if (NGS()->getModulesRoutesEngine()->getModuleType() == "path") {
+        $httpHost = NGS()->getHttpUtils()->getNgsStaticPath("", true);
+      }
+      $jsString .= 'NGS.setHttpHost("'.$httpHost.'");';
+      $staticPath = NGS()->getHttpUtils()->getNgsStaticPath("", true);
+      if (isset(NGS()->getConfig()->static_path)) {
+        $staticPath = NGS()->getConfig()->static_path;
+      }
+      $jsString .= 'NGS.setStaticPath("'.$staticPath.'");';
       foreach ($this->getCustomJsParams() as $key => $value) {
         $jsString .= $key." = '".$value."';";
       }
@@ -204,7 +210,7 @@ namespace ngs\framework\templater {
     protected function getCustomJsParams() {
       return array();
     }
-    
+
     public function getSmartyCompileDir() {
       return NGS()->getTemplateDir()."/".NGS()->getDefinedValue("SMARTY_COMPILE_DIR");
     }

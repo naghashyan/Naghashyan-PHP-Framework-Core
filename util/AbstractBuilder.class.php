@@ -28,6 +28,7 @@ namespace ngs\framework\util {
 
     public function streamFile($module, $file) {
       if (NGS()->getEnvironment() == "production") {
+        
         $filePath = realpath(NGS()->getPublicDir()."/".$file);
         if (strpos($file, NGS()->getDefinedValue("PUBLIC_OUTPUT_DIR")) === false) {
           if (file_exists($filePath) == false) {

@@ -8,7 +8,7 @@
  * @year 2014-2015
  * @package ngs.framework.util
  * @version 2.1.1
- * 
+ *
  * This file is part of the NGS package.
  *
  * @copyright Naghashyan Solutions LLC
@@ -33,14 +33,14 @@ namespace ngs\framework\util {
       }
       return false;
     }
-    
-    public function getRequestProtocol(){
+
+    public function getRequestProtocol() {
       return stripos($_SERVER['SERVER_PROTOCOL'], 'https') === true ? 'https:' : 'http:';
     }
 
     public function getHost($main = false) {
       $httpHost = $this->_getHttpHost($main);
-      if($httpHost == null){
+      if ($httpHost == null) {
         return null;
       }
       $array = explode(".", $httpHost);
@@ -49,7 +49,7 @@ namespace ngs\framework\util {
 
     public function getHttpHost($withPath = false, $withProtacol = false, $main = false) {
       $httpHost = $this->_getHttpHost($main);
-      if($httpHost == null){
+      if ($httpHost == null) {
         return null;
       }
       if ($withPath) {
@@ -64,13 +64,46 @@ namespace ngs\framework\util {
       return (array_key_exists(count($array) - 2, $array) ? $array[count($array) - 2] : "").".".$array[count($array) - 1];
     }
 
+    public function getHttpHostByNs($ns = "", $withProtocol = false) {
+      $httpHost = $this->getHttpHost(true, $withProtocol);
+      if (NGS()->getModulesRoutesEngine()->getModuleType() == "path") {
+        if ($ns == "" || NGS()->getModulesRoutesEngine()->isCurrentModule($ns)) {
+          return $httpHost."/".NGS()->getModulesRoutesEngine()->getModuleUri();
+        }
+      }
+      if ($ns == "") {
+        return $httpHost;
+      }
+      return $this->getHttpHost(true, $withProtocol)."/".$ns;
+    }
+
+    public function getNgsStaticPath($ns = "", $withProtocol = false) {
+      $httpHost = $this->getHttpHost(true, $withProtocol);
+      if (NGS()->getModulesRoutesEngine()->getModuleType() == "path") {
+        if ($ns == "" || NGS()->getModulesRoutesEngine()->isCurrentModule($ns)) {
+          return $httpHost."/".NGS()->getModulesRoutesEngine()->getModuleUri();
+        }
+      }
+      if ($ns == "") {
+        if(NGS()->getModulesRoutesEngine()->isDefaultModule()){
+          return $httpHost;
+        }
+        $ns = NGS()->getModulesRoutesEngine()->getModuleNS();
+      }
+      return $this->getHttpHost(true, $withProtocol)."/".$ns;
+    }
+
     public function getRequestUri($full = false) {
       $uri = isset($_SERVER["REQUEST_URI"]) ? $_SERVER["REQUEST_URI"] : "";
       if (strpos($uri, "?") !== false) {
         $uri = substr($uri, 0, strpos($uri, "?"));
       }
-      if($full === false && NGS()->getModulesRoutesEngine()->getModuleType() == "path"){
-        $uri = str_replace(NGS()->getModulesRoutesEngine()->getModuleUri()."/", "", $uri);
+      if ($full === false && NGS()->getModulesRoutesEngine()->getModuleType() == "path") {
+        $delim = "";
+        if (strpos($uri, NGS()->getModulesRoutesEngine()->getModuleUri()."/") !== false) {
+          $delim = "/";
+        }
+        $uri = str_replace(NGS()->getModulesRoutesEngine()->getModuleUri().$delim, "", $uri);
       }
       return $uri;
     }
@@ -83,7 +116,7 @@ namespace ngs\framework\util {
      * @return integer|babyclass
      */
     public function redirect($url) {
-      header("location: ".$this->getHttpHost(true)."/".$url);
+      header("location: ".$this->getHttpHostByNs("", true)."/".$url);
     }
 
     public function getMainDomain() {
@@ -101,9 +134,6 @@ namespace ngs\framework\util {
         $ngsHost = NGS()->getDefinedValue("HTTP_HOST");
       } elseif (isset($_SERVER["HTTP_HOST"])) {
         $ngsHost = $_SERVER["HTTP_HOST"];
-      } 
-      if($ngsHost != null && $main==false && NGS()->getModulesRoutesEngine()->getModuleType() == "path"){
-        $ngsHost = $ngsHost."/".NGS()->getModulesRoutesEngine()->getModuleUri();
       }
       return $ngsHost;
     }

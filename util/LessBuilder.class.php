@@ -76,10 +76,10 @@ namespace ngs\framework\util {
         $modulePath = "";
         $module = "ngs";
         if ($value["module"] != null) {
-          $modulePath = "/".$value["module"];
+          $modulePath = $value["module"];
           $module = $value["module"];
         }
-        $lessHost = NGS()->getHttpUtils()->getHttpHost(true).$modulePath."/less/";
+        $lessHost = NGS()->getHttpUtils()->getHttpHostByNs($modulePath)."/less/";
         $lessDir = realpath(NGS()->getPublicDir($module)."/".NGS()->getDefinedValue("LESS_DIR"));
         $lessFilePath = realpath($lessDir."/".$value["file"]);
         if ($lessFilePath == false) {

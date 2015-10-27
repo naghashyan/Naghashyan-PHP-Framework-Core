@@ -60,11 +60,14 @@ function smarty_function_ngs($params, $template) {
       return NGS()->getTemplateDir($ns);
       break;  
     case 'get_static_path' :
+      if(isset(NGS()->getConfig()->static_path)){
+        return "//".NGS()->getConfig()->static_path;
+      }
       $protocol = false;
       if(isset($params['protocol']) && $params['protocol'] == true){
         $protocol = true;
       }
-      return NGS()->getHttpUtils()->getPublicHost($protocol, $ns);
+      return NGS()->getHttpUtils()->getNgsStaticPath($ns, $protocol);
       break;    
     case 'get_version' :
       return NGS()->getVersion();

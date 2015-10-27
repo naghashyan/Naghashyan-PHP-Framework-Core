@@ -11,7 +11,7 @@
  * @year 2014-2015
  * @package ngs.framework.util
  * @version 2.1.0
- * 
+ *
  * This file is part of the NGS package.
  *
  * @copyright Naghashyan Solutions LLC
@@ -22,9 +22,9 @@
  */
 namespace ngs\framework\util {
   use ngs\framework\exceptions\NotFoundException;
-  
+
   class JsBuilder extends AbstractBuilder {
-    
+
     public function getOutputDir() {
       $_outDir = NGS()->getPublicOutputDir()."/".NGS()->getDefinedValue("JS_DIR");
       $outDir = realpath($_outDir);
@@ -44,9 +44,9 @@ namespace ngs\framework\util {
       foreach ($files["files"] as $value) {
         $module = "";
         if ($value["module"] != null) {
-          $module = "/".$value["module"];
+          $module = $value["module"];
         }
-        $inputFile = NGS()->getHttpUtils()->getHttpHost(true).$module."/js/".trim($value["file"]);
+        $inputFile = NGS()->getHttpUtils()->getHttpHostByNs($module)."/js/".trim($value["file"]);
         echo("document.write('<script type=\"text/javascript\" src=\"".$inputFile."\"></script>');\n\r");
       }
     }

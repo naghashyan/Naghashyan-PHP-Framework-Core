@@ -49,7 +49,7 @@ if (php_sapi_name() == "cli") {
 */
 
 NGS()->define("VERSION", "1.0.0");
-NGS()->define("NGSVERSION", "2.1.0");
+NGS()->define("NGSVERSION", "2.1.2");
 NGS()->define("FRAMEWORK_NS", "ngs");
 NGS()->define("DEFAULT_NS", "ngs");
 /*

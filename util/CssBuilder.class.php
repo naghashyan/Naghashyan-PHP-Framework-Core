@@ -74,9 +74,9 @@ namespace ngs\framework\util {
       foreach ($files["files"] as $value) {
         $module = "";
         if ($value["module"] != null) {
-          $module = "/".$value["module"];
+          $module = $value["module"];
         }
-        $inputFile = NGS()->getHttpUtils()->getHttpHost(true).$module."/devout/css/".trim($value["file"]);
+        $inputFile = NGS()->getHttpUtils()->getHttpHostByNs($module)."/devout/css/".trim($value["file"]);
         echo '@import url("'.$inputFile.'");';
       }
     }
