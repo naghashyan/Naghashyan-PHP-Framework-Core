@@ -35,7 +35,13 @@ namespace ngs\framework\util {
     }
 
     public function getRequestProtocol() {
-      return stripos($_SERVER['SERVER_PROTOCOL'], 'https') === true ? 'https:' : 'http:';
+      if ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") || $_SERVER['SERVER_PORT'] == 443) {
+        $protocol = "https:";
+      } else {
+        $protocol = "http:";
+      }
+
+      return $protocol;
     }
 
     public function getHost($main = false) {
@@ -67,9 +73,14 @@ namespace ngs\framework\util {
     public function getHttpHostByNs($ns = "", $withProtocol = false) {
       $httpHost = $this->getHttpHost(true, $withProtocol);
       if (NGS()->getModulesRoutesEngine()->getModuleType() == "path") {
-        if ($ns == "" || NGS()->getModulesRoutesEngine()->isCurrentModule($ns)) {
-          return $httpHost."/".NGS()->getModulesRoutesEngine()->getModuleUri();
+        if ($ns == "") {
+          return $httpHost;
         }
+        if(NGS()->getModulesRoutesEngine()->isDefaultModule($ns)){
+          
+        }
+        
+        return $httpHost."/".NGS()->getModulesRoutesEngine()->getModuleUri();
       }
       if ($ns == "") {
         return $httpHost;
