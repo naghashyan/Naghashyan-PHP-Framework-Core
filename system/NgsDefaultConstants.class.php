@@ -6,9 +6,9 @@
  *
  * @author Levon Naghashyan <levon@naghashyan.com>
  * @site http://naghashyan.com
- * @year 2015
+ * @year 2015-2016
  * @package ngs.framework.system
- * @version 2.0.0
+ * @version 2.3.0
  *
  * This file is part of the NGS package.
  *
@@ -24,19 +24,22 @@
  | DEFINNING VARIABLES IF SCRIPT RUNNING FROM COMMAND LINE
  |--------------------------------------------------------------------------
  */
-if (php_sapi_name() == "cli") {
-  $args = substr($argv[1], strpos($argv[1], "?") + 1);
-  $uri = substr($argv[1], 0, strpos($argv[1], "?"));
-  $_SERVER["REQUEST_URI"] = $uri;
-  if (isset($args)) {
+if (php_sapi_name() == "cli"){
+  $args = null;
+  if (isset($argv) && isset($argv[1])){
+    $args = substr($argv[1], strpos($argv[1], "?") + 1);
+    $uri = substr($argv[1], 0, strpos($argv[1], "?"));
+    $_SERVER["REQUEST_URI"] = $uri;
+  }
+  if ($args != null){
     $queryArgsArr = explode("&", $args);
-    foreach ($queryArgsArr as $value) {
+    foreach ($queryArgsArr as $value){
       $_arg = explode("=", $value);
       $_REQUEST[$_arg[0]] = $_arg[1];
       $_GET[$_arg[0]] = $_arg[1];
     }
   }
-  if (isset($argv[2])) {
+  if (isset($argv[2])){
     $_SERVER["ENVIRONMENT"] = $argv[2];
   }
   $_SERVER["HTTP_HOST"] = "";
@@ -49,7 +52,7 @@ if (php_sapi_name() == "cli") {
 */
 
 NGS()->define("VERSION", "1.0.0");
-NGS()->define("NGSVERSION", "2.1.2");
+NGS()->define("NGSVERSION", "2.2.0");
 NGS()->define("FRAMEWORK_NS", "ngs");
 NGS()->define("DEFAULT_NS", "ngs");
 /*
@@ -58,7 +61,7 @@ NGS()->define("DEFAULT_NS", "ngs");
 |--------------------------------------------------------------------------
 */
 $environment = "development";
-if (isset($_SERVER["ENVIRONMENT"])) {
+if (isset($_SERVER["ENVIRONMENT"])){
   $environment = $_SERVER["ENVIRONMENT"];
 }
 NGS()->define("ENVIRONMENT", $environment);
@@ -72,13 +75,13 @@ NGS()->define("JS_FRAMEWORK_ENABLE", true);
 |--------------------------------------------------------------------------
 */
 //---defining document root
-if(strpos(getcwd(), "/htdocs") == false && strpos(getcwd(), "\htdocs") == false){
+if (strpos(getcwd(), "/htdocs") == false && strpos(getcwd(), "\htdocs") == false){
   throw new Exception("please change document root to htdocs");
 }
 //---defining ngs root
-if(strpos(getcwd(), "/htdocs") !== false){
+if (strpos(getcwd(), "/htdocs") !== false){
   $ngsRoot = substr(getcwd(), 0, strrpos(getcwd(), "/htdocs"));
-}else{
+} else{
   $ngsRoot = substr(getcwd(), 0, strrpos(getcwd(), "\htdocs"));
 }
 NGS()->define("NGS_ROOT", $ngsRoot);
@@ -146,7 +149,7 @@ NGS()->define("NGS_UTILS", 'ngs\framework\util\NgsUtils');
 
 /*
 |--------------------------------------------------------------------------
-| DEFINNING NGS DEFAULT EXCEPTIONS
+| DEFINNING NGS DEFAULT EXCEPTIONS HANDLERS (loads/actions)
 |--------------------------------------------------------------------------
 */
 //---defining debug exception

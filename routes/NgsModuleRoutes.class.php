@@ -91,6 +91,10 @@ namespace ngs\framework\routes {
       $this->shuffledRoutes = array();
       foreach ($routes as $domain => $route){
         foreach ($route as $type => $routeItem){
+          if($type == "default"){
+            $this->shuffledRoutes[$routeItem["dir"]] = array("path" => $routeItem["dir"], "type" => $type, "domain" => $domain);
+            continue;
+          }
           foreach ($routeItem as $item){
             if (isset($item["dir"])){
               $this->shuffledRoutes[$item["dir"]] = array("path" => $item["dir"], "type" => $type, "domain" => $domain);

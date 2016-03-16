@@ -21,7 +21,7 @@
  *
  */
 namespace ngs\framework\util {
-  use ngs\framework\exception\NotFoundException;
+  use ngs\framework\exceptions\NotFoundException;
   require_once (NGS()->getFrameworkDir()."/lib/less.php/Less.php");
   class LessBuilder extends AbstractBuilder {
       

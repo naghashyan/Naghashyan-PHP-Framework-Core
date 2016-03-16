@@ -23,19 +23,6 @@ namespace ngs\framework\util {
 		}
 
 		/*
-		 The first letter of input string changes to Lower case
-		 */
-		public static function lowerFirstLetter($str) {
-			$first = substr($str, 0, 1);
-			$asciiValue = ord($first);
-			if ($asciiValue >= 65 && $asciiValue <= 90) {
-				$asciiValue += 32;
-				return chr($asciiValue).substr($str, 1);
-			}
-			return $str;
-		}
-
-		/*
 		 Overloads getter and setter methods
 		 */
 		public function __call($m, $a) {
@@ -48,7 +35,7 @@ namespace ngs\framework\util {
 			// retrieving the method type (setter or getter)
 			$type = substr($m, 0, 3);
 			// retrieving the field name
-			$fieldName = self::lowerFirstLetter(substr($m, 3));
+			$fieldName = NGS()->getNgsUtils()->lowerFirstLetter(substr($m, 3));
 
 			if ($type == 'set') {
 				if(count($a) == 1){

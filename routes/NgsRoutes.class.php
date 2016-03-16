@@ -6,9 +6,9 @@
  *
  * @author Levon Naghashyan <levon@naghashyan.com>
  * @site http://naghashyan.com
- * @year 2014-2015
+ * @year 2014-2016
  * @package ngs.framework.routes
- * @version 2.1.1
+ * @version 2.2.0
  *
  * This file is part of the NGS package.
  *
@@ -19,14 +19,16 @@
  *
  */
 namespace ngs\framework\routes {
+  use ngs\framework\exceptions\DebugException;
+  use ngs\framework\exceptions\NotFoundException;
   class NgsRoutes {
 
     private $routes = null;
     private $package = null;
     private $nestedRoutes = null;
-    private $jsonParams = array();
     private $contentLoad = null;
     private $dynContainer = "dyn";
+    private $currentRoute = null;
 
     /**
      * return url dynamic part
@@ -241,13 +243,17 @@ namespace ngs\framework\routes {
         if ($dynRoute == true){
           return $this->getStandartRoutes($package, $urlPartsArr);
         }
-        throw NGS()->getNotFoundException();
+        if(NGS()->getEnvironment() == "development"){
+          throw new DebugException("No Matched Routes");
+        }
+        throw new NotFoundException();
       }
       $_action = NGS()->getModulesRoutesEngine()->getModuleNS().".".$route["action"];
       $this->setContentLoad($_action);
       if (isset($route["nestedLoad"])){
         $this->setNestedRoutes($route["nestedLoad"], $route["action"]);
       }
+      $this->setCurrentRoute($route);
       return array("action" => $_action, "args" => $route["args"], "matched" => true);
     }
 
@@ -265,8 +271,11 @@ namespace ngs\framework\routes {
     private function getMatchedRoute($uriParams, $routeArr) {
       $route = "";
       if (!isset($routeArr["route"])){
+
         $routeArr["route"] = "";
       }
+
+
       $route = $routeArr["route"];
       if (strpos($route, "[:") === false && strpos($route, "[/:") === false){
         $fullUri = implode("/", $uriParams);
@@ -389,6 +398,14 @@ namespace ngs\framework\routes {
 
     public function getContentLoad() {
       return $this->contentLoad;
+    }
+
+    private function setCurrentRoute($currentRoute){
+      $this->currentRoute = $currentRoute;
+    }
+
+    public function getCurrentRoute(){
+      return $this->currentRoute;
     }
 
   }

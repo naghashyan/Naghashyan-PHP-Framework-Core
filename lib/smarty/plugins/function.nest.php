@@ -36,7 +36,6 @@ function smarty_function_nest($params, $template) {
     }
 
     $nsValue = $template->tpl_vars["ns"]->value;
-    $pmValue = $template->tpl_vars["pm"]->value;
     $namespace = $nsValue["inc"][$params["ns"]]["namespace"];
 
     $include_file = $nsValue["inc"][$params["ns"]]["filename"];
@@ -46,7 +45,6 @@ function smarty_function_nest($params, $template) {
         $_tpl->assign($key, $tplVars);
     }
     $_tpl->assign("ns", $nsValue["inc"][$params["ns"]]["params"]);
-    $_tpl->assign("pm", $pmValue);
     if ($_tpl->mustCompile()) {
         $_tpl->compileTemplateSource();
     }

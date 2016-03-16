@@ -21,58 +21,7 @@ namespace ngs\framework\session {
 
     private $requestSessionHeadersArr = array();
     
-    
-    /**
-     * this method for get user from cookies,
-     * Children of the NgsSessionManager class should override this method
-     *
-     * @abstract
-     * @access
-     * @param
-     * @return mixed user Object| $user
-     */
-    protected function getUserIdKey(){
-      return "ud";
-    }
-    
-    /**
-     * this method for get user from cookies,
-     * Children of the NgsSessionManager class should override this method
-     *
-     * @abstract
-     * @access
-     * @param
-     * @return mixed user Object| $user
-     */
-    protected function getUserHashKey(){
-      return "uh";
-    }
-    
-    /**
-     * this method for get user from cookies,
-     * Children of the NgsSessionManager class should override this method
-     *
-     * @abstract
-     * @access
-     * @param
-     * @return mixed user Object| $user
-     */
-    protected function getUserTypeKey(){
-      return "ut";
-    }
 
-    /**
-     * this method for get user from cookies,
-     * Children of the NgsSessionManager class should override this method
-     *
-     * @abstract
-     * @access
-     * @param
-     * @return mixed user Object| $user
-     */
-    public function getUser() {
-      return null;
-    }
 
     /**
      * set user info into cookie and session

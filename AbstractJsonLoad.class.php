@@ -30,7 +30,7 @@ namespace ngs\framework {
 			$this->params["inc"][$namespace] = $loadObj->getParams();
 		}
 
-		public final function getLoadType(){
+		public function getLoadType(){
 			return "json";
 		}
 		

@@ -101,7 +101,11 @@ namespace ngs\framework\util {
         }
 
         public function setParams($params) {
+            if(!$this->reqParams){
+                return;
+            }
             $this->reqParams .= "?";
+
             foreach ($this->reqParams as $key => $value) {
                 $this->reqParams .= urlencode($key) . "=" . urlencode($value) . "&";
             }
