@@ -6,8 +6,8 @@
  * @author Levon Naghashyan <levon@naghashyan.com>
  * @site http://naghashyan.com
  * @package ngs.framework.dal.mappers
- * @version 2.0.0
- * @year 2009-2015
+ * @version 2.3.0
+ * @year 2009-2016
  *
  * This file is part of the NGS package.
  *
@@ -344,7 +344,7 @@ namespace ngs\framework\dal\mappers {
       return $this->fetchRow($sqlQuery, array("id" => $id));
     }
 
-    protected function exec($sqlQuery){
+    protected function exec($sqlQuery) {
       $this->dbms->exec($sqlQuery);
     }
   }

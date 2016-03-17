@@ -6,7 +6,7 @@
  * @site http://naghashyan.com
  * @year 2016
  * @package ngs.framework.util
- * @version 2.2.0
+ * @version 2.3.0
  *
  * This file is part of the NGS package.
  *
@@ -18,7 +18,7 @@
  */
 
 namespace ngs\framework\util {
-
+  use ngs\framework\exceptions\DebugException;
   class NgsArgs {
 
     /**
@@ -128,18 +128,23 @@ namespace ngs\framework\util {
       return $this->requestParams;
     }
 
-    public function input($toObject = false) {
-      if ($this->inputParams == null){
-        $this->inputParams = file_get_contents('php://input');
-        if (NGS()->getNgsUtils()->isJson($this->inputParams)){
-          $this->inputArgs = new NgsArgs($this->trim);
-          $this->inputArgs->setArgs(json_decode($this->inputParams, true));
+    public function input() {
+      if ($this->inputArgs == null){
+        if (!NGS()->getNgsUtils()->isJson($this->inputParams)){
+          throw new DebugException("response body is not json");
         }
-      }
-      if ($toObject == false){
-        return $this->inputParams;
+        $this->inputArgs = new NgsArgs($this->trim);
+        $this->inputArgs->setArgs(json_decode($this->inputData(), true));
       }
       return $this->inputArgs;
+    }
+
+    public function inputData() {
+      if ($this->inputParams == null){
+        $this->inputParams = file_get_contents('php://input');
+      }
+      return $this->inputParams;
+
     }
 
     public function headers() {
