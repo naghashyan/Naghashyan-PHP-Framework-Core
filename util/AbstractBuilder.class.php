@@ -21,7 +21,7 @@
  *
  */
 namespace ngs\framework\util {
-  use ngs\framework\exceptions\NotFoundException;
+  use ngs\framework\exceptions\DebugException;
   abstract class AbstractBuilder {
 
     private $builderJsonArr = array();
@@ -32,7 +32,7 @@ namespace ngs\framework\util {
         $filePath = realpath(NGS()->getPublicDir()."/".$file);
         if (strpos($file, NGS()->getDefinedValue("PUBLIC_OUTPUT_DIR")) === false) {
           if (file_exists($filePath) == false) {
-            throw NGS()->getNotFoundException($filePath + " NOT FOUND");
+            throw new DebugException($filePath + " NOT FOUND");
           }
         } elseif (file_exists($filePath) == false || fileatime($filePath) != fileatime($this->getBuilderFile())) {
           $this->build($file);
@@ -44,7 +44,7 @@ namespace ngs\framework\util {
         $realFile = substr($file, strpos($file, "/") + 1);
         $realFile = realpath(NGS()->getPublicDir($module)."/".$realFile);
         if ($realFile == null) {
-          throw NGS()->getDebugException($file." not found");
+          throw new DebugException($file." not found");
         }
         $buffer = file_get_contents($realFile);
         $buffer = $this->customBufferUpdates($buffer);
@@ -60,7 +60,7 @@ namespace ngs\framework\util {
       
       $files = $this->getBuilderArr($this->getBuilderJsonArr(), $file);
       if (count($files) == 0) {
-        throw NGS()->getDebugException("Please add file in builder under section ".$file);
+        throw new DebugException("Please add file in builder under section ".$file);
       }
       $this->doDevOutput($files);
     }
@@ -163,7 +163,7 @@ namespace ngs\framework\util {
         }
         $inputFile = realpath($this->getItemDir($module)."/".trim($value["file"]));
         if (!$inputFile) {
-          throw NGS()->getNotFoundException($this->getItemDir($module)."/".trim($value["file"])." not found");
+          throw new DebugException($this->getItemDir($module)."/".trim($value["file"])." not found");
         }
         $buffer .= file_get_contents($inputFile)."\n\r";
       }

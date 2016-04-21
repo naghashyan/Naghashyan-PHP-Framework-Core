@@ -130,7 +130,7 @@ namespace ngs\framework\util {
 
     public function input() {
       if ($this->inputArgs == null){
-        if (!NGS()->getNgsUtils()->isJson($this->inputParams)){
+        if (!NGS()->getNgsUtils()->isJson($this->inputData())){
           throw new DebugException("response body is not json");
         }
         $this->inputArgs = new NgsArgs($this->trim);

@@ -25,7 +25,12 @@ namespace ngs\framework\exceptions {
      * @param boolean $paramie
      * @return integer|babyclass
      */
-    public function __construct() {
+    public function __construct($msg = "", $code = -1, $params = array()) {
+      parent::__construct($msg, $code);
+      if (NGS()->getEnvironment() != "production"){
+        new DebugException($this->getMessage(), $this->getCode());
+        return;
+      }
       header("HTTP/1.0 404 Not Found");
       echo "404 page :)";
       exit;

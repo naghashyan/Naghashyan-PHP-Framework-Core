@@ -21,7 +21,7 @@
  *
  */
 namespace ngs\framework\util {
-  use ngs\framework\exception\NotFoundException;
+  use ngs\framework\exceptions\DebugException;
   class CssBuilder extends AbstractBuilder {
 
     protected function doBuild($file) {
@@ -39,7 +39,7 @@ namespace ngs\framework\util {
         }
         $inputFile = realpath(NGS()->getCssDir($module)."/".trim($value["file"]));
         if (!$inputFile) {
-          throw NGS()->getNotFoundException($filePath." not found");
+          throw new DebugException($filePath." not found");
         }
         $buf .= file_get_contents($inputFile)."\n\r";
       }

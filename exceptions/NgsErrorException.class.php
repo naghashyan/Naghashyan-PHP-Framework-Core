@@ -22,10 +22,9 @@ namespace ngs\framework\exceptions {
 
     public function __construct($msg = "", $code = -1, $params = array()) {
       if (!NGS()->getHttpUtils()->isAjaxRequest()){
-        //throw  NGS()->getNotFoundException();
+        //throw  new DebugException();
       }
       NGS()->getTemplateEngine()->setHttpStatusCode(400);
-      NGS()->getTemplateEngine()->assignJson("status", "error");
       NGS()->getTemplateEngine()->assignJson("code", $code);
       NGS()->getTemplateEngine()->assignJson("msg", $msg);
       NGS()->getTemplateEngine()->assignJson("params", $params);

@@ -203,7 +203,7 @@ namespace ngs\framework\routes {
       if (isset($routes["default"])){
         return $routes["default"];
       }
-      throw NGS()->getDebugException("PLEASE ADD DEFAULT SECTION IN module.json");
+      throw new DebugException("PLEASE ADD DEFAULT SECTION IN module.json");
     }
 
     /**
@@ -272,7 +272,7 @@ namespace ngs\framework\routes {
       } elseif (isset($matchedArr["extend"])){
         $ns = $matchedArr["extend"];
       } else{
-        throw NGS()->getDebugException("PLEASE ADD DIR OR NAMESPACE SECTION IN module.json");
+        throw new DebugException("PLEASE ADD DIR OR NAMESPACE SECTION IN module.json");
       }
       /*TODO add global extend
        if (isset($matchedArr["extend"])) {

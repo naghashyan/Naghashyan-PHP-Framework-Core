@@ -52,7 +52,7 @@ namespace ngs\framework\session {
 		 * @param mixed user Object| $user
 		 * @return
 		 */
-		public abstract function deleteUser($user);
+		public abstract function deleteUser();
 		
 		
 		/**

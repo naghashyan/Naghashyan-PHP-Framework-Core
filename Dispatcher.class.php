@@ -72,8 +72,6 @@ namespace ngs\framework {
         //$this->diplayJSONResuls($ex->getMsg());
       } catch (RedirectException $ex){
         $this->redirect($ex->getRedirectTo());
-      } catch (\Exception $ex){
-        throw new NotFoundException("Load/Action Not found");
       }
     }
 
@@ -173,7 +171,7 @@ namespace ngs\framework {
           return true;
         }
       }
-      return true;
+      return false;
     }
 
     /**
@@ -184,14 +182,6 @@ namespace ngs\framework {
      * @return void
      */
     private function displayResult() {
-      /*
-      foreach (NGS()->getSessionManager()->getRequestHeader() as $key => $value){
-        $headerStr = $key;
-        if ($value != ""){
-          $headerStr .= " : ".$value;
-        }
-        header($headerStr);
-      }*/
       NGS()->getTemplateEngine()->display();
 
     }

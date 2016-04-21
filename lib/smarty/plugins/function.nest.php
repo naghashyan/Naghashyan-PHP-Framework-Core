@@ -19,8 +19,8 @@
  * @author   Levon Naghashyan <levon at naghashyan dot com>
  * @site http://naghashyan.com
  * @mail levon@naghashyan.com
- * @year 2012-2015
- * @version 2.0.0
+ * @year 2012-2016
+ * @version 2.5.0
  * @param array $params parameters
  * @param object $template template object
  * @return render template|null
@@ -48,7 +48,6 @@ function smarty_function_nest($params, $template) {
     if ($_tpl->mustCompile()) {
         $_tpl->compileTemplateSource();
     }
-
     //$_tpl->renderTemplate();
     $_output = $_tpl->display();
     if (NGS()->isJsFrameworkEnable() && !NGS()->getHttpUtils()->isAjaxRequest()) {
@@ -62,5 +61,3 @@ function smarty_function_nest($params, $template) {
 
     return $_output;
 }
-
-?>

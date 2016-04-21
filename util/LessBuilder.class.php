@@ -21,7 +21,7 @@
  *
  */
 namespace ngs\framework\util {
-  use ngs\framework\exceptions\NotFoundException;
+  use ngs\framework\exceptions\DebugException;
   require_once (NGS()->getFrameworkDir()."/lib/less.php/Less.php");
   class LessBuilder extends AbstractBuilder {
       
@@ -43,15 +43,14 @@ namespace ngs\framework\util {
     public function build($file, $mode = false) {
       $files = $this->getBuilderArr($this->getBuilderJsonArr(), $file);
       if (count($files) == 0) {
-        throw NGS()->getDebugException("Please add less files in builder");
+        throw new DebugException("Please add less files in builder");
       }
       $options = array();
       if ($mode) {
         $options["compress"] = true;
       }
       $this->lessParser = new \Less_Parser($options);
-      $this->lessParser->parse('@NGS_PATH: "'.NGS()->getHttpUtils()->getHttpHost(true).'";');
-      $this->lessParser->parse('@NGS_MODULE_PATH: "'.NGS()->getPublicHostByNS().'";');
+      $this->lessParser->parse('@NGS_PATH: "'.NGS()->getHttpUtils()->getHttpHost(true).'";@NGS_MODULE_PATH: "'.NGS()->getPublicHostByNS().'";');
       $this->setLessFiles($files);
       if($mode){
         $outFileName = $files["output_file"];
@@ -83,7 +82,7 @@ namespace ngs\framework\util {
         $lessDir = realpath(NGS()->getPublicDir($module)."/".NGS()->getDefinedValue("LESS_DIR"));
         $lessFilePath = realpath($lessDir."/".$value["file"]);
         if ($lessFilePath == false) {
-          throw NGS()->getDebugException("Please add or check if correct less file in builder under section ".$value["file"]);
+          throw new DebugException("Please add or check if correct less file in builder under section ".$value["file"]);
         }
         $importDirs[$lessFilePath] = $lessDir;
         $this->lessParser->parseFile($lessFilePath);

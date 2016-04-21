@@ -18,7 +18,7 @@
  *
  */
 namespace ngs\framework\dal\mappers {
-
+  use ngs\framework\exceptions\DebugException;
   abstract class AbstractMysqlMapper extends AbstractMapper {
 
     public $dbms;
@@ -61,7 +61,7 @@ namespace ngs\framework\dal\mappers {
       }
 
       //creating query
-      $q = sprintf("INSERT INTO `%s` SET ", $this->getTableName());
+      $sqlQuery = sprintf("INSERT INTO `%s` SET ", $this->getTableName());
       $params = array();
       for ($i = 0; $i < count($fieldsArray); $i++){
         if ($val == "CURRENT_TIMESTAMP()" || $val == "NOW()" || $val === "NULL"){

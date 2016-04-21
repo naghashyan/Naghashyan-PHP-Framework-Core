@@ -21,13 +21,14 @@
  * 
  */
 namespace ngs\framework\util {
+  use ngs\framework\exceptions\DebugException;
   class FileUtils {
     
     
     public function streamFile($module, $file){
       $filePath = realpath(NGS()->getPublicDir($module)."/".$file);
       if ($filePath == false) {
-        throw NGS()->getNotFoundException();
+        throw new DebugException("File Not Found");
       }
       $options = array();
       if(NGS()->getEnvironment() != "production"){
@@ -56,7 +57,7 @@ namespace ngs\framework\util {
      */
     public function sendFile($file, $options = array()) {
       if (!is_string($file)) {
-        throw NGS()->getNotFoundException();
+        throw new DebugException($file."File Not Found");
       }
 
       $defaultOptions = array("filename" => null, "mimeType" => null, "contentLength" => null, "cache" => true, "remoteFile" => false, "streamer" => "standart", "headers" => array());

@@ -8,7 +8,7 @@
  * @site http://naghashyan.com
  * @year 2014-2016
  * @package ngs.framework.routes
- * @version 2.2.0
+ * @version 2.5.0
  *
  * This file is part of the NGS package.
  *
@@ -290,7 +290,7 @@ namespace ngs\framework\routes {
         preg_match_all("/([^\/\?]+)/", $newUri, $matches);
         return $matches[1];
       }
-      preg_match_all("/\[([0-9A-Za-z\:\/]+)\]|([0-9A-Za-z])+/", $routeArr["route"], $matches, PREG_SET_ORDER);
+      preg_match_all("/\[([0-9A-Za-z\:\/\-\_]+)\]|([0-9A-Za-z\-\_])+/", $routeArr["route"], $matches, PREG_SET_ORDER);
       $urlMatchArgs = array();
       foreach ((array)$matches as $matchKey => $matchedValues){
         $value = $matchedValues[1];

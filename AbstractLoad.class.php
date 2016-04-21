@@ -30,6 +30,7 @@ namespace ngs\framework {
     private $jsonParam = array();
     private $load_name = "";
     private $isNestedLoad = false;
+    private $ngsWrappingLoad = null;
 
     /**
      * this method use for initialize
@@ -88,6 +89,8 @@ namespace ngs\framework {
      * @param String $namespace
      * @param array $loadArr
      *
+     * @throws NoAccessException
+     *
      * @return void
      */
     public final function nest($namespace, $loadArr) {
@@ -97,6 +100,7 @@ namespace ngs\framework {
       $loadObj = new $actionArr["action"];
       //set that this load is nested
       $loadObj->setIsNestedLoad(true);
+      $loadObj->setNgsWrappingLoad($this);
       if (isset($loadArr["args"])){
         NgsArgs::getInstance()->setArgs($loadArr["args"]);
       }
@@ -104,7 +108,7 @@ namespace ngs\framework {
       $loadObj->initialize();
 
       if (NGS()->getSessionManager()->validateRequest($loadObj) === false){
-        throw NGS()->getNoAccessException("User hasn't access to the load: " . $actionArr["action"], 1);
+        $loadObj->onNoAccess();
       }
 
       $loadObj->service();
@@ -127,7 +131,6 @@ namespace ngs\framework {
       $this->params["inc"][$namespace]["jsonParam"] = $loadObj->getJsonParams();
       $this->params["inc"][$namespace]["parent"] = $this->getLoadName();
       $this->params["inc"][$namespace]["permalink"] = $this->getPermalink();
-
     }
 
 
@@ -239,16 +242,55 @@ namespace ngs\framework {
       return $this->isNestedLoad;
     }
 
+    /**
+     * set load type default it is smarty
+     *
+     *
+     * @return string $type
+     */
     public function getLoadType() {
       return "smarty";
     }
 
+    /**
+     * set load name
+     *
+     * @param string $name
+     *
+     * @return void
+     */
     public function setLoadName($name) {
       $this->load_name = $name;
     }
 
+    /**
+     * get load name
+     *
+     *
+     * @return string load_name
+     */
     public function getLoadName() {
       return $this->load_name;
+    }
+
+    /**
+     * set wrapping load object(if load is nested)
+     *
+     * @param NgsLoadObject $loadObj
+     *
+     * @return void
+     */
+    protected function setNgsWrappingLoad($loadObj) {
+      $this->ngsWrappingLoad = $loadObj;
+    }
+
+    /**
+     * get wrapping load if load is nested
+     *
+     * @return boolean|$ngsWrappingLoad
+     */
+    protected function getWrappingLoad() {
+      return $this->ngsWrappingLoad;
     }
 
     public function getPermalink() {

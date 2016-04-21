@@ -41,6 +41,7 @@ namespace ngs\framework\dal\connectors {
       parent::__construct('mysql:dbname=' . $db_name . ';host=' . $db_host . ';charset=utf8', $db_user, $db_pass);
       $this->setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);
       $this->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+      $this->setAttribute(\PDO::ATTR_STATEMENT_CLASS, array('\ngs\framework\dal\connectors\DBStatement'));
 
     }
 
@@ -59,11 +60,21 @@ namespace ngs\framework\dal\connectors {
     public function prepare($statement, $driver_options = array()) {
       try{
         return parent::prepare($statement, $driver_options);
-      }catch(\PDOException $ex){
+      } catch (\PDOException $ex){
         throw new DebugException($ex->getMessage(), $ex->getCode());
       }
     }
 
+  }
+
+  class DBStatement extends \PDOStatement {
+    public function execute($bound_input_params = NULL) {
+      try{
+        return parent::execute($bound_input_params);
+      } catch (\PDOException $ex){
+        throw new DebugException($ex->getMessage(), $ex->getCode());
+      }
+    }
   }
 
 }
