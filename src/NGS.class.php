@@ -23,8 +23,8 @@
 use ngs\framework\exceptions\DebugException;
 use ngs\framework\util\NgsArgs;
 
-require_once("routes/NgsModuleRoutes.class.php");
-require_once("util/HttpUtils.class.php");
+require_once("routes/NgsModuleRoutes.php");
+require_once("util/HttpUtils.php");
 
 class NGS {
 
@@ -47,7 +47,6 @@ class NGS {
   private $define = array();
 
   public function initialize() {
-    $this->registerAutoload();
     $moduleConstatPath = realpath(NGS()->getConfigDir()."/constants.php");
     if ($moduleConstatPath){
       require_once $moduleConstatPath;
@@ -665,34 +664,11 @@ class NGS {
   public function getDynObject() {
     return new \ngs\framework\util\NgsDynamic();
   }
-
-  /*
-   |--------------------------------------------------------------------------
-   | AUTOLOAD SECTION
-   |--------------------------------------------------------------------------
-   */
-
-  /**
-   * register file autload event for namespace use include
-   */
-  public function registerAutoload() {
-    spl_autoload_register(function ($class) {
-      $class = str_replace('\\', '/', $class);
-      $ns = substr($class, 0, strpos($class, "/"));
-      $class = substr($class, strpos($class, "/") + 1);
-      $classPath = NGS()->getClassesDir($ns);
-      $filePath = realpath($classPath.'/'.$class.'.class.php');
-      if (file_exists($filePath)){
-        require_once($filePath);
-      }
-    });
-  }
-
 }
 
 function NGS() {
   return NGS::getInstance();
 }
 
-require_once("system/NgsDefaultConstants.class.php");
+require_once("system/NgsDefaultConstants.php");
 NGS()->initialize();
