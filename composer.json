@@ -1,0 +1,24 @@
+{
+  "name": "naghashyan/ngs-php-framework",
+  "type": "library",
+  "description": "The Naghashyan PHP framework",
+  "keywords": ["framework"],
+  "homepage": "http://ngsframework.com",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Naghashyan Solutions LLC",
+      "email": "info@naghashyan.com"
+    }
+  ],
+  "require": {
+    "php": ">=5.6.4",
+    "smarty/smarty": "~3.1",
+    "oyejorge/less.php": "~1.7.0.9"
+  },
+  "autoload": {
+    "psr-4": {
+      "ngs": "src"
+    }
+  }
+}
