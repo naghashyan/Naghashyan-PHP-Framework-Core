@@ -17,7 +17,7 @@
  * file that was distributed with this source code.
  *
  */
-namespace ngs\framework\dal\connectors {
+namespace ngs\dal\connectors {
 	class ImprovedDBMS {
 
 		/**

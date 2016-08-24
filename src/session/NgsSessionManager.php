@@ -16,8 +16,8 @@
  * file that was distributed with this source code.
  *
  */
-namespace ngs\framework\session {
-  class NgsSessionManager extends \ngs\framework\session\AbstractSessionManager {
+namespace ngs\session {
+  class NgsSessionManager extends \ngs\session\AbstractSessionManager {
 
     private $requestSessionHeadersArr = array();
     

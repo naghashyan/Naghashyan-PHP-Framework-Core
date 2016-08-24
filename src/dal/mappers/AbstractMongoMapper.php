@@ -10,9 +10,9 @@
  * @year 2009-2014
  * @copyright Naghashyan Solutions LLC
  */
-namespace ngs\framework\dal\mappers {
+namespace ngs\dal\mappers {
 
-  use ngs\framework\exceptions\DebugException;
+  use ngs\exceptions\DebugException;
 
   abstract class AbstractMongoMapper extends AbstractMapper {
 
@@ -28,7 +28,7 @@ namespace ngs\framework\dal\mappers {
 				$user = NGS()->getConfig()->DB->mongo->user;
 				$pass = NGS()->getConfig()->DB->mongo->pass;
 				$name = NGS()->getConfig()->DB->mongo->name;
-				$this->dbms = \ngs\framework\dal\connectors\MongoDBMS::getInstance($host, $user, $pass, $name);
+				$this->dbms = \ngs\dal\connectors\MongoDBMS::getInstance($host, $user, $pass, $name);
 			} catch(\Exception $e) {
 				throw new DebugException($e->getMessage(), "Mongo DB");
 			}

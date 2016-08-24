@@ -17,7 +17,7 @@
  * file that was distributed with this source code.
  *
  */
-namespace ngs\framework\exceptions {
+namespace ngs\exceptions {
   class NgsErrorException extends \Exception {
 
     public function __construct($msg = "", $code = -1, $params = array()) {

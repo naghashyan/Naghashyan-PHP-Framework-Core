@@ -20,9 +20,9 @@
  * file that was distributed with this source code.
  *
  */
-namespace ngs\framework\util {
+namespace ngs\util {
 
-  use ngs\framework\exceptions\NotFoundException;
+  use ngs\exceptions\NotFoundException;
 
   class JsBuilder extends AbstractBuilder {
 
@@ -37,7 +37,7 @@ namespace ngs\framework\util {
     }
 
     protected function doCompress($buf) {
-      return \ngs\framework\lib\minify\ClosureCompiler::minify($buf);
+      return \ngs\lib\minify\ClosureCompiler::minify($buf);
     }
 
     protected function doDevOutput($files) {

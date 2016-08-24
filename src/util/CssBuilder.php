@@ -20,9 +20,9 @@
  * file that was distributed with this source code.
  *
  */
-namespace ngs\framework\util {
+namespace ngs\util {
 
-  use ngs\framework\exceptions\DebugException;
+  use ngs\exceptions\DebugException;
 
   class CssBuilder extends AbstractBuilder {
 
@@ -68,7 +68,7 @@ namespace ngs\framework\util {
     }
 
     protected function doCompress($buf) {
-      return \ngs\framework\lib\minify\CssCompressor::process($buf);
+      return \ngs\lib\minify\CssCompressor::process($buf);
     }
 
     protected function doDevOutput($files) {

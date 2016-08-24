@@ -15,7 +15,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace ngs\framework\util {
+namespace ngs\util {
   class MimeTypeUtils {
 
     private static $mime_types = array('.3dm' => 'x-world/x-3dmf',

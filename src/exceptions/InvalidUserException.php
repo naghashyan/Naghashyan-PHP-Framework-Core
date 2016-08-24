@@ -1,5 +1,5 @@
 <?php
-namespace ngs\framework\exceptions {
+namespace ngs\exceptions {
   class InvalidUserException extends \Exception {
 
     public function __construct($redirectTo = "", $redirectToLoad = "") {

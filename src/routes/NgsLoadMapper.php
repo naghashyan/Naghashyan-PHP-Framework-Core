@@ -18,7 +18,7 @@
  * file that was distributed with this source code.
  *
  */
-namespace ngs\framework\routes {
+namespace ngs\routes {
 
 	class NgsLoadMapper{
 

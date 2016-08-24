@@ -15,15 +15,15 @@
  * file that was distributed with this source code.
  *
  */
-namespace ngs\framework {
+namespace ngs {
 
-  use ngs\framework\exceptions\ClientException;
-  use ngs\framework\exceptions\DebugException;
-  use ngs\framework\exceptions\NgsErrorException;
-  use ngs\framework\exceptions\NoAccessException;
-  use ngs\framework\exceptions\NotFoundException;
-  use ngs\framework\exceptions\RedirectException;
-  use ngs\framework\util\NgsArgs;
+  use ngs\exceptions\ClientException;
+  use ngs\exceptions\DebugException;
+  use ngs\exceptions\NgsErrorException;
+  use ngs\exceptions\NoAccessException;
+  use ngs\exceptions\NotFoundException;
+  use ngs\exceptions\RedirectException;
+  use ngs\util\NgsArgs;
 
   class Dispatcher {
 

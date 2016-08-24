@@ -16,7 +16,7 @@
  * file that was distributed with this source code.
  */
 
-namespace ngs\framework\templater {
+namespace ngs\templater {
 
   abstract class AbstractTemplater {
 

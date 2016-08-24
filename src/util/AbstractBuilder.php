@@ -20,9 +20,9 @@
  * file that was distributed with this source code.
  *
  */
-namespace ngs\framework\util {
+namespace ngs\util {
 
-  use ngs\framework\exceptions\DebugException;
+  use ngs\exceptions\DebugException;
 
   abstract class AbstractBuilder {
 

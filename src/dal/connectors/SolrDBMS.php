@@ -11,7 +11,7 @@
  * @year 2009-2014
  * @copyright Naghashyan Solutions LLC
  */
-namespace ngs\framework\dal\connectors {
+namespace ngs\dal\connectors {
 	class ImprovedDBMS {
 
 		/**

@@ -10,9 +10,9 @@
  * @year 2014-2015
  * @copyright Naghashyan Solutions LLC
  */
-namespace ngs\framework\dal\connectors {
+namespace ngs\dal\connectors {
 
-  use ngs\framework\exceptions\DebugException;
+  use ngs\exceptions\DebugException;
 
   class MongoDBMS extends \MongoClient {
 

@@ -1,5 +1,5 @@
 <?php
-namespace ngs\framework\lib\minify; 
+namespace ngs\lib\minify;
 class ClosureCompiler {
     /**
      * @var string The option key for the maximum POST byte size

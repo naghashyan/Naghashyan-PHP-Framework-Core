@@ -16,8 +16,8 @@
  * file that was distributed with this source code.
  *
  */
-namespace ngs\framework\request {
-  abstract class AbstractAction extends \ngs\framework\request\AbstractRequest {
+namespace ngs\request {
+  abstract class AbstractAction extends \ngs\request\AbstractRequest {
 
     public function initialize() {
       parent::initialize();

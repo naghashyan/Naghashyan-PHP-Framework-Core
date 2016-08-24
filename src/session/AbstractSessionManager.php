@@ -19,7 +19,7 @@
  * file that was distributed with this source code.
  *
  */
-namespace ngs\framework\session {
+namespace ngs\session {
 	abstract class AbstractSessionManager {
 
 		/**

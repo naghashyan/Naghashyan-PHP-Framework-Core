@@ -19,9 +19,9 @@
  * file that was distributed with this source code.
  *
  */
-namespace ngs\framework\request {
+namespace ngs\request {
 
-  use ngs\framework\exceptions\NoAccessException;
+  use ngs\exceptions\NoAccessException;
 
   abstract class AbstractJsonLoad extends AbstractLoad {
 

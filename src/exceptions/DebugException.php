@@ -17,7 +17,7 @@
  * file that was distributed with this source code.
  *
  */
-namespace ngs\framework\exceptions {
+namespace ngs\exceptions {
   class DebugException extends \Exception {
 
     /**

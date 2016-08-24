@@ -10,7 +10,7 @@
  * @year 2014
  * @copyright Naghashyan Solutions LLC
  */
-namespace ngs\framework\dal\mappers {
+namespace ngs\dal\mappers {
 
 	abstract class AbstractSolrMapper extends AbstractMapper {
 
@@ -20,7 +20,7 @@ namespace ngs\framework\dal\mappers {
 		 * Initializes DBMS pointer.
 		 */
 		function __construct() {
-			$this->dbms = \ngs\framework\dal\connectors\SolrDBMS::getInstance(NGS()->getConfig()->DB_SOLR_host, $this->getTableName(), NGS()->getConfig()->DB_SOLR_user, NGS()->getConfig()->DB_SOLR_pass);
+			$this->dbms = \ngs\dal\connectors\SolrDBMS::getInstance(NGS()->getConfig()->DB_SOLR_host, $this->getTableName(), NGS()->getConfig()->DB_SOLR_user, NGS()->getConfig()->DB_SOLR_pass);
 		}
 
 		/**

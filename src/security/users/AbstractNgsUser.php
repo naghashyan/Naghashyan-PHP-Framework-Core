@@ -18,7 +18,7 @@
  * file that was distributed with this source code.
  *
  */
-namespace ngs\framework\security\users {
+namespace ngs\security\users {
   abstract class AbstractNgsUser {
 
     /**

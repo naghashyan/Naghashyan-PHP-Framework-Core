@@ -20,7 +20,7 @@
  * file that was distributed with this source code.
  *
  */
-namespace ngs\framework\util {
+namespace ngs\util {
 	class RequestValidator {
 		
 		

@@ -19,10 +19,10 @@
  * file that was distributed with this source code.
  *
  */
-namespace ngs\framework\request {
+namespace ngs\request {
 
-  use ngs\framework\exceptions\NoAccessException;
-  use ngs\framework\util\NgsArgs;
+  use ngs\exceptions\NoAccessException;
+  use ngs\util\NgsArgs;
 
   abstract class AbstractLoad extends AbstractRequest {
 

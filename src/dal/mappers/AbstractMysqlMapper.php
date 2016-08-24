@@ -17,9 +17,9 @@
  * file that was distributed with this source code.
  *
  */
-namespace ngs\framework\dal\mappers {
+namespace ngs\dal\mappers {
 
-  use ngs\framework\exceptions\DebugException;
+  use ngs\exceptions\DebugException;
 
   abstract class AbstractMysqlMapper extends AbstractMapper {
 
@@ -43,7 +43,7 @@ namespace ngs\framework\dal\mappers {
         $user = NGS()->getConfig()->DB->mysql->user;
         $pass = NGS()->getConfig()->DB->mysql->pass;
         $name = NGS()->getConfig()->DB->mysql->name;
-        $this->dbms = \ngs\framework\dal\connectors\MysqlPDO::getInstance($host, $user, $pass, $name);
+        $this->dbms = \ngs\dal\connectors\MysqlPDO::getInstance($host, $user, $pass, $name);
       }
     }
 

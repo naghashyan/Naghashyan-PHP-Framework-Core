@@ -18,7 +18,7 @@
  * file that was distributed with this source code.
  *
  */
-namespace ngs\framework\dal\dto {
+namespace ngs\dal\dto {
 
 
   abstract class AbstractDto {

@@ -16,7 +16,7 @@
  * file that was distributed with this source code.
  *
  */
-namespace ngs\framework {
+namespace ngs {
 	abstract class AbstractManager {
 
 		public function __construct() {

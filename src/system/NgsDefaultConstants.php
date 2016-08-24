@@ -125,27 +125,27 @@ NGS()->define("NGS_ROUTS", "routes.json");
 //defining database connector class path
 
 //defining load mapper path
-NGS()->define("LOAD_MAPPER", 'ngs\framework\routes\NgsLoadMapper');
+NGS()->define("LOAD_MAPPER", 'ngs\routes\NgsLoadMapper');
 //defining session manager path
-NGS()->define("SESSION_MANAGER", 'ngs\framework\session\NgsSessionManager');
+NGS()->define("SESSION_MANAGER", 'ngs\session\NgsSessionManager');
 //defining session manager path
-NGS()->define("TEMPLATE_ENGINE", 'ngs\framework\templater\NgsTemplater');
+NGS()->define("TEMPLATE_ENGINE", 'ngs\templater\NgsTemplater');
 //---defining modules routing file
-NGS()->define("FILE_UTILS", 'ngs\framework\util\FileUtils');
+NGS()->define("FILE_UTILS", 'ngs\util\FileUtils');
 //---defining modules routing file
-NGS()->define("HTTP_UTILS", 'ngs\framework\util\HttpUtils');
+NGS()->define("HTTP_UTILS", 'ngs\util\HttpUtils');
 //---defining modules routing file
-NGS()->define("MODULES_ROUTES_ENGINE", 'ngs\framework\routes\NgsModuleRoutes');
+NGS()->define("MODULES_ROUTES_ENGINE", 'ngs\routes\NgsModuleRoutes');
 //---defining routing file
-NGS()->define("ROUTES_ENGINE", 'ngs\framework\routes\NgsRoutes');
+NGS()->define("ROUTES_ENGINE", 'ngs\routes\NgsRoutes');
 //---defining js builder file
-NGS()->define("JS_BUILDER", 'ngs\framework\util\JsBuilder');
+NGS()->define("JS_BUILDER", 'ngs\util\JsBuilder');
 //---defining js builder file
-NGS()->define("CSS_BUILDER", 'ngs\framework\util\CssBuilder');
+NGS()->define("CSS_BUILDER", 'ngs\util\CssBuilder');
 //---defining js builder file
-NGS()->define("LESS_BUILDER", 'ngs\framework\util\LessBuilder');
+NGS()->define("LESS_BUILDER", 'ngs\util\LessBuilder');
 //---defining ngs utils file
-NGS()->define("NGS_UTILS", 'ngs\framework\util\NgsUtils');
+NGS()->define("NGS_UTILS", 'ngs\util\NgsUtils');
 
 /*
 |--------------------------------------------------------------------------
@@ -153,15 +153,15 @@ NGS()->define("NGS_UTILS", 'ngs\framework\util\NgsUtils');
 |--------------------------------------------------------------------------
 */
 //---defining debug exception
-NGS()->define("NGS_EXCEPTION_DEBUG", 'ngs\framework\exceptions\DebugException');
+NGS()->define("NGS_EXCEPTION_DEBUG", 'ngs\exceptions\DebugException');
 //---defining Invalid User exception
-NGS()->define("NGS_EXCEPTION_INVALID_USER", 'ngs\framework\exceptions\InvalidUserException');
+NGS()->define("NGS_EXCEPTION_INVALID_USER", 'ngs\exceptions\InvalidUserException');
 //---defining Invalid User exception
-NGS()->define("NGS_EXCEPTION_NGS_ERROR", 'ngs\framework\exceptions\NgsErrorException');
+NGS()->define("NGS_EXCEPTION_NGS_ERROR", 'ngs\exceptions\NgsErrorException');
 //---defining Invalid User exception
-NGS()->define("NGS_EXCEPTION_NO_ACCESS", 'ngs\framework\exceptions\NoAccessException');
+NGS()->define("NGS_EXCEPTION_NO_ACCESS", 'ngs\exceptions\NoAccessException');
 //---defining Invalid User exception
-NGS()->define("NGS_EXCEPTION_NOT_FOUND", 'ngs\framework\exceptions\NotFoundException');
+NGS()->define("NGS_EXCEPTION_NOT_FOUND", 'ngs\exceptions\NotFoundException');
 /*
 |--------------------------------------------------------------------------
 | DEFINNING NGS MODULES

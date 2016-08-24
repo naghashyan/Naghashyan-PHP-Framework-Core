@@ -20,8 +20,8 @@
  *
  *
  */
-use ngs\framework\exceptions\DebugException;
-use ngs\framework\util\NgsArgs;
+use ngs\exceptions\DebugException;
+use ngs\util\NgsArgs;
 
 require_once("routes/NgsModuleRoutes.php");
 require_once("util/HttpUtils.php");
@@ -662,7 +662,7 @@ class NGS {
   }
 
   public function getDynObject() {
-    return new \ngs\framework\util\NgsDynamic();
+    return new \ngs\util\NgsDynamic();
   }
 }
 

@@ -17,9 +17,9 @@
  * file that was distributed with this source code.
  *
  */
-namespace ngs\framework\dal\connectors {
+namespace ngs\dal\connectors {
 
-  use ngs\framework\exceptions\DebugException;
+  use ngs\exceptions\DebugException;
 
   class MysqlPDO extends \PDO {
 
@@ -41,7 +41,7 @@ namespace ngs\framework\dal\connectors {
       parent::__construct('mysql:dbname=' . $db_name . ';host=' . $db_host . ';charset=utf8', $db_user, $db_pass);
       $this->setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);
       $this->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-      $this->setAttribute(\PDO::ATTR_STATEMENT_CLASS, array('\ngs\framework\dal\connectors\DBStatement'));
+      $this->setAttribute(\PDO::ATTR_STATEMENT_CLASS, array('\ngs\dal\connectors\DBStatement'));
 
     }
 

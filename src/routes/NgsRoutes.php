@@ -18,10 +18,10 @@
  * file that was distributed with this source code.
  *
  */
-namespace ngs\framework\routes {
+namespace ngs\routes {
 
-  use ngs\framework\exceptions\DebugException;
-  use ngs\framework\exceptions\NotFoundException;
+  use ngs\exceptions\DebugException;
+  use ngs\exceptions\NotFoundException;
 
   class NgsRoutes {
 
@@ -314,7 +314,7 @@ namespace ngs\framework\routes {
         }
 
         if (!isset($routeArr["constraints"][$key])){
-          throw new \ngs\framework\exceptions\DebugException("constraints and routs params note matched, please check in ".NGS_ROUTS."in this rout section ".$route);
+          throw new \ngs\exceptions\DebugException("constraints and routs params note matched, please check in ".NGS_ROUTS."in this rout section ".$route);
         }
 
         if (isset($uriParams[0])){

@@ -20,9 +20,9 @@
  * file that was distributed with this source code.
  *
  */
-namespace ngs\framework\util {
+namespace ngs\util {
 
-  use ngs\framework\exceptions\DebugException;
+  use ngs\exceptions\DebugException;
 
   require_once (NGS()->getFrameworkDir()."/lib/less.php/Less.php");
   class LessBuilder extends AbstractBuilder {

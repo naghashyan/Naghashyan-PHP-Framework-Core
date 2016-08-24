@@ -1,5 +1,5 @@
 <?php
-namespace ngs\framework\lib\minify; 
+namespace ngs\lib\minify;
 class CssCompressor {
     /**
      * Minify a CSS string

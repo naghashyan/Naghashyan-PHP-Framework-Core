@@ -17,7 +17,7 @@
  * file that was distributed with this source code.
  *
  */
-namespace ngs\framework\dal\mappers {
+namespace ngs\dal\mappers {
 
 	abstract class AbstractMapper {
 

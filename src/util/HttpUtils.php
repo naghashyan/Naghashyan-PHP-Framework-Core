@@ -18,7 +18,7 @@
  *
  */
 
-namespace ngs\framework\util {
+namespace ngs\util {
 
   class HttpUtils {
     /**

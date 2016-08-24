@@ -17,7 +17,7 @@
  * file that was distributed with this source code.
  *
  */
-namespace ngs\framework\util {
+namespace ngs\util {
 	class NgsDynamic extends \stdClass {
 		public function __get($var) {
 		}

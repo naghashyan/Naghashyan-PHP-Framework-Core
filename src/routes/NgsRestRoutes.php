@@ -18,10 +18,10 @@
  * file that was distributed with this source code.
  *
  */
-namespace ngs\framework\routes {
+namespace ngs\routes {
 
-  use ngs\framework\exceptions\DebugException;
-  use ngs\framework\exceptions\NotFoundException;
+  use ngs\exceptions\DebugException;
+  use ngs\exceptions\NotFoundException;
 
   class NgsRestRoutes extends NgsRoutes {
 

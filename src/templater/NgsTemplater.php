@@ -16,10 +16,10 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace ngs\framework\templater {
+namespace ngs\templater {
 
-  use ngs\framework\templater\AbstractTemplater;
-  use ngs\framework\templater\NgsSmartyTemplater;
+  use ngs\templater\AbstractTemplater;
+  use ngs\templater\NgsSmartyTemplater;
 
   class NgsTemplater extends AbstractTemplater {
 
