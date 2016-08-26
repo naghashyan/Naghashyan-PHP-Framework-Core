@@ -314,15 +314,20 @@ namespace ngs\dal\mappers {
      * If query matches more than one rows, the first field will be returnd.
      *
      * @param object $sqlQuery - select query
-     * @param object $fieldName - the field name, which was returnd by query
-     * @return fieldValue or NULL, if the query doesn't return such field
+     * @param string $fieldName - the field name, which was returnd by query
+     * @param array $params
+     * @return string fieldValue or NULL, if the query doesn't return such field
      */
     protected function fetchField($sqlQuery, $fieldName, $params = array()) {
       // Execute query.
       $res = $this->dbms->prepare($sqlQuery);
       $results = $res->execute($params);
       if ($results){
-        return $res->fetchObject()->$fieldName;
+        $fetchedObject = $res->fetchObject();
+        if($fetchedObject === false){
+          return "";
+        }
+        return $fetchedObject->$fieldName;
       }
       return null;
     }
