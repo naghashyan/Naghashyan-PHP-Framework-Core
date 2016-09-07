@@ -35,8 +35,20 @@ if (php_sapi_name() == "cli"){
     $queryArgsArr = explode("&", $args);
     foreach ($queryArgsArr as $value){
       $_arg = explode("=", $value);
-      $_REQUEST[$_arg[0]] = $_arg[1];
-      $_GET[$_arg[0]] = $_arg[1];
+      if(isset($_REQUEST[$_arg[0]])){
+        if(is_array($_REQUEST[$_arg[0]])){
+          $tmp = $_REQUEST[$_arg[0]];
+
+        }else{
+          $tmp =[];
+          $tmp[] = $_REQUEST[$_arg[0]];
+        }
+        $tmp[] =  $_arg[1];
+        $_REQUEST[$_arg[0]] = $tmp;
+
+      }else{
+        $_REQUEST[$_arg[0]] = $_arg[1];
+      }
     }
   }
   if (isset($argv[2])){
