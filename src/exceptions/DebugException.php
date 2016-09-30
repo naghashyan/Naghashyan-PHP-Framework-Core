@@ -27,19 +27,29 @@ namespace ngs\exceptions {
      * @param boolean $paramie
      * @return integer|babyclass
      */
-    public function __construct($msg, $code=1, $params=array()) {
-      if (NGS()->getEnvironment() == "production") {
-        $this->message = $msg;
-        return;
-      }
-      if ($msg != "") {
-        $this->message = $msg;
-      }
+
+    private $params = [];
+    protected $code = 1;
+
+    public function __construct($msg = "", $code = 1, $params = []) {
+      $this->message = $msg;
+      $this->params = $params;
+      $this->code = $code;
+    }
+
+    public function display() {
       $trace = $this->getTrace();
       header('Content-Type: application/json; charset=utf-8');
       header("HTTP/1.0 403 Forbidden");
-      echo json_encode(array("NGSDEBUGMSG" => $this->getMessage(), "file" => $trace[0]["file"], "line" => $trace[0]["line"], "_tmst_" => time()));
-      exit ;
+      $debugArr = [
+        "NGSDEBUGMSG" => $this->getMessage(),
+        "code" => $this->code,
+        "params" => $this->params,
+        "file" => $trace[0]["file"],
+        "line" => $trace[0]["line"],
+        "_tmst_" => time()
+      ];
+      echo json_encode($debugArr);
     }
 
   }

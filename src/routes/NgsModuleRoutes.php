@@ -18,7 +18,10 @@
  * file that was distributed with this source code.
  *
  */
+
+
 namespace ngs\routes {
+  use ngs\exceptions\DebugException;
   class NgsModuleRoutes {
 
     private $routes = array();
@@ -33,6 +36,7 @@ namespace ngs\routes {
     private $type = null;
     private $dir = null;
     private $ns = null;
+    private $name = "";
     private $uri = null;
 
     public function __construct() {
@@ -181,16 +185,18 @@ namespace ngs\routes {
       $mainDomain = NGS()->getHttpUtils()->getMainDomain();
       $modulePart = $this->getModulePartByDomain($mainDomain);
       $host = explode('.', $parsedUrl['path']);
-      $subdomain = null;
       if (count($host) >= 3){
         if ($this->moduleArr = $this->getModuleBySubDomain($modulePart, $host[0])){
+          $this->setModuleName($this->moduleArr["uri"]);
           return $this->moduleArr;
         }
       }
       $uri = NGS()->getHttpUtils()->getRequestUri(true);
       if ($this->moduleArr = $this->getModuleByURI($modulePart, $uri)){
+        $this->setModuleName($this->moduleArr["uri"]);
         return $this->moduleArr;
       }
+      $this->setModuleName("default");
       $this->moduleArr = $this->getMatchedModule($modulePart["default"], $uri, "default");
       return $this->moduleArr;
     }
@@ -271,6 +277,9 @@ namespace ngs\routes {
         $ns = $matchedArr["namespace"];
       } elseif (isset($matchedArr["extend"])){
         $ns = $matchedArr["extend"];
+        if(isset($matchedArr["route_file"])){
+          NGS()->define("NGS_MODULE_ROUTS", $matchedArr["route_file"]);
+        }
       } else{
         throw new DebugException("PLEASE ADD DIR OR NAMESPACE SECTION IN module.json");
       }
@@ -322,6 +331,26 @@ namespace ngs\routes {
      */
     public function getModuleNS() {
       return $this->ns;
+    }
+
+    /**
+     * set module name domain or subdomain or path
+     *
+     * @param $name String
+     *
+     * @return void
+     */
+    private function setModuleName($name) {
+      $this->name = $name;
+    }
+
+    /**
+     * return current name
+     *
+     * @return String
+     */
+    public function getModuleName() {
+      return $this->name;
     }
 
     /**

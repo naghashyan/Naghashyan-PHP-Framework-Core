@@ -24,7 +24,6 @@ namespace ngs\util {
 
   use ngs\exceptions\DebugException;
 
-  require_once (NGS()->getFrameworkDir()."/lib/less.php/Less.php");
   class LessBuilder extends AbstractBuilder {
       
     private $lessParser;  

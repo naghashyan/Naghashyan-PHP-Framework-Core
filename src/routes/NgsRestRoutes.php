@@ -38,7 +38,7 @@ namespace ngs\routes {
      *
      * @return array|false
      */
-    public function getDynamicLoad($url) {
+    public function getDynamicLoad($url, $is404=false) {
       $loadsArr = parent::getDynamicLoad($url);
       if (isset($this->getCurrentRoute()["method"])){
         $this->setRequestHttpMethod($this->getCurrentRoute()["method"]);

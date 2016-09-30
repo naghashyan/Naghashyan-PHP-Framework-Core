@@ -18,24 +18,30 @@
 namespace ngs\exceptions {
   class NotFoundException extends \Exception {
 
+    private $url = "";
+    private $action = "";
+
     /**
-     * Return a thingie based on $paramie
-     * @abstract
-     * @access
-     * @param boolean $paramie
-     * @return integer|babyclass
+     * @param mixed $url
      */
-    public function __construct($msg = "", $code = -1, $params = array()) {
-      parent::__construct($msg, $code);
-      if (NGS()->getEnvironment() != "production"){
-        new DebugException($this->getMessage(), $this->getCode());
-        return;
-      }
-      header("HTTP/1.0 404 Not Found");
-      echo "404 page :)";
-      exit;
+    public function setRedirectUrl($url) {
+      $this->url = $url;
     }
 
+    public function getRedirectUrl(){
+      return $this->url;
+    }
+
+    /**
+     * @param mixed $action
+     */
+    public function setRedirectAction($action) {
+      $this->action = $action;
+    }
+
+    public function getRedirectAction(){
+      return $this->action;
+    }
   }
 
 }

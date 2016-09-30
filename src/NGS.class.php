@@ -77,7 +77,9 @@ class NGS {
     }
     return null;
   }
-
+  public function get($key) {
+    return $this->getDefinedValue($key);
+  }
   public function define($key, $value) {
     $this->define[$key] = $value;
     return true;

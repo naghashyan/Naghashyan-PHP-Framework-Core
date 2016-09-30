@@ -46,7 +46,7 @@ namespace ngs\templater {
       return $this->type;
     }
 
-    public function getSmartyTemplater(){
+    public function getSmartyTemplater() {
       return new NgsSmartyTemplater();
     }
 
@@ -160,20 +160,25 @@ namespace ngs\templater {
     public function display() {
 
       http_response_code($this->getHttpStatusCode());
-      if(!$this->getTemplate()){
+      if (!$this->getTemplate()){
         $this->displayJson($this->params);
       }
       $this->smarty = new NgsSmartyTemplater();
       foreach ($this->smartyParams as $key => $value){
         $this->smarty->assign($key, $value);
       }
+      if ($this->getType() == "json"){
+        $this->displayJson();
+        return;
+      }
+
       $ext = pathinfo($this->getTemplate(), PATHINFO_EXTENSION);
-      if($ext != "json" && (NGS()->isJsFrameworkEnable() && !NGS()->getHttpUtils()->isAjaxRequest())){
+      if ($ext != "json" && (NGS()->isJsFrameworkEnable() && !NGS()->getHttpUtils()->isAjaxRequest())){
         $this->smarty->setCustomHeader($this->getCustomHeader());
         $this->displaySmarty($this->getTemplate());
         return;
       }
-      if(NGS()->isJsFrameworkEnable() && NGS()->getHttpUtils()->isAjaxRequest()){
+      if (NGS()->isJsFrameworkEnable() && NGS()->getHttpUtils()->isAjaxRequest()){
         $params = [];
         $params["html"] = $this->smarty->fetch($this->getTemplate());
         $params["nl"] = NGS()->getLoadMapper()->getNestedLoads();
@@ -188,13 +193,15 @@ namespace ngs\templater {
 
     private function displayJson($params = null) {
       header('Content-Type: application/json; charset=utf-8');
-      if($params != null){
-        echo json_encode($params);exit;
+      if ($params != null){
+        echo json_encode($params);
+        exit;
       }
       foreach ($this->params as $key => $value){
         $this->smarty->assign($key, $value);
       }
-      echo($this->smarty->fetch($this->getTemplate()));exit;
+      echo($this->smarty->fetch($this->getTemplate()));
+      exit;
     }
 
     private function displaySmarty() {
@@ -205,7 +212,6 @@ namespace ngs\templater {
     public function fetchSmartyTemplate($templatePath) {
       return $this->smarty->fetch($templatePath);
     }
-
 
 
     protected function getCustomJsParams() {

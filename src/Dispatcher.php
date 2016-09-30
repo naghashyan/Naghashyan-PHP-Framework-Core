@@ -35,8 +35,9 @@ namespace ngs {
      * @return void
      */
     public function dispatch() {
-      $routesArr = NGS()->getRoutesEngine()->getDynamicLoad(NGS()->getHttpUtils()->getRequestUri());
+
       try{
+        $routesArr = NGS()->getRoutesEngine()->getDynamicLoad(NGS()->getHttpUtils()->getRequestUri());
         if ($routesArr["matched"] === false){
           throw new NotFoundException("Load/Action Not found");
         }
@@ -56,12 +57,28 @@ namespace ngs {
             $this->streamStaticFile($routesArr);
             break;
         }
-      } catch (ClientException $ex){
-        throw new NotFoundException($ex->getMsg());
-      } catch (NgsErrorException $ex){
-        //$this->diplayJSONResuls($ex->getMsg());
+      } catch (DebugException $ex){
+        if(NGS()->getEnvironment() != "production"){
+          $ex->display();
+          return;
+        }
+        $routesArr = NGS()->getRoutesEngine()->getNotFoundLoad();
+        if($routesArr == null){
+          echo "404 :)";exit;
+        }
+        $this->loadPage($routesArr["action"]);
       } catch (RedirectException $ex){
-        $this->redirect($ex->getRedirectTo());
+        NGS()->getHttpUtils()->redirect($ex->getRedirectTo());
+      } catch (NotFoundException $ex){
+        if($ex->getRedirectUrl() != ""){
+          NGS()->getHttpUtils()->redirect($ex->getRedirectUrl());
+          return;
+        }
+        $routesArr = NGS()->getRoutesEngine()->getNotFoundLoad();
+        if($routesArr == null){
+          echo "404 :)";exit;
+        }
+        $this->loadPage($routesArr["action"]);
       }
     }
 
