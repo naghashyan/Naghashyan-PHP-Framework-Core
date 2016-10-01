@@ -168,7 +168,7 @@ namespace ngs\util {
       $headers = array();
       foreach($_SERVER as $key=>$value) {
         if (substr($key,0,5)=="HTTP_") {
-          $key=str_replace(" ","-",ucwords(strtolower(str_replace("_"," ",substr($key,5)))));
+          $key=str_replace(" ","-",(strtolower(str_replace("_"," ",substr($key,5)))));
           $headers[$key]=$value;
         }else{
           $headers[$key]=$value;
