@@ -239,6 +239,9 @@ namespace ngs\routes {
             break;
           }
         }
+        if(isset($route["method"]) && strtolower($route["method"]) != strtolower($this->getRequestHttpMethod())){
+          continue;
+        }
         $args = $this->getMatchedRoute($urlPartsArr, $route);
         if (!isset($route["args"])){
           $route["args"] = array();
@@ -422,6 +425,10 @@ namespace ngs\routes {
 
     public function getNotFoundLoad() {
       return $this->getDynamicLoad("/", true);
+    }
+
+    protected function getRequestHttpMethod(){
+      return "get";
     }
 
   }
