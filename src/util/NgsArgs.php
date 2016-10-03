@@ -159,4 +159,24 @@ namespace ngs\util {
 
   }
 
+  if (!function_exists('getallheaders')){
+    function getallheaders() {
+      if (!is_array($_SERVER)){
+        return array();
+      }
+
+      $headers = array();
+      foreach($_SERVER as $key=>$value) {
+        if (substr($key,0,5)=="HTTP_") {
+          $key=str_replace(" ","-",(strtolower(str_replace("_"," ",substr($key,5)))));
+          $headers[$key]=$value;
+        }else{
+          $headers[$key]=$value;
+        }
+      }
+      return $headers;
+    }
+  }
 }
+
+
