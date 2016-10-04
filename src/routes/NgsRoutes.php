@@ -31,7 +31,6 @@ namespace ngs\routes {
     private $contentLoad = null;
     private $dynContainer = "dyn";
     private $currentRoute = null;
-    private $routeFileName = "routes.json";
 
     /**
      * return url dynamic part
@@ -49,7 +48,7 @@ namespace ngs\routes {
      * read from file json routes
      * and set in private property for cache
      *
-     * @return json Array
+     * @return Object Array
      */
     protected function getRouteConfig() {
       if ($this->routes == null){
@@ -187,7 +186,6 @@ namespace ngs\routes {
      * @return array|false
      */
     private function getStandartRoutes($ns, $urlPartsArr) {
-      $package = "default";
       $command = array_shift($urlPartsArr);
       if ($command == null){
         $command = "default";
@@ -327,7 +325,7 @@ namespace ngs\routes {
         }
 
         if (!isset($routeArr["constraints"][$key])){
-          throw new \ngs\exceptions\DebugException("constraints and routs params note matched, please check in " . NGS_ROUTS . "in this rout section " . $route);
+          throw new \ngs\exceptions\DebugException("constraints and routs params note matched, please check in " . NGS()->get("NGS_ROUTS"). "in this rout section " . $route);
         }
 
         if (isset($uriParams[0])){
@@ -428,6 +426,9 @@ namespace ngs\routes {
     }
 
     protected function getRequestHttpMethod(){
+      if(isset($_SERVER["REQUEST_METHOD"])){
+        return strtolower($_SERVER["REQUEST_METHOD"]);
+      }
       return "get";
     }
 
