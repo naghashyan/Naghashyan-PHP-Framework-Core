@@ -86,6 +86,7 @@ namespace ngs\request {
       if($this->getNgsLoadType() == "json"){
         NGS()->getTemplateEngine()->assignJsonParams($this->getParams());
       }else if($this->getNgsLoadType() == "smarty"){
+        NGS()->getTemplateEngine()->assignJsonParams($this->getJsonParams());
         NGS()->getTemplateEngine()->assign("ns", $this->getParams());
       }
     }

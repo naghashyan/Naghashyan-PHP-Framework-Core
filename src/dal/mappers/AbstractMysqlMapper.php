@@ -215,6 +215,22 @@ namespace ngs\dal\mappers {
     }
 
     /**
+     * execute query
+     * using query and params
+     *
+     * @param String $sqlQuery
+     * @param array $params
+     * @return int|null
+     */
+    public function executeQuery($sqlQuery, $params = array()) {
+      $res = $this->dbms->prepare($sqlQuery);
+      if ($res){
+        return $res->execute($params);
+      }
+      return null;
+    }
+
+    /**
      * Sets field value NULL.
      *
      * @param object $id
@@ -273,7 +289,8 @@ namespace ngs\dal\mappers {
     /**
      * Executes the query and returns an array of corresponding DTOs
      *
-     * @param object $sqlQuery
+     * @param string $sqlQuery
+     * @param array $params
      * @return
      */
     protected function fetchRows($sqlQuery, $params = array()) {
@@ -313,7 +330,7 @@ namespace ngs\dal\mappers {
      * Returns table's field value, which was returnd by query.
      * If query matches more than one rows, the first field will be returnd.
      *
-     * @param object $sqlQuery - select query
+     * @param string $sqlQuery - select query
      * @param string $fieldName - the field name, which was returnd by query
      * @param array $params
      * @return string fieldValue or NULL, if the query doesn't return such field

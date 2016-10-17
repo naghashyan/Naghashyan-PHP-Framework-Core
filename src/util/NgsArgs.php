@@ -48,6 +48,7 @@ namespace ngs\util {
     public static function getInstance($trim = false) {
       if (self::$instance == null){
         self::$instance = new NgsArgs($trim);
+        self::$instance->mergeInputData();
       }
       return self::$instance;
     }
@@ -130,6 +131,13 @@ namespace ngs\util {
       return $this->requestParams;
     }
 
+    public function mergeInputData() {
+      if (NGS()->getNgsUtils()->isJson($this->inputData())){
+        $this->setArgs(json_decode($this->inputData(), true));
+      }
+
+    }
+
     public function input() {
       if ($this->inputArgs == null){
         if (!NGS()->getNgsUtils()->isJson($this->inputData())){
@@ -166,12 +174,12 @@ namespace ngs\util {
       }
 
       $headers = array();
-      foreach($_SERVER as $key=>$value) {
-        if (substr($key,0,5)=="HTTP_") {
-          $key=str_replace(" ","-",(strtolower(str_replace("_"," ",substr($key,5)))));
-          $headers[$key]=$value;
-        }else{
-          $headers[$key]=$value;
+      foreach ($_SERVER as $key => $value){
+        if (substr($key, 0, 5) == "HTTP_"){
+          $key = str_replace(" ", "-", (strtolower(str_replace("_", " ", substr($key, 5)))));
+          $headers[$key] = $value;
+        } else{
+          $headers[$key] = $value;
         }
       }
       return $headers;
