@@ -152,10 +152,14 @@ NGS()->define("MODULES_ROUTES_ENGINE", 'ngs\routes\NgsModuleRoutes');
 NGS()->define("ROUTES_ENGINE", 'ngs\routes\NgsRoutes');
 //---defining js builder file
 NGS()->define("JS_BUILDER", 'ngs\util\JsBuilder');
-//---defining js builder file
+//---defining js build env
+NGS()->define("JS_BUILD_MODE", $environment);
+//---defining css builder file
 NGS()->define("CSS_BUILDER", 'ngs\util\CssBuilder');
-//---defining js builder file
+//---defining less builder file
 NGS()->define("LESS_BUILDER", 'ngs\util\LessBuilder');
+//---defining less build env
+NGS()->define("LESS_BUILD_MODE", $environment);
 //---defining ngs utils file
 NGS()->define("NGS_UTILS", 'ngs\util\NgsUtils');
 

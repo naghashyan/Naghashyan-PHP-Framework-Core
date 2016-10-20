@@ -29,12 +29,12 @@ namespace ngs\util {
     private $builderJsonArr = array();
 
     public function streamFile($module, $file) {
-      if (NGS()->getEnvironment() == "production") {
+      if ($this->getEnvironment() == "production") {
         
         $filePath = realpath(NGS()->getPublicDir()."/".$file);
         if (strpos($file, NGS()->getDefinedValue("PUBLIC_OUTPUT_DIR")) === false) {
-          if (file_exists($filePath) == false) {
-            throw new DebugException($filePath + " NOT FOUND");
+          if (!$filePath) {
+            throw new DebugException(NGS()->getPublicDir()."/".$file . " NOT FOUND");
           }
         } elseif (file_exists($filePath) == false || fileatime($filePath) != fileatime($this->getBuilderFile())) {
           $this->build($file);
@@ -181,6 +181,11 @@ namespace ngs\util {
 
     protected function customBufferUpdates($buffer) {
       return $buffer;
+    }
+
+
+    protected function getEnvironment(){
+      return NGS()->getEnvironment();
     }
 
     abstract protected function getItemDir($module);

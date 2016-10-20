@@ -46,8 +46,8 @@ namespace ngs\dal\mappers {
 		/**
 		 *
 		 * @param object $dto
-		 * @param object $dbData
-		 * @return
+		 * @param array $dbData
+		 * @return void
 		 */
 		protected function initializeDto($dto, $dbData) {
 			if(method_exists($dto, "getExtendedMapArray")){
@@ -71,7 +71,10 @@ namespace ngs\dal\mappers {
 				}
 			}
 		}
-
+    /**
+     *
+     * @return string
+     */
 		protected function getCorrespondingFunctionName($mapArray, $itemName, $prefix = "set") {
 			// Get keys.
 			$mapKeys = array_keys($mapArray);
@@ -86,6 +89,7 @@ namespace ngs\dal\mappers {
 					return $functionName;
 				}
 			}
+			return "";
 		}
 
 		public function getFieldValue($dto, $fieldName) {
@@ -97,7 +101,7 @@ namespace ngs\dal\mappers {
 		 * create dtos array from mysql fethed reuslt array
 		 *
 		 * @param array $results
-		 * @return dtos array
+		 * @return array array
 		 */
 		protected function createDtoFromResultArray($results) {
 			$resultArr = array();

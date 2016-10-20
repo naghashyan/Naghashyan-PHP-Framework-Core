@@ -27,9 +27,9 @@ namespace ngs\util {
   class JsBuilder extends AbstractBuilder {
 
     public function getOutputDir() {
-      $_outDir = NGS()->getPublicOutputDir()."/".NGS()->getDefinedValue("JS_DIR");
+      $_outDir = NGS()->getPublicOutputDir() . "/" . NGS()->getDefinedValue("JS_DIR");
       $outDir = realpath($_outDir);
-      if ($outDir == false) {
+      if ($outDir == false){
         mkdir($_outDir, 0755, true);
         $outDir = realpath($_outDir);
       }
@@ -42,13 +42,13 @@ namespace ngs\util {
 
     protected function doDevOutput($files) {
       header("Content-type: text/javascript");
-      foreach ($files["files"] as $value) {
+      foreach ($files["files"] as $value){
         $module = "";
-        if ($value["module"] != null) {
+        if ($value["module"] != null){
           $module = $value["module"];
         }
-        $inputFile = NGS()->getHttpUtils()->getHttpHostByNs($module)."/js/".trim($value["file"]);
-        echo("document.write('<script type=\"text/javascript\" src=\"".$inputFile."\"></script>');\n\r");
+        $inputFile = NGS()->getHttpUtils()->getHttpHostByNs($module) . "/js/" . trim($value["file"]);
+        echo("document.write('<script type=\"text/javascript\" src=\"" . $inputFile . "\"></script>');\n\r");
       }
     }
 
@@ -57,7 +57,11 @@ namespace ngs\util {
     }
 
     protected function getBuilderFile() {
-      return realpath(NGS()->getJsDir()."/builder.json");
+      return realpath(NGS()->getJsDir() . "/builder.json");
+    }
+
+    protected function getEnvironment() {
+      return NGS()->get("JS_BUILD_MODE");
     }
 
     protected function getContentType() {

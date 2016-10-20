@@ -29,10 +29,9 @@ namespace ngs\util {
     private $lessParser;  
       
     public function streamFile($module, $file) {
-
-      if (NGS()->getEnvironment() == "production") {
+      if ($this->getEnvironment() == "production") {
         $filePath = realpath(NGS()->getPublicDir()."/".$file);
-        if (file_exists($filePath) == false || fileatime($filePath) != fileatime($this->getBuilderFile())) {
+        if (!$filePath) {
           $this->build($file, true);
         }
         NGS()->getFileUtils()->sendFile($filePath, array("mimeType" => $this->getContentType(), "cache" => true));
@@ -60,7 +59,7 @@ namespace ngs\util {
         }
         $outFile = $this->getOutputDir()."/".$outFileName;
         touch($outFile, fileatime($this->getBuilderFile()));
-        file_put_contents($outFile, $this->lessParser->getCss());exit;
+        file_put_contents($outFile, $this->lessParser->getCss());
         return true;
       }
       header('Content-type: '.$this->getContentType());
@@ -116,6 +115,9 @@ namespace ngs\util {
 
     protected function getBuilderFile() {
       return realpath(NGS()->getLessDir()."/builder.json");
+    }
+    protected function getEnvironment(){
+      return NGS()->get("LESS_BUILD_MODE");
     }
 
     protected function getContentType() {

@@ -128,6 +128,10 @@ namespace ngs\routes {
       }
       //if static file
       if ($loadsArr["matched"] == false && $staticFile == true){
+        if($urlMatches[0] == strtolower(NGS()->getModulesRoutesEngine()->getDefaultNS())){
+          array_shift($urlMatches);
+          $fileUrl = substr($fileUrl, strpos($fileUrl, "/")+1);
+        }
         $loadsArr = $this->getStaticFileRoute($matches, $urlMatches, $fileUrl);
         $package = $loadsArr["module"];
       }
@@ -365,7 +369,12 @@ namespace ngs\routes {
         $package = array_shift($filePices);
       }
       //checking if css loaded from less
-      if (isset($filePices[1]) && $filePices[1] == "less"){
+      $filePeaceIndex = 0;
+      if(!NGS()->getModulesRoutesEngine()->isDefaultModule()){
+        $filePeaceIndex = 1;
+
+      }
+      if (isset($filePices[$filePeaceIndex]) && $filePices[$filePeaceIndex] == "less"){
         $loadsArr["file_type"] = "less";
       }
       if (!NGS()->getModulesRoutesEngine()->checkModuleByNS($package)){
