@@ -170,7 +170,14 @@ namespace ngs\templater {
           break;
         case 'get_static_path' :
           if (isset(NGS()->getConfig()->static_path)){
-            return "//" . NGS()->getConfig()->static_path;
+            if(strpos(NGS()->getConfig()->static_path, "http") == 0){
+              return NGS()->getConfig()->static_path;
+            }
+            $httpProtocol  = "//";
+            if (isset($params['protocol']) && $params['protocol'] == true){
+              $httpProtocol = NGS()->getHttpUtils()->getRequestProtocol().$httpProtocol;
+            }
+            return $httpProtocol . NGS()->getConfig()->static_path;
           }
           $protocol = false;
           if (isset($params['protocol']) && $params['protocol'] == true){
