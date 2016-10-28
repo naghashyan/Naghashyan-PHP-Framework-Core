@@ -8,7 +8,7 @@
  * @site http://naghashyan.com
  * @year 2014-2016
  * @package ngs.framework
- * @version 2.3.0
+ * @version 3.1.0
  *
  *
  * This file is part of the NGS package.

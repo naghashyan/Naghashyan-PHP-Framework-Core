@@ -6,7 +6,7 @@
  * @author Levon Naghashyan <levon@naghashyan.com>
  * @site http://naghashyan.com
  * @package ngs.framework.templater
- * @version 2.5.0
+ * @version 3.1.0
  * @year 2010-2016
  *
  * This file is part of the NGS package.

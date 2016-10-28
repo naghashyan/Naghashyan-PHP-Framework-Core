@@ -4,7 +4,7 @@
  *
  * @author Zaven Naghashyan <zaven@naghashyan.com>, Levon Naghashyan <levon@naghashyan.com>
  * @year 2009-2016
- * @version 2.2.0
+ * @version 3.1.0
  * @package ngs.framework
  *
  * This file is part of the NGS package.

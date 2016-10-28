@@ -8,7 +8,7 @@
  * @mail levon@naghashyan.com
  * @year 2015
  * @package ngs.framework.security.users
- * @version 2.2.0
+ * @version 3.1.0
  *  
  * This file is part of the NGS package.
  *

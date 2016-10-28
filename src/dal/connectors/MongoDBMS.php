@@ -6,8 +6,8 @@
  * @author Levon Naghashyan <levon@naghashyan.com>
  * @site http://naghashyan.com
  * @package framework.dal.connectors
- * @version 2.0.0
- * @year 2014-2015
+ * @version 3.1.0
+ * @year 2014-2016
  * @copyright Naghashyan Solutions LLC
  */
 namespace ngs\dal\connectors {

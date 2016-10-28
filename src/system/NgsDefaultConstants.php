@@ -8,7 +8,7 @@
  * @site http://naghashyan.com
  * @year 2015-2016
  * @package ngs.framework.system
- * @version 2.3.0
+ * @version 3.1.0
  *
  * This file is part of the NGS package.
  *
@@ -64,7 +64,7 @@ if (php_sapi_name() == "cli"){
 */
 
 NGS()->define("VERSION", "1.0.0");
-NGS()->define("NGSVERSION", "3.0.0");
+NGS()->define("NGSVERSION", "3.1.0");
 NGS()->define("FRAMEWORK_NS", "ngs");
 NGS()->define("DEFAULT_NS", "ngs");
 /*
