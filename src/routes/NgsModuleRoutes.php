@@ -31,7 +31,7 @@ namespace ngs\routes {
     private $package = null;
     private $nestedRoutes = null;
     private $jsonParams = array();
-    private $contentLoad = null;
+    private $modulesLists = null;
     private $dynContainer = "dyn";
     private $type = null;
     private $dir = null;
@@ -70,7 +70,7 @@ namespace ngs\routes {
      * read from file json routes
      * and set in private property for cache
      *
-     * @return json Array
+     * @return array json
      */
     private function getRouteConfig() {
       if (count($this->routes) == 0){
@@ -85,7 +85,7 @@ namespace ngs\routes {
      * key=>dir value=namespace
      * and set in private shuffledRoutes property for cache
      *
-     * @return json Array
+     * @return array json
      */
     public function getShuffledRoutes() {
       if (count($this->shuffledRoutes) > 0){
@@ -351,6 +351,46 @@ namespace ngs\routes {
      */
     public function getModuleName() {
       return $this->name;
+    }
+    /**
+     * return all modules list
+     *
+     * @return array
+     */
+    public function getAllModules(){
+      if($this->modulesLists != null){
+        return $this->modulesLists;
+      }
+      $this->modulesLists = [];
+      $routes = $this->getRouteConfig();
+      foreach ($routes as $key=>$value){
+        $this->modulesLists = array_merge($this->modulesLists, $this->getModulesByType($routes, "subdomain"));
+        $this->modulesLists = array_merge($this->modulesLists, $this->getModulesByType($routes, "domain"));
+        $this->modulesLists = array_merge($this->modulesLists, $this->getModulesByType($routes, "path"));
+        if(isset($value["default"]) && isset($value["default"]["dir"])){
+          $this->modulesLists[] = $value["default"]["dir"];
+        }
+
+      }
+      return $this->modulesLists;
+
+    }
+    /**
+     * return module list by type
+     *
+     * @return array
+     */
+    private function getModulesByType($routes, $type){
+      $tmpArr = [];
+      $routes = $this->getRouteConfig();
+      if (isset($routes[$type])){
+        foreach ($routes[$type] as $value){
+          if(isset($value["dir"])){
+            $tmpArr[]  = $value["dir"];
+          }
+        }
+      }
+      return $tmpArr;
     }
 
     /**

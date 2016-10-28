@@ -36,8 +36,12 @@ namespace ngs\templater {
       //register NGS plugins
       $this->registerPlugin("function", "nest", array($this, 'nest'));
       $this->registerPlugin("function", "ngs", array($this, 'NGS'));
-
-      $this->setTemplateDir(NGS()->getTemplateDir());
+      $moduleList = NGS()->getModulesRoutesEngine()->getAllModules();
+      $tmpTplArr = [];
+      foreach ($moduleList as $value){
+        $tmpTplArr[$value] = NGS()->getTemplateDir($value);
+      }
+      $this->setTemplateDir($tmpTplArr);
       $this->setCompileDir($this->getSmartyCompileDir());
       $this->setConfigDir($this->getSmartyConfigDir());
       $this->setCacheDir($this->getSmartyCacheDir());
@@ -151,7 +155,7 @@ namespace ngs\templater {
           }
           return NGS()->getPublicOutputHost($ns, $protocol) . "/less";
           break;
-        case 'get_template_dir' :
+        case 'get_template_dir' : 
           return NGS()->getTemplateDir($ns);
           break;
         case 'get_http_host' :

@@ -93,7 +93,7 @@ namespace ngs\routes {
      *
      * @return array|false
      */
-    public function getDynamicLoad($url, $is404=false) {
+    public function getDynamicLoad($url, $is404 = false) {
       $loadsArr = array("matched" => false);
       //do check if uri exist if not get default route
       preg_match_all("/(\/([^\/\?]+))/", $url, $urlMatches);
@@ -119,7 +119,7 @@ namespace ngs\routes {
         if ($package == null){
           $package = "default";
         }
-        $loadsArr = $this->getDynRoutesLoad($url, $package, $urlPartsArr, $is404);
+        $loadsArr = $this->getDynRoutesLoad($url, $package, $urlPartsArr, $is404, $staticFile);
       }
       if ($loadsArr["matched"]){
         $actionArr = $this->getLoadORActionByAction($loadsArr["action"]);
@@ -128,9 +128,9 @@ namespace ngs\routes {
       }
       //if static file
       if ($loadsArr["matched"] == false && $staticFile == true){
-        if($urlMatches[0] == strtolower(NGS()->getModulesRoutesEngine()->getDefaultNS())){
+        if ($urlMatches[0] == strtolower(NGS()->getModulesRoutesEngine()->getDefaultNS())){
           array_shift($urlMatches);
-          $fileUrl = substr($fileUrl, strpos($fileUrl, "/")+1);
+          $fileUrl = substr($fileUrl, strpos($fileUrl, "/") + 1);
         }
         $loadsArr = $this->getStaticFileRoute($matches, $urlMatches, $fileUrl);
         $package = $loadsArr["module"];
@@ -215,7 +215,7 @@ namespace ngs\routes {
      *
      * @return array|false
      */
-    private function getDynRoutesLoad($url, $package, $urlPartsArr, $is404=false) {
+    private function getDynRoutesLoad($url, $package, $urlPartsArr, $is404 = false, $staticFile=false) {
       $routes = $this->getRouteConfig();
       if (!isset($routes[$package])){
         return array("matched" => false);
@@ -234,14 +234,14 @@ namespace ngs\routes {
             $dynRoute = true;
             continue;
           }
-          if (isset($route["default"]["action"]) && $is404 !=false){
+          if (isset($route["default"]["action"]) && $is404 != false){
             $route = $route["default"];
-          }else{
+          } else{
             $route = $route["default"]["404"];
             break;
           }
         }
-        if(isset($route["method"]) && strtolower($route["method"]) != strtolower($this->getRequestHttpMethod())){
+        if (isset($route["method"]) && strtolower($route["method"]) != strtolower($this->getRequestHttpMethod())){
           continue;
         }
         $args = $this->getMatchedRoute($urlPartsArr, $route);
@@ -261,12 +261,21 @@ namespace ngs\routes {
         if ($dynRoute == true){
           return $this->getStandartRoutes($package, $urlPartsArr);
         }
+        if($staticFile){
+          return array("matched" => false);
+        }
         if (NGS()->getEnvironment() == "development"){
           throw new DebugException("No Matched Routes");
         }
         throw new NotFoundException();
       }
-      $_action = NGS()->getModulesRoutesEngine()->getModuleNS() . "." . $route["action"];
+      if (isset($route["namespace"])){
+        $actionNS = $route["namespace"];
+      } else{
+        $actionNS = NGS()->getModulesRoutesEngine()->getModuleNS();
+      }
+
+      $_action = $actionNS . "." . $route["action"];
       $this->setContentLoad($_action);
       if (isset($route["nestedLoad"])){
         $this->setNestedRoutes($route["nestedLoad"], $route["action"]);
@@ -329,7 +338,7 @@ namespace ngs\routes {
         }
 
         if (!isset($routeArr["constraints"][$key])){
-          throw new \ngs\exceptions\DebugException("constraints and routs params note matched, please check in " . NGS()->get("NGS_ROUTS"). "in this rout section " . $route);
+          throw new \ngs\exceptions\DebugException("constraints and routs params note matched, please check in " . NGS()->get("NGS_ROUTS") . "in this rout section " . $route);
         }
 
         if (isset($uriParams[0])){
@@ -370,7 +379,7 @@ namespace ngs\routes {
       }
       //checking if css loaded from less
       $filePeaceIndex = 0;
-      if(!NGS()->getModulesRoutesEngine()->isDefaultModule()){
+      if (!NGS()->getModulesRoutesEngine()->isDefaultModule()){
         $filePeaceIndex = 1;
 
       }
@@ -397,10 +406,15 @@ namespace ngs\routes {
     private function setNestedRoutes($nestedLoads, $package) {
 
       foreach ($nestedLoads as $key => $value){
-        $value["action"] = NGS()->getModulesRoutesEngine()->getModuleNS() . "." . $value["action"];
+        if (isset($value["namespace"])){
+          $actionNS = $value["namespace"];
+        } else{
+          $actionNS = NGS()->getModulesRoutesEngine()->getModuleNS();
+        }
+        $value["action"] = $actionNS . "." . $value["action"];
         $nestedLoads[$key]["action"] = $value["action"];
         if (isset($value["nestedLoad"]) && is_array($value["nestedLoad"])){
-          $this->setNestedRoutes($value["nestedLoad"], NGS()->getModulesRoutesEngine()->getModuleNS() . "." . $value["action"]);
+          $this->setNestedRoutes($value["nestedLoad"], $actionNS . "." . $value["action"]);
           unset($nestedLoads[$key]["nestedLoad"]);
         }
       }
@@ -434,8 +448,8 @@ namespace ngs\routes {
       return $this->getDynamicLoad("/", true);
     }
 
-    protected function getRequestHttpMethod(){
-      if(isset($_SERVER["REQUEST_METHOD"])){
+    protected function getRequestHttpMethod() {
+      if (isset($_SERVER["REQUEST_METHOD"])){
         return strtolower($_SERVER["REQUEST_METHOD"]);
       }
       return "get";

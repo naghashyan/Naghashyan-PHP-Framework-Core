@@ -58,8 +58,7 @@ namespace ngs\request {
       //initialize template engine pass load params to templater
       NGS()->getTemplateEngine()->setType($this->getNgsLoadType());
       $ns = get_class($this);
-      $ns = substr($ns, strpos($ns, NGS()->getModulesRoutesEngine()->getModuleNS()) + strlen(NGS()->getModulesRoutesEngine()->getModuleNS()) + 1);
-
+      $ns = substr($ns, strpos($ns, "\\") + 1);
       $ns = str_replace(array("Load", "\\"), array("", "."), $ns);
       $ns = preg_replace_callback('/[A-Z]/', function ($m) {
         return "_" . strtolower($m[0]);
