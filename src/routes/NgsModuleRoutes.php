@@ -28,13 +28,9 @@ namespace ngs\routes {
     private $shuffledRoutes = array();
     private $defaultNS = null;
     private $moduleArr = null;
-    private $package = null;
-    private $nestedRoutes = null;
-    private $jsonParams = array();
-    private $contentLoad = null;
+    private $modulesLists = null;
     private $dynContainer = "dyn";
     private $type = null;
-    private $dir = null;
     private $ns = null;
     private $name = "";
     private $uri = null;
