@@ -51,6 +51,10 @@ class NGS {
     if ($moduleConstatPath){
       require_once $moduleConstatPath;
     }
+    $envConstantFile = realpath(NGS()->getConfigDir() . "/constants_".$this->getShortEnvironment().".php");
+    if($envConstantFile){
+      require_once $envConstantFile;
+    }
     $this->getModulesRoutesEngine(true)->initialize();
   }
 
@@ -629,7 +633,15 @@ class NGS {
    * @return String $namespace
    */
   public function getEnvironment() {
-    return $this->getDefinedValue("ENVIRONMENT");
+    $definedValue = $this->getDefinedValue("ENVIRONMENT");
+    switch ($definedValue){
+      case "development":
+      case "staging":
+        return $definedValue;
+        break;
+      default:
+        return "production";
+    }
   }
 
   /**
@@ -642,6 +654,8 @@ class NGS {
     $env = "prod";
     if ($this->getEnvironment() == "development"){
       $env = "dev";
+    } elseif ($this->getEnvironment() == "staging"){
+      return "stage";
     }
     return $env;
   }

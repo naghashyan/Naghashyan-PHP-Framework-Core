@@ -193,14 +193,16 @@ namespace ngs\templater {
 
     private function displayJson($params = null) {
       header('Content-Type: application/json; charset=utf-8');
-      if ($params != null){
+      if ($params !== null){
         echo json_encode($params);
         exit;
       }
       foreach ($this->params as $key => $value){
         $this->smarty->assign($key, $value);
       }
-      echo($this->smarty->fetch($this->getTemplate()));
+      if($this->getTemplate()){
+        echo($this->smarty->fetch($this->getTemplate()));
+      }
       exit;
     }
 

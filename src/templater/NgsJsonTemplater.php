@@ -84,8 +84,6 @@ namespace ngs\templater {
 
     public function fetch() {
       $this->renderTemplate();
-      var_dump($this->params);exit;
-
     }
 
     private function renderTemplate(){
@@ -98,14 +96,8 @@ namespace ngs\templater {
         if(isset($matches[1][0]) && isset($this->params[$matches[1][0]])){
 
         }
-        var_dump($value);
-        var_dump($matches[1][0]);exit;
-
       }
       $results = print_r($jsonTemplate, true);
-      var_dump($results);exit;
-     // eval($results);exit;
-
     }
 
 

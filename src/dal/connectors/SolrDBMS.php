@@ -28,18 +28,18 @@ namespace ngs\dal\connectors {
      * @param string $db_path
      *
      */
-    public function __construct($db_host, $db_port, $db_path) {
+    public function __construct($db_host, $db_port, $db_path, $db_core) {
       $config = array(
         'endpoint' => array(
           'localhost' => array(
             'host' => $db_host,
             'port' => $db_port,
             'path' => $db_path,
+            'core' => $db_core
           )
         )
       );
       parent::__construct($config);
-
     }
 
     /**
@@ -51,9 +51,9 @@ namespace ngs\dal\connectors {
      *
      * @return SolrDBMS $instance
      */
-    public static function getInstance($db_host, $db_port, $db_path) {
+    public static function getInstance($db_host, $db_port, $db_path, $db_core) {
       if (is_null(self::$instance)){
-        self::$instance = new SolrDBMS($db_host, $db_port, $db_path);
+        self::$instance = new SolrDBMS($db_host, $db_port, $db_path, $db_core);
       }
       return self::$instance;
     }

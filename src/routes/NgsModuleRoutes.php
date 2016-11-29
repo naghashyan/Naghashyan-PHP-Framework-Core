@@ -31,7 +31,7 @@ namespace ngs\routes {
     private $package = null;
     private $nestedRoutes = null;
     private $jsonParams = array();
-    private $modulesLists = null;
+    private $contentLoad = null;
     private $dynContainer = "dyn";
     private $type = null;
     private $dir = null;
@@ -70,7 +70,7 @@ namespace ngs\routes {
      * read from file json routes
      * and set in private property for cache
      *
-     * @return array json
+     * @return json Array
      */
     private function getRouteConfig() {
       if (count($this->routes) == 0){
@@ -85,7 +85,7 @@ namespace ngs\routes {
      * key=>dir value=namespace
      * and set in private shuffledRoutes property for cache
      *
-     * @return array json
+     * @return json Array
      */
     public function getShuffledRoutes() {
       if (count($this->shuffledRoutes) > 0){

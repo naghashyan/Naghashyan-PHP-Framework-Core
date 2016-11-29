@@ -278,7 +278,7 @@ namespace ngs\dal\mappers {
      * Executes the query and returns an row field of corresponding DTOs
      * if $row isn't false return first elem
      *
-     * @param object $sqlQuery
+     * @param string $sqlQuery
      * @return
      */
     protected function fetchRow($sqlQuery, $params = array(), $standartArgs = false) {
@@ -333,8 +333,8 @@ namespace ngs\dal\mappers {
     /**
      * Selects from table by primary key and returns corresponding DTO
      *
-     * @param object $id
-     * @return
+     * @param int $id
+     * @return object
      */
     public function selectByPK($id) {
       $sqlQuery = sprintf("SELECT * FROM `%s` WHERE `%s` = :id ", $this->getTableName(), $this->getPKFieldName());
