@@ -6,8 +6,8 @@
  * @author Levon Naghashyan <levon@naghashyan.com>
  * @site http://naghashyan.com
  * @package ngs.framework.templater
- * @version 3.1.0
- * @year 2010-2016
+ * @version 3.2.0
+ * @year 2010-2017
  *
  * This file is part of the NGS package.
  *
@@ -16,6 +16,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace ngs\templater {
 
   use Smarty;
@@ -35,6 +36,7 @@ namespace ngs\templater {
       $this->isHtml = $isHtml;
       //register NGS plugins
       $this->registerPlugin("function", "nest", array($this, 'nest'));
+      $this->registerPlugin("function", "nestLoad", array($this, 'nestLoad'));
       $this->registerPlugin("function", "ngs", array($this, 'NGS'));
       $moduleList = NGS()->getModulesRoutesEngine()->getAllModules();
       $tmpTplArr = [];
@@ -53,6 +55,49 @@ namespace ngs\templater {
     }
 
     /**
+     * Smarty {nestLoad} function plugin
+     *
+     * Type:     function<br>
+     * Name:     nest<br>
+     * Purpose:  nest NGS load from template
+     * <br>
+     * @param array $params parameters
+     * @param object $template template object
+     * @return string html
+     */
+    public function nestLoad($params, $template) {
+      if (!isset($params['action'])){
+        trigger_error("nest: missing 'action' parameter");
+        return;
+      }
+      $actionArr = NGS()->getRoutesEngine()->getLoadORActionByAction($params['action']);
+      if ($actionArr["type"] != "load"){
+        throw new DebugException($action . " Load Not found");
+      }
+      $action = $actionArr["action"];
+      if (class_exists($action) == false){
+        throw new DebugException($action . " Load Not found");
+      }
+      if (isset($params["args"]) && is_array($params["args"])){
+        NgsArgs::getInstance()->setArgs($params["args"]);
+      }
+      $loadObj = new $action;
+      $loadObj->setIsNestedLoad(true);
+      $loadObj->setLoadName($action);
+      $loadObj->initialize();
+      if (NGS()->getSessionManager()->validateRequest($loadObj) === false){
+        $loadObj->onNoAccess();
+      }
+      $loadObj->service();
+      $template->tpl_vars["ns"]->value["inc"][$action]["filename"] = $loadObj->getTemplate();
+      $template->tpl_vars["ns"]->value["inc"][$action]["params"] = $loadObj->getParams();
+      $template->tpl_vars["ns"]->value["inc"][$action]["namespace"] = $action;
+      $template->tpl_vars["ns"]->value["inc"][$action]["jsonParam"] = $loadObj->getJsonParams();
+      $template->tpl_vars["ns"]->value["inc"][$action]["permalink"] = $loadObj->getPermalink();
+      $this->nest(["ns" => $action], $template);
+    }
+
+    /**
      * Smarty {nest} function plugin
      *
      * Type:     function<br>
@@ -67,10 +112,6 @@ namespace ngs\templater {
       if (!isset($params['ns'])){
         trigger_error("nest: missing 'ns' parameter");
         return;
-      }
-
-      if (!$template->tpl_vars["ns"]){
-        $template->tpl_vars["ns"] = $template->tpl_vars["ns"];
       }
 
       $nsValue = $template->tpl_vars["ns"]->value;
@@ -155,7 +196,14 @@ namespace ngs\templater {
           }
           return NGS()->getPublicOutputHost($ns, $protocol) . "/less";
           break;
-        case 'get_template_dir' : 
+        case 'get_sass_out_dir' :
+          $protocol = false;
+          if (isset($params['protocol']) && $params['protocol'] == true){
+            $protocol = true;
+          }
+          return NGS()->getPublicOutputHost($ns, $protocol) . "/sass";
+          break;
+        case 'get_template_dir' :
           return NGS()->getTemplateDir($ns);
           break;
         case 'get_http_host' :
@@ -172,17 +220,10 @@ namespace ngs\templater {
           }
           return NGS()->getHttpUtils()->getHost();
           break;
+        case 'get_environment' :
+          return NGS()->getEnvironment();
+          break;
         case 'get_static_path' :
-          if (isset(NGS()->getConfig()->static_path)){
-            if(strpos(NGS()->getConfig()->static_path, "http") == 0){
-              return NGS()->getConfig()->static_path;
-            }
-            $httpProtocol  = "//";
-            if (isset($params['protocol']) && $params['protocol'] == true){
-              $httpProtocol = NGS()->getHttpUtils()->getRequestProtocol().$httpProtocol;
-            }
-            return $httpProtocol . NGS()->getConfig()->static_path;
-          }
           $protocol = false;
           if (isset($params['protocol']) && $params['protocol'] == true){
             $protocol = true;
@@ -209,6 +250,7 @@ namespace ngs\templater {
     public function addScripts($tpl_output, $template) {
       $jsString = '<meta name="generator" content="Naghashyan Framework ' . NGS()->getNGSVersion() . '" />';
       if (NGS()->isJsFrameworkEnable() == false){
+        $jsString .= '</head>';
         $tpl_output = str_replace('</head>', $jsString, $tpl_output) . "\n";
         return $tpl_output;
       }
