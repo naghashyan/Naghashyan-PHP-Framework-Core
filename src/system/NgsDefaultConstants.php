@@ -24,7 +24,7 @@
  | DEFINNING VARIABLES IF SCRIPT RUNNING FROM COMMAND LINE
  |--------------------------------------------------------------------------
  */
-if (php_sapi_name() == "cli"){
+if (php_sapi_name() == "cli" && NGS()->get("CMD_SCRIPT")){
   $args = null;
   if (isset($argv) && isset($argv[1])){
     $args = substr($argv[1], strpos($argv[1], "?") + 1);
@@ -35,23 +35,23 @@ if (php_sapi_name() == "cli"){
     $queryArgsArr = explode("&", $args);
     foreach ($queryArgsArr as $value){
       $_arg = explode("=", $value);
-      if(isset($_REQUEST[$_arg[0]])){
-        if(is_array($_REQUEST[$_arg[0]])){
+      if (isset($_REQUEST[$_arg[0]])){
+        if (is_array($_REQUEST[$_arg[0]])){
           $tmp = $_REQUEST[$_arg[0]];
 
-        }else{
-          $tmp =[];
+        } else{
+          $tmp = [];
           $tmp[] = $_REQUEST[$_arg[0]];
         }
-        $tmp[] =  $_arg[1];
+        $tmp[] = $_arg[1];
         $_REQUEST[$_arg[0]] = $tmp;
 
-      }else{
+      } else{
         $_REQUEST[$_arg[0]] = $_arg[1];
       }
     }
   }
-  if (isset($argv[2])){
+  if (isset($argv[2]) && !isset($_SERVER["ENVIRONMENT"])){
     $_SERVER["ENVIRONMENT"] = $argv[2];
   }
   $_SERVER["HTTP_HOST"] = "";
@@ -72,9 +72,13 @@ NGS()->define("DEFAULT_NS", "ngs");
 | DEFINNING ENVIRONMENT VARIABLES
 |--------------------------------------------------------------------------
 */
-$environment = "development";
+$environment = "production";
 if (isset($_SERVER["ENVIRONMENT"])){
-  $environment = $_SERVER["ENVIRONMENT"];
+  if ($_SERVER["ENVIRONMENT"] == "development" || $_SERVER["ENVIRONMENT"] == "dev"){
+    $environment = "development";
+  } else if ($_SERVER["ENVIRONMENT"] == "staging"){
+    $environment = "staging";
+  }
 }
 NGS()->define("ENVIRONMENT", $environment);
 
@@ -115,6 +119,8 @@ NGS()->define("PUBLIC_OUTPUT_DIR", "out");
 NGS()->define("CSS_DIR", "css");
 //---defining less dir in public folder
 NGS()->define("LESS_DIR", "less");
+//---defining sass dir in public folder
+NGS()->define("SASS_DIR", "sass");
 //---defining js dir in public folder
 NGS()->define("JS_DIR", "js");
 //---defining config dir
@@ -160,6 +166,10 @@ NGS()->define("CSS_BUILDER", 'ngs\util\CssBuilder');
 NGS()->define("LESS_BUILDER", 'ngs\util\LessBuilder');
 //---defining less build env
 NGS()->define("LESS_BUILD_MODE", $environment);
+//---defining sass builder file
+NGS()->define("SASS_BUILDER", 'ngs\util\SassBuilder');
+//---defining sass build env
+NGS()->define("SASS_BUILD_MODE", $environment);
 //---defining ngs utils file
 NGS()->define("NGS_UTILS", 'ngs\util\NgsUtils');
 

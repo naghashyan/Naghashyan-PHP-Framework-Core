@@ -18,6 +18,7 @@
  * file that was distributed with this source code.
  *
  */
+
 namespace ngs\routes {
 
   use ngs\exceptions\DebugException;
@@ -215,39 +216,43 @@ namespace ngs\routes {
      *
      * @return array|false
      */
-    private function getDynRoutesLoad($url, $package, $urlPartsArr, $is404 = false, $staticFile=false) {
+    private function getDynRoutesLoad($url, $package, $urlPartsArr, $is404 = false, $staticFile = false) {
       $routes = $this->getRouteConfig();
       if (!isset($routes[$package])){
         return array("matched" => false);
       }
+
       $matchedRoutesArr = array();
       if ($package == "default"){
-        $matchedRoutesArr[] = $routes[$package];
+        $matchedRoutesArr[][$package] = $routes[$package];
       } else{
         $matchedRoutesArr = $routes[$package];
       }
       $dynRoute = false;
       $args = false;
       foreach ($matchedRoutesArr as $route){
+
         if (isset($route["default"])){
           if ($route["default"] == "dyn"){
             $dynRoute = true;
             continue;
           }
-          if (isset($route["default"]["action"]) && $is404 != false){
-            $route = $route["default"];
-          } else{
+          if (isset($route["default"]["action"]) && $is404 == true && isset($route["default"]["404"])){
             $route = $route["default"]["404"];
+          } else{
+            $route = $route["default"];
             break;
           }
         }
         if (isset($route["method"]) && strtolower($route["method"]) != strtolower($this->getRequestHttpMethod())){
           continue;
         }
+
         $args = $this->getMatchedRoute($urlPartsArr, $route);
         if (!isset($route["args"])){
           $route["args"] = array();
         }
+
         if ($args !== false && is_array($args)){
           $route["args"] = array_merge($route["args"], $args);
           break;
@@ -256,12 +261,11 @@ namespace ngs\routes {
           unset($route["action"]);
         }
       }
-
       if ($args == false && !isset($route["action"])){
         if ($dynRoute == true){
           return $this->getStandartRoutes($package, $urlPartsArr);
         }
-        if($staticFile){
+        if ($staticFile){
           return array("matched" => false);
         }
         if (NGS()->getEnvironment() == "development"){
@@ -281,6 +285,9 @@ namespace ngs\routes {
         $this->setNestedRoutes($route["nestedLoad"], $route["action"]);
       }
       $this->setCurrentRoute($route);
+      if (!isset($route["args"])){
+        $route["args"] = array();
+      }
       return array("action" => $_action, "args" => $route["args"], "matched" => true);
     }
 
@@ -298,10 +305,8 @@ namespace ngs\routes {
     private function getMatchedRoute($uriParams, $routeArr) {
       $route = "";
       if (!isset($routeArr["route"])){
-
         $routeArr["route"] = "";
       }
-
       $route = $routeArr["route"];
       if (strpos($route, "[:") === false && strpos($route, "[/:") === false){
         $fullUri = implode("/", $uriParams);
@@ -309,7 +314,7 @@ namespace ngs\routes {
           $route = substr($route, 1);
         }
         $route = str_replace("/", "\/", $route) . "\/";
-        $newUri = preg_replace("/" . $route . "/", "", $fullUri . "/", -1, $count);
+        $newUri = preg_replace("/^" . $route . "/", "", $fullUri . "/", -1, $count);
         if ($count == 0){
           return false;
         }
@@ -359,7 +364,6 @@ namespace ngs\routes {
           }
         }
         array_shift($uriParams);
-
       }
       return array_merge($urlMatchArgs, $uriParams);
     }
@@ -385,6 +389,9 @@ namespace ngs\routes {
       }
       if (isset($filePices[$filePeaceIndex]) && $filePices[$filePeaceIndex] == "less"){
         $loadsArr["file_type"] = "less";
+      }
+      if (isset($filePices[$filePeaceIndex]) && $filePices[$filePeaceIndex] == "sass"){
+        $loadsArr["file_type"] = "sass";
       }
       if (!NGS()->getModulesRoutesEngine()->checkModuleByNS($package)){
         $package = NGS()->getModulesRoutesEngine()->getDefaultNS();

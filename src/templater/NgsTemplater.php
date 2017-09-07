@@ -171,7 +171,10 @@ namespace ngs\templater {
         $this->displayJson();
         return;
       }
-
+      if(!NGS()->isJsFrameworkEnable()){
+        $this->displaySmarty($this->getTemplate());
+        return;
+      }
       $ext = pathinfo($this->getTemplate(), PATHINFO_EXTENSION);
       if ($ext != "json" && (NGS()->isJsFrameworkEnable() && !NGS()->getHttpUtils()->isAjaxRequest())){
         $this->smarty->setCustomHeader($this->getCustomHeader());

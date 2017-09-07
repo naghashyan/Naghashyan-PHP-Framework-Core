@@ -117,7 +117,7 @@ namespace ngs\util {
 
         /* @desc for initiating http get request
          * @access public
-         * @param url of requesting host
+         * @param string url of requesting host
          * @return true if all is OK, false if thereare errors
          */
 
@@ -128,7 +128,6 @@ namespace ngs\util {
             }
             $curl = \curl_init($url);
             if ($this->toFile) {
-                $curl = $this->getCurlConnection();
                 $fp = fopen($this->toFile, 'w');
                 $this->setOpt(CURLOPT_HEADER, 0);
                 $this->setOpt(CURLOPT_FILE, $fp);

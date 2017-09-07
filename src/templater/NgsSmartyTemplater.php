@@ -70,6 +70,10 @@ namespace ngs\templater {
         trigger_error("nest: missing 'action' parameter");
         return;
       }
+      $parent = NGS()->getLoadMapper()->getGlobalParentLoad();
+      if (isset($params['parent'])){
+        $parent = $params['parent'];
+      }
       $actionArr = NGS()->getRoutesEngine()->getLoadORActionByAction($params['action']);
       if ($actionArr["type"] != "load"){
         throw new DebugException($action . " Load Not found");
@@ -89,12 +93,15 @@ namespace ngs\templater {
         $loadObj->onNoAccess();
       }
       $loadObj->service();
+      NGS()->getLoadMapper()->setNestedLoads($parent, $params["action"], $loadObj->getJsonParams());
       $template->tpl_vars["ns"]->value["inc"][$action]["filename"] = $loadObj->getTemplate();
       $template->tpl_vars["ns"]->value["inc"][$action]["params"] = $loadObj->getParams();
-      $template->tpl_vars["ns"]->value["inc"][$action]["namespace"] = $action;
+      $template->tpl_vars["ns"]->value["inc"][$action]["namespace"] = $params['action'];
+      $template->tpl_vars["ns"]->value["inc"][$action]["action"] = $params['action'];
+      $template->tpl_vars["ns"]->value["inc"][$action]["parent"] = $parent;
       $template->tpl_vars["ns"]->value["inc"][$action]["jsonParam"] = $loadObj->getJsonParams();
       $template->tpl_vars["ns"]->value["inc"][$action]["permalink"] = $loadObj->getPermalink();
-      $this->nest(["ns" => $action], $template);
+      return $this->nest(["ns" => $action], $template);
     }
 
     /**
@@ -136,11 +143,15 @@ namespace ngs\templater {
         $jsonParams = $nsValue["inc"][$params["ns"]]["jsonParam"];
         $parentLoad = $nsValue["inc"][$params["ns"]]["parent"];
         $jsString = '<script type="text/javascript">';
-        $jsString .= 'NGS.setNestedLoad("' . $parentLoad . '", "' . $namespace . '", ' . json_encode($jsonParams) . ')';
+        if ($parentLoad){
+          $jsString .= 'NGS.setNestedLoad("' . $parentLoad . '", "' . $namespace . '", ' . json_encode($jsonParams) . ')';
+        } elseif (isset($nsValue["inc"][$params["ns"]]["action"])){
+          $jsString .= 'NGS.nestLoad("' . $nsValue["inc"][$params["ns"]]["action"] . '", ' . json_encode($jsonParams) . ', "")';
+        }
+
         $jsString .= '</script>';
         $_output = $jsString . $_output;
       }
-
       return $_output;
     }
 

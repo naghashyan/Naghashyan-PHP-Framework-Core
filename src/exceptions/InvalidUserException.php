@@ -1,4 +1,5 @@
 <?php
+
 namespace ngs\exceptions {
   class InvalidUserException extends \Exception {
 

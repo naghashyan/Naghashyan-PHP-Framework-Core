@@ -142,7 +142,7 @@ class ClosureCompiler {
                     'header' => "Content-type: application/x-www-form-urlencoded\r\nConnection: close\r\n",
                     'content' => $postBody,
                     'max_redirects' => 0,
-                    'timeout' => 15,
+                    'timeout' => 500,
                 )
             )));
         } elseif (defined('CURLOPT_POST')) {
@@ -152,7 +152,7 @@ class ClosureCompiler {
             curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-type: application/x-www-form-urlencoded'));
             curl_setopt($ch, CURLOPT_POSTFIELDS, $postBody);
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
-            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 15);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 500);
             $contents = curl_exec($ch);
             curl_close($ch);
         } else {

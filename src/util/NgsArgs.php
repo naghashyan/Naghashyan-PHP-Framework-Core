@@ -45,7 +45,7 @@ namespace ngs\util {
      * @param object $args
      * @return
      */
-    public static function getInstance($trim = false) {
+    public static function getInstance($trim = true) {
       if (self::$instance == null){
         self::$instance = new NgsArgs($trim);
         self::$instance->mergeInputData();
@@ -66,7 +66,10 @@ namespace ngs\util {
     public function __get($name) {
       if (isset($this->args()[$name])){
         if ($this->trim){
-          return trim($this->args()[$name]);
+          if (is_string($this->args()[$name])){
+            return trim($this->args()[$name]);
+          }
+          return $this->args()[$name];
         }
         return $this->args()[$name];
       }
@@ -134,6 +137,11 @@ namespace ngs\util {
     public function mergeInputData() {
       if (NGS()->getNgsUtils()->isJson($this->inputData())){
         $this->setArgs(json_decode($this->inputData(), true));
+      } else{
+        parse_str($this->inputData(), $parsedRequestBody);
+        if (is_array($parsedRequestBody)){
+          $this->setArgs($parsedRequestBody);
+        }
       }
 
     }

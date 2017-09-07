@@ -137,7 +137,7 @@ namespace ngs\request {
 
 
     public function onNoAccess() {
-      return false;
+      throw new NoAccessException("User not have access to this request ");
     }
 
     /**
