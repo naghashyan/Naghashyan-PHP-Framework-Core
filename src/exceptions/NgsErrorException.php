@@ -5,9 +5,9 @@
  *
  * @author Levon Naghashyan <levon@naghashyan.com>
  * @site http://naghashyan.com
- * @year 2009-2016
+ * @year 2009-2018
  * @package framework
- * @version 3.1.0
+ * @version 3.6.0
  *
  * This file is part of the NGS package.
  *
@@ -17,19 +17,45 @@
  * file that was distributed with this source code.
  *
  */
+
 namespace ngs\exceptions {
   class NgsErrorException extends \Exception {
 
-    public function __construct($msg = "", $code = -1, $params = array()) {
-      if (!NGS()->getHttpUtils()->isAjaxRequest()){
-        //throw  new DebugException();
-      }
-      NGS()->getTemplateEngine()->setHttpStatusCode(400);
-      NGS()->getTemplateEngine()->assignJson("code", $code);
-      NGS()->getTemplateEngine()->assignJson("msg", $msg);
-      NGS()->getTemplateEngine()->assignJson("params", $params);
-      NGS()->getTemplateEngine()->display();
-      exit;
+    private $httpCode = 400;
+    private $params = [];
+
+    public function __construct($msg = "", $code = -1, $params = []) {
+      parent::__construct($msg, $code);
+      $this->setParams($params);
     }
+
+    /**
+     * @return int
+     */
+    public function getHttpCode(): int {
+      return $this->httpCode;
+    }
+
+    /**
+     * @param int $httpCode
+     */
+    public function setHttpCode(int $httpCode): void {
+      $this->httpCode = $httpCode;
+    }
+
+    /**
+     * @return array
+     */
+    public function getParams(): array {
+      return $this->params;
+    }
+
+    /**
+     * @param array $params
+     */
+    public function setParams(array $params): void {
+      $this->params = $params;
+    }
+
   }
 }

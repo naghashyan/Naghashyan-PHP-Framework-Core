@@ -6,7 +6,7 @@
  * @author Levon Naghashyan <levon@naghashyan.com>
  * @site http://naghashyan.com
  * @package framework.dal.mappers
- * @version 3.1.0
+ * @version 3.6.0
  * @year 2009-2014
  * @copyright Naghashyan Solutions LLC
  */

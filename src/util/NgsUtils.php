@@ -5,9 +5,9 @@
  *
  * @author Levon Naghashyan <levon@naghashyan.com>
  * @site http://naghashyan.com
- * @year 2015
+ * @year 2015-2018
  * @package ngs.framework.util
- * @version 3.1.0
+ * @version 3.6.0
  *
  * This file is part of the NGS package.
  *

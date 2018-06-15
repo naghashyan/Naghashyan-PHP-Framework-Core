@@ -8,7 +8,7 @@
  * @site http://naghashyan.com
  * @year 2014-2016
  * @package ngs.framework
- * @version 3.1.0
+ * @version 3.6.0
  *
  *
  * This file is part of the NGS package.
@@ -43,6 +43,7 @@ class NGS {
   private $jsBuilder = null;
   private $cssBuilder = null;
   private $lessBuilder = null;
+  private $sassBuilder = null;
   private $isModuleEnable = false;
   private $define = array();
 
@@ -290,6 +291,25 @@ class NGS {
    *
    * @return String public less dir path
    */
+  public function getSassDir($ns = "") {
+    $lessDir = realpath($this->getPublicDir($ns) . "/" . $this->getDefinedValue("SASS_DIR"));
+    if ($lessDir == false){
+      mkdir($this->getPublicDir($ns) . "/" . $this->getDefinedValue("SASS_DIR"), 0755, true);
+    } else{
+      return $lessDir;
+    }
+    return realpath($this->getPublicDir($ns) . "/" . $this->getDefinedValue("SASS_DIR"));
+  }
+
+  /**
+   * this method do calculate and return public output
+   * dir path by namespace
+   *
+   *
+   * @param String $ns
+   *
+   * @return String public less dir path
+   */
   public function getLessDir($ns = "") {
     $lessDir = realpath($this->getPublicDir($ns)."/".$this->getDefinedValue("LESS_DIR"));
     if ($lessDir == false){
@@ -329,7 +349,7 @@ class NGS {
    * @return String classes dir path
    */
   public function getClassesDir($ns = "") {
-    return realpath($this->getModuleDirByNS($ns)."/".$this->getDefinedValue("CLASSES_DIR"));
+    return realpath($this->getModuleDirByNS($ns) . "/" . $this->getDefinedValue("CLASSES_DIR"));
   }
 
   /**
@@ -610,6 +630,27 @@ class NGS {
     return $this->lessBuilder;
   }
 
+  /**
+   * this method return ngs or user defined sassBuilder object
+   *
+   * @throws DebugException if SASS_BUILDER Not found
+   *
+   * @return Object fileUtils
+   */
+  public function getSassBuilder() {
+    if ($this->sassBuilder != null){
+      return $this->sassBuilder;
+    }
+    try{
+      $classPath = $this->getDefinedValue("SASS_BUILDER");
+      $this->sassBuilder = new $classPath();
+    } catch (Exception $e){
+      throw new DebugException("SASS UTILS NOT FOUND, please check in constants.php SASS_BUILDER variable");
+    }
+    return $this->sassBuilder;
+  }
+
+
   public function getFileStreamerByType($fileType) {
     switch ($fileType){
       case 'js' :
@@ -620,6 +661,9 @@ class NGS {
         break;
       case 'less' :
         return $this->getLessBuilder();
+        break;
+      case 'sass' :
+        return $this->getSassBuilder();
         break;
       default :
         return $this->getFileUtils();
@@ -680,8 +724,27 @@ class NGS {
   public function getDynObject() {
     return new \ngs\util\NgsDynamic();
   }
+
+
+  public function cliLog($log, $color = "white", $bold = false) {
+    $colorArr = ["black" => "0;30", "blue" => "0;34", "green" => "0;32", "cyan" => "0;36",
+      "red" => "0;31", "purple" => "0;35", "prown" => "0;33", "light_gray" => "0;37 ",
+      "gark_gray" => "1;30", "light_blue" => "1;34", "light_green" => "1;32", "light_cyan" => "1;36",
+      "light_red" => "1;31", "light_purple" => "1;35", "yellow" => "1;33", "white" => "1;37"];
+    $colorCode = $colorArr["white"];
+    if ($colorArr[$color]){
+      $colorCode = $colorArr[$color];
+    }
+    $colorCode .= "0m";
+    echo "\033[" . $colorCode . $log . "  \033[" . $colorArr["white"] . "0m \n";
+  }
 }
 
+/**
+ * return NGS instance
+ *
+ * @return NGS NGS
+ */
 function NGS() {
   return NGS::getInstance();
 }

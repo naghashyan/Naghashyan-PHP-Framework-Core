@@ -3,9 +3,9 @@
  *
  * @author Levon Naghashyan <levon@naghashyan.com>
  * @site http://naghashyan.com
- * @year 2009-2016
+ * @year 2009-2018
  * @package framework
- * @version 3.1.0
+ * @version 3.6.0
  *
  * This file is part of the NGS package.
  *
@@ -15,30 +15,14 @@
  * file that was distributed with this source code.
  *
  */
+
 namespace ngs\exceptions {
-  class NoAccessException extends \Exception {
+  class NoAccessException extends InvalidUserException {
 
-    public function __construct($redirectTo = "", $redirectToLoad = "") {
-      NGS()->getSessionManager()->deleteUser();
-      if (NGS()->getHttpUtils()->isAjaxRequest() || NGS()->getDefinedValue("display_json")){
-        $this->displayJsonInvalidError("access denied", $redirectTo, $redirectToLoad);
-        exit;
-      }
-      NGS()->getHttpUtils()->redirect($redirectTo);
-      exit;
+    protected $httpCode = 403;
+
+    public function __construct($msg = "access denied", $code = -5) {
+      parent::__construct($msg, $code);
     }
-
-    public function displayJsonInvalidError($msg, $redirectTo, $redirectToLoad) {
-      NGS()->getTemplateEngine()->setHttpStatusCode(403);
-      NGS()->getTemplateEngine()->assignJson("msg", $msg);
-      if($redirectTo != ""){
-        NGS()->getTemplateEngine()->assignJson("redirect_to", $redirectTo);
-      }
-      if($redirectToLoad != ""){
-        NGS()->getTemplateEngine()->assignJson("redirect_to_load", $redirectToLoad);
-      }
-      NGS()->getTemplateEngine()->display();
-    }
-
   }
 }

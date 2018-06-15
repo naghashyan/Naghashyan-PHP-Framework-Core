@@ -7,7 +7,7 @@
  * @site http://naghashyan.com
  * @year 2014-2016
  * @package ngs.framework.util
- * @version 3.1.0
+ * @version 3.6.0
  *
  * This file is part of the NGS package.
  *
@@ -123,8 +123,8 @@ namespace ngs\util {
      * @param boolean $paramie
      * @return integer|babyclass
      */
-    public function redirect($url) {
-      header("location: " . $this->getHttpHostByNs("", true) . "/" . $url);
+    public function redirect($url, $module = "") {
+      header("location: " . $this->getHttpHostByNs($module, true) . "/" . $url);
     }
 
     public function getMainDomain() {

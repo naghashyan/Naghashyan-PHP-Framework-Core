@@ -6,8 +6,8 @@
  * @author Levon Naghashyan <levon@naghashyan.com>
  * @site http://naghashyan.com
  * @package ngs.framework.dal.mappers
- * @version 3.1.0
- * @year 2009-2016
+ * @version 3.6.0
+ * @year 2009-2018
  *
  * This file is part of the NGS package.
  *
@@ -17,6 +17,7 @@
  * file that was distributed with this source code.
  *
  */
+
 namespace ngs\dal\mappers {
 
   use ngs\exceptions\DebugException;
@@ -81,6 +82,7 @@ namespace ngs\dal\mappers {
       $sqlQuery = substr($sqlQuery, 0, -1);
       // Execute query.
       $res = $this->dbms->prepare($sqlQuery);
+
       if ($res){
         $res->execute($params);
         return $this->dbms->lastInsertId();
@@ -264,10 +266,8 @@ namespace ngs\dal\mappers {
         return null;
       }
       $resultArr = array();
-
-      while ($row = $res->fetchObject(get_class($this->createDto()))){
-        $resultArr[] = $row;
-      }
+      $res->setFetchMode(\PDO::FETCH_CLASS, get_class($this->createDto()));
+      $resultArr = $res->fetchAll();
       if (count($resultArr) > 0){
         return $resultArr;
       }
@@ -286,7 +286,7 @@ namespace ngs\dal\mappers {
       if (isset($result) && is_array($result) && count($result) > 0){
         return $result[0];
       }
-      return false;
+      return null;
     }
 
     /**
@@ -304,7 +304,7 @@ namespace ngs\dal\mappers {
       $results = $res->execute($params);
       if ($results){
         $fetchedObject = $res->fetchObject();
-        if($fetchedObject === false){
+        if ($fetchedObject === false){
           return "";
         }
         return $fetchedObject->$fieldName;
@@ -327,7 +327,7 @@ namespace ngs\dal\mappers {
      */
     public function selectByLimit($offset, $limit) {
       $sqlQuery = sprintf("SELECT * FROM `%s` LIMIT :offset, :limit", $this->getTableName());
-      return $this->fetchRows($sqlQuery, array("offset"=>$offset, "limit"=>$limit));
+      return $this->fetchRows($sqlQuery, array("offset" => $offset, "limit" => $limit));
     }
 
     /**

@@ -3,8 +3,8 @@
  * parent class for all ngs requests (loads/action)
  *
  * @author Zaven Naghashyan <zaven@naghashyan.com>, Levon Naghashyan <levon@naghashyan.com>
- * @year 2009-2016
- * @version 3.1.0
+ * @year 2009-2018
+ * @version 3.6.0
  * @package ngs.framework
  *
  * This file is part of the NGS package.

@@ -33,7 +33,7 @@ class ClosureCompiler {
     /**
      * @var string $url URL of compiler server. defaults to Google's
      */
-    protected $serviceUrl = 'http://closure-compiler.appspot.com/compile';
+    protected $serviceUrl = 'https://closure-compiler.appspot.com/compile';
     /**
      * @var int $maxBytes The maximum JS size that can be sent to the compiler server in bytes
      */

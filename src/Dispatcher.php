@@ -3,9 +3,9 @@
  *
  * @author Levon Naghashyan <levon@naghashyan.com>
  * @site http://naghashyan.com
- * @year 2009-2016
+ * @year 2009-2018
  * @package framework
- * @version 3.1.0
+ * @version 3.6.0
  *
  * This file is part of the NGS package.
  *
@@ -15,8 +15,10 @@
  * file that was distributed with this source code.
  *
  */
+
 namespace ngs {
 
+  use ngs\exceptions\InvalidUserException;
   use ngs\exceptions\ClientException;
   use ngs\exceptions\DebugException;
   use ngs\exceptions\NgsErrorException;
@@ -58,27 +60,65 @@ namespace ngs {
             break;
         }
       } catch (DebugException $ex){
-        if(NGS()->getEnvironment() != "production"){
+        if (NGS()->getEnvironment() != "production"){
           $ex->display();
           return;
         }
         $routesArr = NGS()->getRoutesEngine()->getNotFoundLoad();
-        if($routesArr == null){
-          echo "404 :)";exit;
+        if ($routesArr == null){
+          echo "404 :)";
+          exit;
         }
         $this->loadPage($routesArr["action"]);
       } catch (RedirectException $ex){
         NGS()->getHttpUtils()->redirect($ex->getRedirectTo());
       } catch (NotFoundException $ex){
-        if($ex->getRedirectUrl() != ""){
+        if ($ex->getRedirectUrl() != ""){
           NGS()->getHttpUtils()->redirect($ex->getRedirectUrl());
           return;
         }
         $routesArr = NGS()->getRoutesEngine()->getNotFoundLoad();
-        if($routesArr == null){
-          echo "404 :)";exit;
+        if ($routesArr == null){
+          echo "404 :)";
+          exit;
         }
         $this->loadPage($routesArr["action"]);
+      } catch (NgsErrorException $ex){
+        NGS()->getTemplateEngine()->setHttpStatusCode($ex->getHttpCode());
+        NGS()->getTemplateEngine()->assignJson("code", $ex->getCode());
+        NGS()->getTemplateEngine()->assignJson("msg", $ex->getMessage());
+        NGS()->getTemplateEngine()->assignJson("params", $ex->getParams());
+        NGS()->getTemplateEngine()->display();
+      } catch (InvalidUserException $ex){
+        if (!NGS()->getHttpUtils()->isAjaxRequest() && !NGS()->getDefinedValue("display_json")){
+          NGS()->getHttpUtils()->redirect($ex->getRedirectTo());
+          return;
+        }
+        NGS()->getTemplateEngine()->setHttpStatusCode($ex->getHttpCode());
+        NGS()->getTemplateEngine()->assignJson("code", $ex->getCode());
+        NGS()->getTemplateEngine()->assignJson("msg", $ex->getMessage());
+        if ($ex->getRedirectTo() != ""){
+          NGS()->getTemplateEngine()->assignJson("redirect_to", $ex->getRedirectTo());
+        }
+        if ($ex->getRedirectToLoad() != ""){
+          NGS()->getTemplateEngine()->assignJson("redirect_to_load", $ex->getRedirectToLoad());
+        }
+        NGS()->getTemplateEngine()->display();
+      } catch (NoAccessException $ex){
+        if (!NGS()->getHttpUtils()->isAjaxRequest() && !NGS()->getDefinedValue("display_json")){
+          NGS()->getHttpUtils()->redirect($ex->getRedirectTo());
+          return;
+        }
+        NGS()->getTemplateEngine()->setHttpStatusCode($ex->getHttpCode());
+        NGS()->getTemplateEngine()->assignJson("code", $ex->getCode());
+        NGS()->getTemplateEngine()->assignJson("msg", $ex->getMessage());
+        if ($ex->getRedirectTo() != ""){
+          NGS()->getTemplateEngine()->assignJson("redirect_to", $ex->getRedirectTo());
+        }
+        if ($ex->getRedirectToLoad() != ""){
+          NGS()->getTemplateEngine()->assignJson("redirect_to_load", $ex->getRedirectToLoad());
+        }
+        NGS()->getTemplateEngine()->display();
       }
     }
 

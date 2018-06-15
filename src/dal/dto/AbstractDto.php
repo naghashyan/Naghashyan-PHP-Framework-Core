@@ -6,9 +6,9 @@
  *
  * @author Levon Naghashyan <levon@naghashyan.com>
  * @site http://naghashyan.com
- * @year 2009-2016
+ * @year 2009-2018
  * @package ngs.framework.dal.dto
- * @version 3.1.0
+ * @version 3.6.0
  *
  * This file is part of the NGS package.
  *
@@ -18,6 +18,7 @@
  * file that was distributed with this source code.
  *
  */
+
 namespace ngs\dal\dto {
 
 
@@ -41,6 +42,13 @@ namespace ngs\dal\dto {
     }
 
     /*
+     The first letter of input string changes to Lower case
+     */
+    public static function upperFirstLetter($str) {
+      return ucfirst($str);
+    }
+
+    /*
      Overloads getter and setter methods
      */
     public function __call($m, $a) {
@@ -61,6 +69,16 @@ namespace ngs\dal\dto {
       }
     }
 
+    function __set($property, $value) {
+      $fieldName = "set" . preg_replace_callback('/_([a-z])/', function ($property) {
+          if (isset($property[1])){
+            return ucfirst($property[1]);
+          }
+        }, self::upperFirstLetter(($property)));
+
+      $this->$fieldName($value);
+    }
+
     public function getFieldByName($name) {
       $mapArr = array_flip($this->getMapArray());
       if (isset($mapArr[$name])){
@@ -79,8 +97,8 @@ namespace ngs\dal\dto {
 
     public function fillDtoFromArray($mapArray = []) {
       $mapArr = $this->getMapArray();
-      foreach ($mapArray as $key=>$value){
-        if(!isset($mapArr[$key])){
+      foreach ($mapArray as $key => $value){
+        if (!isset($mapArr[$key]) || is_null($value)){
           continue;
         }
         $functionName = "set" . "" . ucfirst($mapArr[$key]);
@@ -89,7 +107,17 @@ namespace ngs\dal\dto {
     }
 
     public function toArray() {
-      return json_decode(json_encode($this), True);
+      $resultArr = [];
+      $mapArray = $this->getMapArray();
+      foreach ($mapArray as $key => $value){
+        if (!isset($mapArray[$key]) || is_null($value)){
+          continue;
+        }
+
+        $functionName = "get" . "" . ucfirst($mapArray[$key]);
+        $resultArr[$key] = $this->$functionName();
+      }
+      return $resultArr;
     }
 
   }

@@ -7,8 +7,8 @@
  *
  * @author Levon Naghashyan <levon@naghashyan.com>
  * @site http://naghashyan.com
- * @year 2009-2016
- * @version 3.1.0
+ * @year 2009-2018
+ * @version 3.6.0
  * @package ngs.framework
  *
  * This file is part of the NGS package.
@@ -19,6 +19,7 @@
  * file that was distributed with this source code.
  *
  */
+
 namespace ngs\request {
 
   use ngs\exceptions\NoAccessException;
@@ -57,14 +58,17 @@ namespace ngs\request {
       $this->load();
       //initialize template engine pass load params to templater
       NGS()->getTemplateEngine()->setType($this->getNgsLoadType());
+      if (!$this->getIsNestedLoad() && $this->getLoadName()){
+        NGS()->getLoadMapper()->setGlobalParentLoad($this->getLoadName());
+      }
       $ns = get_class($this);
       $ns = substr($ns, strpos($ns, NGS()->getModulesRoutesEngine()->getModuleNS()) + strlen(NGS()->getModulesRoutesEngine()->getModuleNS()) + 1);
-
       $ns = str_replace(array("Load", "\\"), array("", "."), $ns);
       $ns = preg_replace_callback('/[A-Z]/', function ($m) {
         return "_" . strtolower($m[0]);
       }, $ns);
       $ns = str_replace("._", ".", $ns);
+
       $nestedLoads = NGS()->getRoutesEngine()->getNestedRoutes($ns);
       $loadDefaultLoads = $this->getDefaultLoads();
       $defaultLoads = array();
@@ -82,10 +86,10 @@ namespace ngs\request {
       $this->ngsInitializeTemplateEngine();
     }
 
-    public final function ngsInitializeTemplateEngine(){
-      if($this->getNgsLoadType() == "json"){
+    public final function ngsInitializeTemplateEngine() {
+      if ($this->getNgsLoadType() == "json"){
         NGS()->getTemplateEngine()->assignJsonParams($this->getParams());
-      }else if($this->getNgsLoadType() == "smarty"){
+      } else if ($this->getNgsLoadType() == "smarty"){
         NGS()->getTemplateEngine()->assignJsonParams($this->getJsonParams());
         NGS()->getTemplateEngine()->assign("ns", $this->getParams());
       }
@@ -269,7 +273,7 @@ namespace ngs\request {
       }
       //todo add additional header ngs framework checker
       if ($_SERVER["HTTP_ACCEPT"] == "application/json" || $this->getTemplate() == null
-          || strpos($this->getTemplate(), ".json")){
+        || strpos($this->getTemplate(), ".json")){
         $this->ngsLoadType = "json";
       } else{
         $this->ngsLoadType = "smarty";
