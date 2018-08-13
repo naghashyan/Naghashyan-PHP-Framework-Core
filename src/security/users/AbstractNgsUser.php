@@ -6,9 +6,9 @@
  * @author Levon Naghashyan <levon@naghashyan.com>
  * @site http://naghashyan.com
  * @mail levon@naghashyan.com
- * @year 2015-2018
+ * @year 2015
  * @package ngs.framework.security.users
- * @version 3.6.0
+ * @version 3.1.0
  *  
  * This file is part of the NGS package.
  *

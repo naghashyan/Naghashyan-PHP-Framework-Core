@@ -7,7 +7,7 @@
  * @site http://naghashyan.com
  * @year 2014-2016
  * @package ngs.framework.util
- * @version 3.6.0
+ * @version 3.1.0
  *
  * This file is part of the NGS package.
  *
@@ -149,6 +149,9 @@ namespace ngs\util {
     public function getSubdomain() {
       $domain = $this->_getHttpHost(true);
       $parsedUrl = parse_url($domain);
+      if (!isset($parsedUrl['path'])){
+        return null;
+      }
       $host = explode('.', $parsedUrl['path']);
       if (count($host) >= 3){
         return $host[0];

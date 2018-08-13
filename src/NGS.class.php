@@ -8,7 +8,7 @@
  * @site http://naghashyan.com
  * @year 2014-2016
  * @package ngs.framework
- * @version 3.6.0
+ * @version 3.1.0
  *
  *
  * This file is part of the NGS package.
@@ -48,12 +48,12 @@ class NGS {
   private $define = array();
 
   public function initialize() {
-    $moduleConstatPath = realpath(NGS()->getConfigDir()."/constants.php");
+    $moduleConstatPath = realpath(NGS()->getConfigDir() . "/constants.php");
     if ($moduleConstatPath){
       require_once $moduleConstatPath;
     }
-    $envConstantFile = realpath(NGS()->getConfigDir() . "/constants_".$this->getShortEnvironment().".php");
-    if($envConstantFile){
+    $envConstantFile = realpath(NGS()->getConfigDir() . "/constants_" . $this->getShortEnvironment() . ".php");
+    if ($envConstantFile){
       require_once $envConstantFile;
     }
     $this->getModulesRoutesEngine(true)->initialize();
@@ -82,9 +82,11 @@ class NGS {
     }
     return null;
   }
+
   public function get($key) {
     return $this->getDefinedValue($key);
   }
+
   public function define($key, $value) {
     $this->define[$key] = $value;
     return true;
@@ -111,7 +113,7 @@ class NGS {
     if (isset($this->ngsConfig)){
       return $this->ngsConfig;
     }
-    return $this->ngsConfig = json_decode(file_get_contents($this->getConfigDir("ngs")."/config_".$this->getShortEnvironment().".json"));
+    return $this->ngsConfig = json_decode(file_get_contents($this->getConfigDir("ngs") . "/config_" . $this->getShortEnvironment() . ".json"));
   }
 
   /**
@@ -134,19 +136,19 @@ class NGS {
     if (isset($this->config[$_prefix])){
       return $this->config[$_prefix];
     }
-    return $this->config[$_prefix] = json_decode(file_get_contents($this->getConfigDir($_prefix)."/config_".$this->getShortEnvironment().".json"));
+    return $this->config[$_prefix] = json_decode(file_get_contents($this->getConfigDir($_prefix) . "/config_" . $this->getShortEnvironment() . ".json"));
   }
 
-  public function args(){
+  public function args() {
     return NgsArgs::getInstance();
   }
 
 
-  public function setDispatcher($dispatcher){
+  public function setDispatcher($dispatcher) {
     $this->dispatcher = $dispatcher;
   }
 
-  public function getDispatcher(){
+  public function getDispatcher() {
     return $this->dispatcher;
   }
 
@@ -177,7 +179,7 @@ class NGS {
    * @return String config dir path
    */
   public function getFrameworkDir() {
-    return realpath($this->getClassesDir($this->getDefinedValue("FRAMEWORK_NS"))."/framework");
+    return realpath($this->getClassesDir($this->getDefinedValue("FRAMEWORK_NS")) . "/framework");
   }
 
   /**
@@ -189,7 +191,7 @@ class NGS {
    * @return String config dir path
    */
   public function getConfigDir($ns = "") {
-    return realpath($this->getModuleDirByNS($ns)."/".$this->getDefinedValue("CONF_DIR"));
+    return realpath($this->getModuleDirByNS($ns) . "/" . $this->getDefinedValue("CONF_DIR"));
   }
 
   /**
@@ -202,7 +204,7 @@ class NGS {
    * @return String template dir path
    */
   public function getTemplateDir($ns = "") {
-    return realpath($this->getModuleDirByNS($ns)."/".$this->getDefinedValue("TEMPLATES_DIR"));
+    return realpath($this->getModuleDirByNS($ns) . "/" . $this->getDefinedValue("TEMPLATES_DIR"));
   }
 
   /**
@@ -215,7 +217,7 @@ class NGS {
    * @return String temp dir path
    */
   public function getTempDir($ns = "") {
-    return realpath($this->getModuleDirByNS($ns)."/".$this->getDefinedValue("TEMP_DIR"));
+    return realpath($this->getModuleDirByNS($ns) . "/" . $this->getDefinedValue("TEMP_DIR"));
   }
 
   /**
@@ -228,7 +230,7 @@ class NGS {
    * @return String data dir path
    */
   public function getDataDir($ns = "") {
-    return realpath($this->getModuleDirByNS($ns)."/".$this->getDefinedValue("DATA_DIR"));
+    return realpath($this->getModuleDirByNS($ns) . "/" . $this->getDefinedValue("DATA_DIR"));
   }
 
   /**
@@ -241,7 +243,7 @@ class NGS {
    * @return String public dir path
    */
   public function getPublicDir($ns = "") {
-    return realpath($this->getModuleDirByNS($ns)."/".$this->getDefinedValue("PUBLIC_DIR"));
+    return realpath($this->getModuleDirByNS($ns) . "/" . $this->getDefinedValue("PUBLIC_DIR"));
   }
 
   /**
@@ -254,13 +256,13 @@ class NGS {
    * @return String public output dir path
    */
   public function getPublicOutputDir($ns = "") {
-    $outDir = realpath($this->getPublicDir($ns)."/".$this->getDefinedValue("PUBLIC_OUTPUT_DIR"));
+    $outDir = realpath($this->getPublicDir($ns) . "/" . $this->getDefinedValue("PUBLIC_OUTPUT_DIR"));
     if ($outDir == false){
-      mkdir($this->getPublicDir($ns)."/".$this->getDefinedValue("PUBLIC_OUTPUT_DIR"), 0755, true);
+      mkdir($this->getPublicDir($ns) . "/" . $this->getDefinedValue("PUBLIC_OUTPUT_DIR"), 0755, true);
     } else{
       return $outDir;
     }
-    return realpath($this->getPublicDir($ns)."/".$this->getDefinedValue("PUBLIC_OUTPUT_DIR"));
+    return realpath($this->getPublicDir($ns) . "/" . $this->getDefinedValue("PUBLIC_OUTPUT_DIR"));
   }
 
   /**
@@ -273,13 +275,13 @@ class NGS {
    * @return String public output dir path
    */
   public function getCssDir($ns = "") {
-    $cssDir = realpath($this->getPublicDir($ns)."/".$this->getDefinedValue("CSS_DIR"));
+    $cssDir = realpath($this->getPublicDir($ns) . "/" . $this->getDefinedValue("CSS_DIR"));
     if ($cssDir == false){
-      mkdir($this->getPublicDir($ns)."/".$this->getDefinedValue("CSS_DIR"), 0755, true);
+      mkdir($this->getPublicDir($ns) . "/" . $this->getDefinedValue("CSS_DIR"), 0755, true);
     } else{
       return $cssDir;
     }
-    return realpath($this->getPublicDir($ns)."/".$this->getDefinedValue("CSS_DIR"));
+    return realpath($this->getPublicDir($ns) . "/" . $this->getDefinedValue("CSS_DIR"));
   }
 
   /**
@@ -311,13 +313,13 @@ class NGS {
    * @return String public less dir path
    */
   public function getLessDir($ns = "") {
-    $lessDir = realpath($this->getPublicDir($ns)."/".$this->getDefinedValue("LESS_DIR"));
+    $lessDir = realpath($this->getPublicDir($ns) . "/" . $this->getDefinedValue("LESS_DIR"));
     if ($lessDir == false){
-      mkdir($this->getPublicDir($ns)."/".$this->getDefinedValue("LESS_DIR"), 0755, true);
+      mkdir($this->getPublicDir($ns) . "/" . $this->getDefinedValue("LESS_DIR"), 0755, true);
     } else{
       return $lessDir;
     }
-    return realpath($this->getPublicDir($ns)."/".$this->getDefinedValue("LESS_DIR"));
+    return realpath($this->getPublicDir($ns) . "/" . $this->getDefinedValue("LESS_DIR"));
   }
 
   /**
@@ -330,13 +332,13 @@ class NGS {
    * @return String public output dir path
    */
   public function getJsDir($ns = "") {
-    $jsDir = realpath($this->getPublicDir($ns)."/".$this->getDefinedValue("JS_DIR"));
+    $jsDir = realpath($this->getPublicDir($ns) . "/" . $this->getDefinedValue("JS_DIR"));
     if ($jsDir == false){
-      mkdir($this->getPublicDir($ns)."/".$this->getDefinedValue("JS_DIR"), 0755, true);
+      mkdir($this->getPublicDir($ns) . "/" . $this->getDefinedValue("JS_DIR"), 0755, true);
     } else{
       return $jsDir;
     }
-    return realpath($this->getPublicDir($ns)."/".$this->getDefinedValue("JS_DIR"));
+    return realpath($this->getPublicDir($ns) . "/" . $this->getDefinedValue("JS_DIR"));
   }
 
   /**
@@ -384,11 +386,11 @@ class NGS {
       }
       $ns = $this->getModulesRoutesEngine()->getModuleNS();
     }
-    return $this->getHttpUtils()->getHttpHost(true, $withProtocol)."/".$ns;
+    return $this->getHttpUtils()->getHttpHost(true, $withProtocol) . "/" . $ns;
   }
 
   public function getPublicOutputHost($ns = "", $withProtocol = false) {
-    return $this->getHttpUtils()->getNgsStaticPath($ns, $withProtocol)."/".$this->getDefinedValue("PUBLIC_OUTPUT_DIR");
+    return $this->getHttpUtils()->getNgsStaticPath($ns, $withProtocol) . "/" . $this->getDefinedValue("PUBLIC_OUTPUT_DIR");
   }
 
   /**
@@ -398,7 +400,7 @@ class NGS {
    *
    * @throws DebugException if SESSION_MANAGER Not found
    *
-   * @return Object loadMapper
+   * @return \IM\managers\SessionManager
    */
 
   public function getSessionManager() {
@@ -518,7 +520,7 @@ class NGS {
       return $this->ngsUtils;
     }
     try{
-      $ns = "\\".$this->getDefinedValue("NGS_UTILS");
+      $ns = "\\" . $this->getDefinedValue("NGS_UTILS");
       $this->ngsUtils = new $ns;
     } catch (Exception $e){
       throw new DebugException("NGS UTILS NOT FOUND, please check in constants.php NGS_UTILS variable");
@@ -540,7 +542,7 @@ class NGS {
       return $this->fileUtils;
     }
     try{
-      $ns = "\\".$this->getDefinedValue("FILE_UTILS");
+      $ns = "\\" . $this->getDefinedValue("FILE_UTILS");
       $this->fileUtils = new $ns;
     } catch (Exception $e){
       throw new DebugException("FILE UTILS NOT FOUND, please check in constants.php FILE_UTILS variable");
