@@ -25,7 +25,7 @@ namespace ngs\util {
 
   use ngs\exceptions\DebugException;
   use Leafo\ScssPhp\Compiler;
-
+  use Leafo\ScssPhp\Formatter\Crunched;
   class SassBuilder extends AbstractBuilder {
 
     private $sassParser;
@@ -50,7 +50,7 @@ namespace ngs\util {
       $this->sassParser = new Compiler();
       $this->sassParser->setImportPaths(NGS()->getSassDir());
       if ($mode){
-        $this->sassParser->setFormatter(Leafo\ScssPhp\Formatter\Crunched);
+        $this->sassParser->setFormatter(Crunched::class);
       }
       $this->sassParser->setVariables(array(
         'NGS_PATH' => NGS()->getHttpUtils()->getHttpHost(true),
