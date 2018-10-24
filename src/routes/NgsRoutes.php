@@ -273,7 +273,11 @@ namespace ngs\routes {
         }
         throw new NotFoundException();
       }
-      if (isset($route["namespace"])){
+      $actionType = substr($route["action"], 0, strpos($route["action"], "."));
+      if (NGS()->getModulesRoutesEngine()->checkModulByNS($actionType)){
+        $actionNS = $actionType;
+        $route["action"] = substr($route["action"], strpos($route["action"], ".") + 1);
+      } else if (isset($route["namespace"])){
         $actionNS = $route["namespace"];
       } else{
         $actionNS = NGS()->getModulesRoutesEngine()->getModuleNS();
@@ -383,7 +387,7 @@ namespace ngs\routes {
       }
       //checking if css loaded from less
       $filePeaceIndex = 0;
-      if (!NGS()->getModulesRoutesEngine()->isDefaultModule()){
+      if (!NGS()->getModulesRoutesEngine()->isDefaultModule() && NGS()->getModulesRoutesEngine()->getModuleType() != "path"){
         $filePeaceIndex = 1;
 
       }
@@ -410,6 +414,7 @@ namespace ngs\routes {
      *
      * @return void
      */
+
     private function setNestedRoutes($nestedLoads, $package) {
 
       foreach ($nestedLoads as $key => $value){
@@ -418,10 +423,11 @@ namespace ngs\routes {
         } else{
           $actionNS = NGS()->getModulesRoutesEngine()->getModuleNS();
         }
+        $value["package"] = $value["action"];
         $value["action"] = $actionNS . "." . $value["action"];
         $nestedLoads[$key]["action"] = $value["action"];
         if (isset($value["nestedLoad"]) && is_array($value["nestedLoad"])){
-          $this->setNestedRoutes($value["nestedLoad"], $actionNS . "." . $value["action"]);
+          $this->setNestedRoutes($value["nestedLoad"], $value["package"]);
           unset($nestedLoads[$key]["nestedLoad"]);
         }
       }
