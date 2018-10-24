@@ -6,8 +6,8 @@
  * @author Levon Naghashyan <levon@naghashyan.com>
  * @site http://naghashyan.com
  * @package ngsframework.dal.connectors
- * @version 3.6.0
- * @year 2009-2018
+ * @version 3.1.0
+ * @year 2009-2016
  * 
  * This file is part of the NGS package.
  *

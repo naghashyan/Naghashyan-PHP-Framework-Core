@@ -10,7 +10,7 @@
  * @site http://naghashyan.com
  * @year 2014-2016
  * @package ngs.framework.util
- * @version 3.6.0
+ * @version 3.1.0
  * 
  * This file is part of the NGS package.
  *
@@ -36,7 +36,7 @@ namespace ngs\util {
           if (!$filePath) {
             throw new DebugException(NGS()->getPublicDir()."/".$file . " NOT FOUND");
           }
-        } elseif (file_exists($filePath) == false || fileatime($filePath) != fileatime($this->getBuilderFile())) {
+        } elseif (file_exists($filePath) == false) {
           $this->build($file);
         }
         NGS()->getFileUtils()->sendFile($filePath, array("mimeType" => $this->getContentType(), "cache" => true));

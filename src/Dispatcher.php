@@ -3,9 +3,9 @@
  *
  * @author Levon Naghashyan <levon@naghashyan.com>
  * @site http://naghashyan.com
- * @year 2009-2018
+ * @year 2009-2016
  * @package framework
- * @version 3.6.0
+ * @version 3.1.0
  *
  * This file is part of the NGS package.
  *
@@ -18,7 +18,7 @@
 
 namespace ngs {
 
-  use ngs\exceptions\InvalidUserException;
+  use IM\exceptions\InvalidUserException;
   use ngs\exceptions\ClientException;
   use ngs\exceptions\DebugException;
   use ngs\exceptions\NgsErrorException;
