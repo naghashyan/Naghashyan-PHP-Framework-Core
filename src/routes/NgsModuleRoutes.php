@@ -5,10 +5,10 @@
  * for matching url with modules routes
  *
  * @author Levon Naghashyan <levon@naghashyan.com>
- * @site http://naghashyan.com
+ * @site https://naghashyan.com
  * @year 2015-2018
  * @package ngs.framework.routes
- * @version 3.5.0
+ * @version 3.7.0
  *
  * This file is part of the NGS package.
  *

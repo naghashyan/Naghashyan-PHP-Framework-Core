@@ -3,11 +3,11 @@
  * MysqlPDO class uses MySQL PHP PDO Extension to access DB.
  *
  * @author Levon Naghashyan <levon@naghashyan.com>
- * @site http://naghashyan.com
+ * @site https://naghashyan.com
  * @mail levon@naghashyan.com
  * @package ngs.framework.dal.connectors
- * @version 3.1.0
- * @year 2009-2016
+ * @version 3.7.0
+ * @year 2009-2018
  *
  * This file is part of the NGS package.
  *
@@ -37,8 +37,8 @@ namespace ngs\dal\connectors {
     /**
      * Tries to connect to a MySQL Server
      */
-    public function __construct($db_host, $db_user, $db_pass, $db_name) {
-      parent::__construct('mysql:dbname=' . $db_name . ';host=' . $db_host . ';charset=utf8', $db_user, $db_pass);
+    public function __construct($db_host, $db_user, $db_pass, $db_name, $db_chars = "utf8") {
+      parent::__construct('mysql:dbname=' . $db_name . ';host=' . $db_host . ';charset=' . $db_chars, $db_user, $db_pass);
       $this->setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);
       $this->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
       $this->setAttribute(\PDO::ATTR_STATEMENT_CLASS, array('\ngs\dal\connectors\DBStatement'));

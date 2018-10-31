@@ -4,10 +4,10 @@
  * It contains the basic functionality and also DBMS pointer.
  *
  * @author Levon Naghashyan <levon@naghashyan.com>
- * @site http://naghashyan.com
+ * @site https://naghashyan.com
  * @package ngs.framework.dal.mappers
- * @version 3.1.0
- * @year 2009-2016
+ * @version 3.7.0
+ * @year 2009-2018
  *
  * This file is part of the NGS package.
  *
@@ -20,6 +20,7 @@
 
 namespace ngs\dal\mappers {
 
+  use ngs\dal\dto\AbstractDto;
   use ngs\exceptions\DebugException;
 
   abstract class AbstractMysqlMapper extends AbstractMapper {
@@ -44,7 +45,7 @@ namespace ngs\dal\mappers {
         $user = NGS()->getConfig()->DB->mysql->user;
         $pass = NGS()->getConfig()->DB->mysql->pass;
         $name = NGS()->getConfig()->DB->mysql->name;
-        $this->dbms = \ngs\dal\connectors\MysqlPDO::getInstance($host, $user, $pass, $name);
+        $this->dbms = NGS()->get("NGS_MYSQL_PDO_DRIVER")::getInstance($host, $user, $pass, $name);
       }
     }
 
@@ -314,7 +315,7 @@ namespace ngs\dal\mappers {
 
     /**
      * Selects all entries from table
-     * @return
+     * @return AbstractDto[]
      */
     public function selectAll() {
       $sqlQuery = sprintf("SELECT * FROM `%s`", $this->getTableName());
@@ -343,6 +344,36 @@ namespace ngs\dal\mappers {
 
     protected function exec($sqlQuery) {
       $this->dbms->exec($sqlQuery);
+    }
+
+    /**
+     * return mysql formated time
+     * if time not set then return current server time
+     *
+     * @param int|null $time
+     *
+     * @return false|string
+     */
+    public function getMysqlFormatedTime($time = null) {
+      if ($time == null){
+        $time = time();
+      }
+      return date("Y-m-d H:i:s", $time);
+    }
+
+    /**
+     * return mysql formated date
+     * if time not set then return current server date
+     *
+     * @param int|null $date
+     *
+     * @return false|string
+     */
+    public function getMysqlFormatedDate($date = null) {
+      if ($date == null){
+        $date = time();
+      }
+      return date("Y-m-d", $date);
     }
   }
 }

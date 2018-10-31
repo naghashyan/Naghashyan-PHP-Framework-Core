@@ -5,10 +5,10 @@
  * vissible from any classes
  *
  * @author Levon Naghashyan <levon@naghashyan.com>
- * @site http://naghashyan.com
- * @year 2015-2016
+ * @site https://naghashyan.com
+ * @year 2015-2018
  * @package ngs.framework.system
- * @version 3.1.0
+ * @version 3.7.0
  *
  * This file is part of the NGS package.
  *
@@ -172,6 +172,8 @@ NGS()->define("SASS_BUILDER", 'ngs\util\SassBuilder');
 NGS()->define("SASS_BUILD_MODE", $environment);
 //---defining ngs utils file
 NGS()->define("NGS_UTILS", 'ngs\util\NgsUtils');
+//---defining ngs MySql Pdo file
+NGS()->define("NGS_MYSQL_PDO_DRIVER", '\ngs\dal\connectors\MysqlPDO');
 
 /*
 |--------------------------------------------------------------------------
@@ -217,4 +219,10 @@ NGS()->define("USE_SMARTY", TRUE);
 NGS()->define("SMARTY_CACHE_DIR", "cache");
 NGS()->define("SMARTY_COMPILE_DIR", "compile");
 
+/*
+|--------------------------------------------------------------------------
+| DEFINNING SOLR DEFAULT PARAMS
+|--------------------------------------------------------------------------
+*/
 
+NGS()->define("BULK_UPDATE_LIMIT", 50);

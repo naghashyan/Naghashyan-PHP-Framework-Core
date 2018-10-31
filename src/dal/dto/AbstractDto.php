@@ -5,10 +5,10 @@
  * ngs dtos
  *
  * @author Levon Naghashyan <levon@naghashyan.com>
- * @site http://naghashyan.com
- * @year 2009-2016
+ * @site https://naghashyan.com
+ * @year 2009-2018
  * @package ngs.framework.dal.dto
- * @version 3.1.0
+ * @version 3.7.0
  *
  * This file is part of the NGS package.
  *
@@ -95,8 +95,10 @@ namespace ngs\dal\dto {
       return false;
     }
 
-    public function fillDtoFromArray($mapArray = []) {
-      $mapArr = $this->getMapArray();
+    public function fillDtoFromArray($mapArray = [], $mapArr = null) {
+      if (is_null($mapArr)){
+        $mapArr = $this->getMapArray();
+      }
       foreach ($mapArray as $key => $value){
         if (!isset($mapArr[$key]) || is_null($value)){
           continue;
@@ -118,6 +120,36 @@ namespace ngs\dal\dto {
         $resultArr[$key] = $this->$functionName();
       }
       return $resultArr;
+    }
+
+    /**
+     * return mysql formated time
+     * if time not set then return current server time
+     *
+     * @param int|null $time
+     *
+     * @return false|string
+     */
+    public function getMysqlFormatedTime($time = null) {
+      if ($time == null){
+        $time = time();
+      }
+      return date("Y-m-d H:i:s", $time);
+    }
+
+    /**
+     * return mysql formated date
+     * if time not set then return current server date
+     *
+     * @param int|null $date
+     *
+     * @return false|string
+     */
+    public function getMysqlFormatedDate($date = null) {
+      if ($date == null){
+        $date = time();
+      }
+      return date("Y-m-d", $date);
     }
 
   }
