@@ -26,7 +26,6 @@ namespace ngs\util {
   use ngs\exceptions\DebugException;
   use Leafo\ScssPhp\Compiler;
   use Leafo\ScssPhp\Formatter\Crunched;
-
   class SassBuilder extends AbstractBuilder {
 
     private $sassParser;
@@ -87,7 +86,7 @@ namespace ngs\util {
         $sassHost = NGS()->getHttpUtils()->getHttpHostByNs($modulePath) . "/sass/";
         $sassDir = realpath(NGS()->getPublicDir($module) . "/" . NGS()->getDefinedValue("SASS_DIR"));
         $sassFilePath = realpath($sassDir . "/" . $value["file"]);
-        if ($sassFilePath == false && $this->getEnvironment() != "production"){
+        if ($sassFilePath == false){
           throw new DebugException("Please add or check if correct sass file in builder under section " . $value["file"]);
         }
         $sassStream .= file_get_contents($sassFilePath);

@@ -270,6 +270,9 @@ namespace ngs\templater {
       $jsString .= 'NGS.setModule("' . NGS()->getModulesRoutesEngine()->getModuleNS() . '");';
       $jsString .= 'NGS.setTmst("' . time() . '");';
       $jsString .= 'NGS.setHttpHost("' . NGS()->getHttpUtils()->getHttpHostByNs("", true, false, true) . '");';
+      if (!NGS()->getModulesRoutesEngine()->isDefaultModule()){
+        $jsString .= 'NGS.setModuleHttpHost("' . NGS()->getHttpUtils()->getHttpHostByNs(NGS()->getModulesRoutesEngine()->getModuleNS(), true, false, true) . '");';
+      }
       $staticPath = NGS()->getHttpUtils()->getHttpHost(true);
       if (isset(NGS()->getConfig()->static_path)){
         $staticPath = NGS()->getHttpUtils()->getHttpHostByNs("", true, false, true);

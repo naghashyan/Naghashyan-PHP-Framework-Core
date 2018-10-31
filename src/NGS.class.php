@@ -1,14 +1,14 @@
 <?php
 /**
- * Base ngs class
+ * Base NGS class
  * for static function that will
  * vissible from any classes
  *
  * @author Levon Naghashyan <levon@naghashyan.com>
  * @site http://naghashyan.com
- * @year 2014-2016
+ * @year 2014-2018
  * @package ngs.framework
- * @version 3.1.0
+ * @version 3.5.0
  *
  *
  * This file is part of the NGS package.
@@ -20,6 +20,7 @@
  *
  *
  */
+
 use ngs\exceptions\DebugException;
 use ngs\util\NgsArgs;
 
@@ -423,7 +424,7 @@ class NGS {
    *
    * @throws DebugException if ROUTES_ENGINE Not found
    *
-   * @return Object fileUtils
+   * @return \ngs\routes\NgsRoutes
    */
   public function getRoutesEngine() {
     if ($this->routesEngine != null){
@@ -447,7 +448,7 @@ class NGS {
    *
    * @throws DebugException if MODULES_ROUTES_ENGINE Not found
    *
-   * @return Object fileUtils
+   * @return \ngs\routes\NgsModuleRoutes
    */
   public function getModulesRoutesEngine($force = false) {
     if ($this->moduleRoutesEngine != null && $force == false){
@@ -469,7 +470,7 @@ class NGS {
    *
    * @throws DebugException if MAPPER Not found
    *
-   * @return Object loadMapper
+   * @return \ngs\routes\NgsLoadMapper
    */
   public function getLoadMapper() {
     if ($this->loadMapper != null){
@@ -491,7 +492,7 @@ class NGS {
    *
    * @throws DebugException if TEMPLATE_ENGINE Not found
    *
-   * @return Object loadMapper
+   * @return \ngs\templater\NgsTemplater
    */
   public function getTemplateEngine() {
     if ($this->tplEngine != null){
@@ -513,7 +514,7 @@ class NGS {
    *
    * @throws DebugException if NGS_UTILS Not found
    *
-   * @return Object fileUtils
+   * @return \ngs\util\NgsUtils
    */
   public function getNgsUtils() {
     if ($this->ngsUtils != null){
@@ -535,7 +536,7 @@ class NGS {
    *
    * @throws DebugException if FILE_UTILS Not found
    *
-   * @return Object fileUtils
+   * @return \ngs\util\FileUtils
    */
   public function getFileUtils() {
     if ($this->fileUtils != null){
@@ -557,7 +558,7 @@ class NGS {
    *
    * @throws DebugException if HTTP_UTILS Not found
    *
-   * @return Object fileUtils
+   * @return \ngs\util\HttpUtils
    */
   public function getHttpUtils() {
     if ($this->httpUtils != null){
@@ -577,7 +578,7 @@ class NGS {
    *
    * @throws DebugException if JS_BUILDER Not found
    *
-   * @return Object JsBuilder
+   * @return \ngs\util\JsBuilder
    */
   public function getJsBuilder() {
     if ($this->jsBuilder != null){
@@ -597,7 +598,7 @@ class NGS {
    *
    * @throws DebugException if CSS_BUILDER Not found
    *
-   * @return Object CssBuilder
+   * @return \ngs\util\CssBuilder
    */
   public function getCssBuilder() {
     if ($this->cssBuilder != null){
@@ -637,7 +638,7 @@ class NGS {
    *
    * @throws DebugException if SASS_BUILDER Not found
    *
-   * @return Object fileUtils
+   * @return \ngs\util\SassBuilder
    */
   public function getSassBuilder() {
     if ($this->sassBuilder != null){
@@ -652,7 +653,13 @@ class NGS {
     return $this->sassBuilder;
   }
 
-
+  /**
+   * @param string $fileType
+   *
+   * @return \ngs\util\CssBuilder|\ngs\util\FileUtils|\ngs\util\JsBuilder|\ngs\util\SassBuilder|Object
+   *
+   * @throws DebugException
+   */
   public function getFileStreamerByType($fileType) {
     switch ($fileType){
       case 'js' :
@@ -674,8 +681,6 @@ class NGS {
 
   /**
    * return project prefix
-   * @static
-   * @access
    * @return String $namespace
    */
   public function getEnvironment() {
@@ -706,10 +711,16 @@ class NGS {
     return $env;
   }
 
+  /**
+   * @return mixed|null
+   */
   public function getVersion() {
     return $this->getDefinedValue("VERSION");
   }
 
+  /**
+   * @return mixed|null
+   */
   public function getNGSVersion() {
     return $this->getDefinedValue("NGSVERSION");
   }
@@ -717,7 +728,7 @@ class NGS {
   /**
    * check if ngs js framework enable
    *
-   * @return bool $_status
+   * @return bool
    */
   public function isJsFrameworkEnable() {
     return $this->getDefinedValue("JS_FRAMEWORK_ENABLE");

@@ -8,9 +8,9 @@
  * @author Levon Naghashyan
  * <levon@naghashyan.com>
  * @site http://naghashyan.com
- * @year 2014-2016
+ * @year 2014-2018
  * @package ngs.framework.util
- * @version 3.1.0
+ * @version 3.5.0
  *
  * This file is part of the NGS package.
  *
@@ -185,7 +185,6 @@ namespace ngs\util {
           break;
         case 'standart' :
           readfile($streamFile);
-          exit;
           break;
         case 'large_file' :
           $this->_sendFile($streamFile);
@@ -194,8 +193,6 @@ namespace ngs\util {
           $this->_sendFile($streamFile);
           break;
       }
-
-      exit;
     }
 
     protected function _sendFile($filePath) {

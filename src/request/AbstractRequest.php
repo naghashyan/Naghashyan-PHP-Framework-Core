@@ -3,8 +3,8 @@
  * parent class for all ngs requests (loads/action)
  *
  * @author Zaven Naghashyan <zaven@naghashyan.com>, Levon Naghashyan <levon@naghashyan.com>
- * @year 2009-2016
- * @version 3.1.0
+ * @year 2009-2018
+ * @version 3.5.0
  * @package ngs.framework
  *
  * This file is part of the NGS package.
@@ -26,7 +26,6 @@ namespace ngs\request {
     protected $requestGroup;
     protected $params = array();
     protected $ngsStatusCode = 200;
-
 
     public function initialize() {
     }
@@ -151,7 +150,6 @@ namespace ngs\request {
      */
     protected function redirect($url) {
       NGS()->getHttpUtils()->redirect($url);
-      exit;
     }
 
   }
