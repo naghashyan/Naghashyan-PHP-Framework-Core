@@ -6,8 +6,8 @@
  * @author Levon Naghashyan <levon@naghashyan.com>
  * @site https://naghashyan.com
  * @package ngs.framework.dal.mappers
- * @version 3.7.0
- * @year 2009-2018
+ * @version 3.8.0
+ * @year 2009-2019
  *
  * This file is part of the NGS package.
  *
@@ -116,7 +116,7 @@ namespace ngs\dal\mappers {
      *
      * @param object $dto
      * @param object $esc [optional] shows if the textual values must be escaped before setting to DB
-     * @return integer rows count or -1 if something goes wrong
+     * @return bool
      */
     public function updateByPK($dto, $esc = true, $returnQuery = false) {
 
@@ -159,8 +159,8 @@ namespace ngs\dal\mappers {
         if ($res->rowCount()){
           return true;
         }
-        return false;
       }
+      return false;
     }
 
     /**
@@ -335,7 +335,7 @@ namespace ngs\dal\mappers {
      * Selects from table by primary key and returns corresponding DTO
      *
      * @param int $id
-     * @return object
+     * @return AbstractDto|null
      */
     public function selectByPK($id) {
       $sqlQuery = sprintf("SELECT * FROM `%s` WHERE `%s` = :id ", $this->getTableName(), $this->getPKFieldName());

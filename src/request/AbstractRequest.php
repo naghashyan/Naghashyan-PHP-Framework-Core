@@ -3,8 +3,8 @@
  * parent class for all ngs requests (loads/action)
  *
  * @author Zaven Naghashyan <zaven@naghashyan.com>, Levon Naghashyan <levon@naghashyan.com>
- * @year 2009-2018
- * @version 3.5.0
+ * @year 2009-2019
+ * @version 3.8.0
  * @package ngs.framework
  *
  * This file is part of the NGS package.
@@ -131,12 +131,10 @@ namespace ngs\request {
      * @throw NoAccessException
      */
     protected function cancel() {
-      throw new NoAccessException("Load canceled request ");
     }
 
 
     public function onNoAccess() {
-      throw new NoAccessException("User not have access to this request ");
     }
 
     /**

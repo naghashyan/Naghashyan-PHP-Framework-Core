@@ -2,10 +2,10 @@
 /**
  *
  * @author Levon Naghashyan <levon@naghashyan.com>
- * @site http://naghashyan.com
- * @year 2009-2016
+ * @site https://naghashyan.com
+ * @year 2009-2019
  * @package framework
- * @version 3.1.0
+ * @version 3.8.0
  *
  * This file is part of the NGS package.
  *
@@ -29,6 +29,8 @@ namespace ngs {
 
   class Dispatcher {
 
+    private $isRedirect = false;
+
     /**
      * this method manage mathced routes
      *
@@ -36,10 +38,11 @@ namespace ngs {
      *
      * @return void
      */
-    public function dispatch() {
-
+    public function dispatch($routesArr = null) {
       try{
-        $routesArr = NGS()->getRoutesEngine()->getDynamicLoad(NGS()->getHttpUtils()->getRequestUri());
+        if ($routesArr === null){
+          $routesArr = NGS()->getRoutesEngine()->getDynamicLoad(NGS()->getHttpUtils()->getRequestUri());
+        }
         if ($routesArr["matched"] === false){
           throw new NotFoundException("Load/Action Not found");
         }
@@ -65,11 +68,12 @@ namespace ngs {
           return;
         }
         $routesArr = NGS()->getRoutesEngine()->getNotFoundLoad();
-        if ($routesArr == null){
-          echo "404 :)";
+        if ($routesArr == null || $this->isRedirect === true){
+          echo "404";
           exit;
         }
-        $this->loadPage($routesArr["action"]);
+        $this->isRedirect = true;
+        $this->dispatch($routesArr);
       } catch (RedirectException $ex){
         NGS()->getHttpUtils()->redirect($ex->getRedirectTo());
       } catch (NotFoundException $ex){
@@ -78,17 +82,18 @@ namespace ngs {
           return;
         }
         $routesArr = NGS()->getRoutesEngine()->getNotFoundLoad();
-        if ($routesArr == null){
-          echo "404 :)";
+        if ($routesArr == null || $this->isRedirect === true){
+          echo "404";
           exit;
         }
-        $this->loadPage($routesArr["action"]);
+        $this->isRedirect = true;
+        $this->dispatch($routesArr);
       } catch (NgsErrorException $ex){
         NGS()->getTemplateEngine()->setHttpStatusCode($ex->getHttpCode());
         NGS()->getTemplateEngine()->assignJson("code", $ex->getCode());
         NGS()->getTemplateEngine()->assignJson("msg", $ex->getMessage());
         NGS()->getTemplateEngine()->assignJson("params", $ex->getParams());
-        NGS()->getTemplateEngine()->display();
+        NGS()->getTemplateEngine()->display(true);
       } catch (InvalidUserException $ex){
         if (!NGS()->getHttpUtils()->isAjaxRequest() && !NGS()->getDefinedValue("display_json")){
           NGS()->getHttpUtils()->redirect($ex->getRedirectTo());
@@ -103,7 +108,7 @@ namespace ngs {
         if ($ex->getRedirectToLoad() != ""){
           NGS()->getTemplateEngine()->assignJson("redirect_to_load", $ex->getRedirectToLoad());
         }
-        NGS()->getTemplateEngine()->display();
+        NGS()->getTemplateEngine()->display(true);
       } catch (NoAccessException $ex){
         if (!NGS()->getHttpUtils()->isAjaxRequest() && !NGS()->getDefinedValue("display_json")){
           NGS()->getHttpUtils()->redirect($ex->getRedirectTo());
@@ -118,7 +123,7 @@ namespace ngs {
         if ($ex->getRedirectToLoad() != ""){
           NGS()->getTemplateEngine()->assignJson("redirect_to_load", $ex->getRedirectToLoad());
         }
-        NGS()->getTemplateEngine()->display();
+        NGS()->getTemplateEngine()->display(true);
       }
     }
 
@@ -140,9 +145,7 @@ namespace ngs {
         $loadObj = new $action;
         $loadObj->initialize();
         if (!$this->validateRequest($loadObj)){
-          if ($loadObj->onNoAccess()){
-            return;
-          }
+          $loadObj->onNoAccess();
         }
         $loadObj->setLoadName(NGS()->getRoutesEngine()->getContentLoad());
         $loadObj->service();
@@ -152,8 +155,11 @@ namespace ngs {
         $this->displayResult();
       } catch (NoAccessException $ex){
         $loadObj->onNoAccess();
+
+        throw $ex;
       } catch (InvalidUserException $ex){
         $loadObj->onNoAccess();
+        throw $ex;
       }
     }
 
@@ -186,8 +192,10 @@ namespace ngs {
 
       } catch (NoAccessException $ex){
         $actionObj->onNoAccess();
+        throw $ex;
       } catch (InvalidUserException $ex){
         $actionObj->onNoAccess();
+        throw $ex;
       }
     }
 

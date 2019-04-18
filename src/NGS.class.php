@@ -5,10 +5,10 @@
  * vissible from any classes
  *
  * @author Levon Naghashyan <levon@naghashyan.com>
- * @site http://naghashyan.com
- * @year 2014-2018
+ * @site https://naghashyan.com
+ * @year 2014-2019
  * @package ngs.framework
- * @version 3.5.0
+ * @version 3.8.0
  *
  *
  * This file is part of the NGS package.

@@ -4,12 +4,12 @@
  * This class is a template for all authorized user classes.
  *
  * @author Levon Naghashyan <levon@naghashyan.com>
- * @site http://naghashyan.com
+ * @site https://naghashyan.com
  * @mail levon@naghashyan.com
- * @year 2015
+ * @year 2015-2019
  * @package ngs.framework.security.users
- * @version 3.1.0
- *  
+ * @version 3.8.0
+ *
  * This file is part of the NGS package.
  *
  * @copyright Naghashyan Solutions LLC
@@ -18,6 +18,7 @@
  * file that was distributed with this source code.
  *
  */
+
 namespace ngs\security\users {
   abstract class AbstractNgsUser {
 
@@ -29,7 +30,7 @@ namespace ngs\security\users {
      *
      * @return void
      */
-    public abstract function setId($id);
+    public abstract function setId(int $id);
 
     /**
      * Abstract method for get user Id

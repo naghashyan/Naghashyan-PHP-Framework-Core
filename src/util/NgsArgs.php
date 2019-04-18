@@ -3,10 +3,10 @@
  * Helper wrapper class for php curl
  *
  * @author Levon Naghashyan <levon@naghashyan.com>
- * @site http://naghashyan.com
- * @year 2016
+ * @site https://naghashyan.com
+ * @year 2016-2019
  * @package ngs.framework.util
- * @version 3.1.0
+ * @version 3.8.0
  *
  * This file is part of the NGS package.
  *
@@ -41,9 +41,9 @@ namespace ngs\util {
     /**
      * Returns an singleton instance of this class
      *
-     * @param object $config
-     * @param object $args
-     * @return
+     * @param bool $trim
+     *
+     * @return NgsArgs
      */
     public static function getInstance($trim = true) {
       if (self::$instance == null){
@@ -61,7 +61,7 @@ namespace ngs\util {
      *
      * @param string $name
      *
-     * @return $arg
+     * @return mixed
      */
     public function __get($name) {
       if (isset($this->args()[$name])){
@@ -114,8 +114,9 @@ namespace ngs\util {
      * static function that set ngs
      * url args
      *
+     * @param array $args
      *
-     * @return array config
+     * @return bool
      */
     public function setArgs($args) {
       if (!is_array($args)){
@@ -126,7 +127,7 @@ namespace ngs\util {
       return true;
     }
 
-    public function args($trim = false) {
+    public function args() {
       if ($this->requestParams != null){
         return $this->requestParams;
       }
@@ -168,19 +169,15 @@ namespace ngs\util {
     public function headers() {
       if ($this->headerParams == null){
         $this->headerParams = new NgsArgs($this->trim);
-        $this->headerParams->setArgs(getallheaders());
+        $this->headerParams->setArgs($this->getAllHeaders());
       }
       return $this->headerParams;
     }
 
-  }
-
-  if (!function_exists('getallheaders')){
-    function getallheaders() {
+    private function getAllHeaders() {
       if (!is_array($_SERVER)){
         return array();
       }
-
       $headers = array();
       foreach ($_SERVER as $key => $value){
         if (substr($key, 0, 5) == "HTTP_"){
@@ -191,6 +188,7 @@ namespace ngs\util {
         }
       }
       return $headers;
+
     }
   }
 }

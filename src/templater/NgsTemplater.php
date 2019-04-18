@@ -4,10 +4,10 @@
  * handle smarty and json responses
  *
  * @author Levon Naghashyan <levon@naghashyan.com>
- * @site http://naghashyan.com
+ * @site https://naghashyan.com
  * @package ngs.framework.templater
- * @version 3.1.0
- * @year 2010-2016
+ * @version 3.8.0
+ * @year 2010-2019
  *
  * This file is part of the NGS package.
  *
@@ -16,6 +16,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace ngs\templater {
 
   use ngs\templater\AbstractTemplater;
@@ -34,6 +35,7 @@ namespace ngs\templater {
     private $smartyParams = array();
     private $httpStatusCode = 200;
     private $type = "json";
+    private $ngsFromException = false;
 
     public function __construct() {
     }
@@ -48,6 +50,20 @@ namespace ngs\templater {
 
     public function getSmartyTemplater() {
       return new NgsSmartyTemplater();
+    }
+
+    /**
+     * @return bool
+     */
+    public function isNgsFromException() {
+      return $this->ngsFromException;
+    }
+
+    /**
+     * @param bool $ngsFromException
+     */
+    public function setNgsFromException($ngsFromException) {
+      $this->ngsFromException = $ngsFromException;
     }
 
 
@@ -154,11 +170,13 @@ namespace ngs\templater {
 
     /**
      * display response
+     * @param bool $fromExaption
      * @access public
      *
      */
-    public function display() {
-
+    public function display($fromExaption = false) {
+      $this->setNgsFromException($fromExaption);
+      $this->beforeDisplay();
       http_response_code($this->getHttpStatusCode());
       if (!$this->getTemplate()){
         $this->displayJson($this->params);
@@ -171,7 +189,7 @@ namespace ngs\templater {
         $this->displayJson();
         return;
       }
-      if(!NGS()->isJsFrameworkEnable()){
+      if (!NGS()->isJsFrameworkEnable()){
         $this->displaySmarty($this->getTemplate());
         return;
       }
@@ -203,7 +221,7 @@ namespace ngs\templater {
       foreach ($this->params as $key => $value){
         $this->smarty->assign($key, $value);
       }
-      if($this->getTemplate()){
+      if ($this->getTemplate()){
         echo($this->smarty->fetch($this->getTemplate()));
       }
       exit;
@@ -219,10 +237,18 @@ namespace ngs\templater {
     }
 
 
+    protected function beforeDisplay() {
+      return;
+    }
+
+
     protected function getCustomJsParams() {
       return array();
     }
 
+    /**
+     * @return string
+     */
     protected function getCustomHeader() {
       return "";
     }
