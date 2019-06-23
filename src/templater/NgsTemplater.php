@@ -180,6 +180,7 @@ namespace ngs\templater {
       http_response_code($this->getHttpStatusCode());
       if (!$this->getTemplate()){
         $this->displayJson($this->params);
+        return;
       }
       $this->smarty = new NgsSmartyTemplater();
       foreach ($this->smartyParams as $key => $value){
@@ -216,7 +217,7 @@ namespace ngs\templater {
       header('Content-Type: application/json; charset=utf-8');
       if ($params !== null){
         echo json_encode($params);
-        exit;
+        return;
       }
       foreach ($this->params as $key => $value){
         $this->smarty->assign($key, $value);
@@ -224,7 +225,7 @@ namespace ngs\templater {
       if ($this->getTemplate()){
         echo($this->smarty->fetch($this->getTemplate()));
       }
-      exit;
+      return;
     }
 
     private function displaySmarty() {

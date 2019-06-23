@@ -150,6 +150,8 @@ namespace ngs\request {
       NGS()->getHttpUtils()->redirect($url);
     }
 
+    protected abstract function afterRequest();
+
   }
 
 }

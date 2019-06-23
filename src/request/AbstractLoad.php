@@ -7,8 +7,8 @@
  *
  * @author Levon Naghashyan <levon@naghashyan.com>
  * @site http://naghashyan.com
- * @year 2009-2016
- * @version 3.1.0
+ * @year 2009-2019
+ * @version 3.8.0
  * @package ngs.framework
  *
  * This file is part of the NGS package.
@@ -104,9 +104,9 @@ namespace ngs\request {
      * @param String $namespace
      * @param array $loadArr
      *
+     * @return void
      * @throws NoAccessException
      *
-     * @return void
      */
     public final function nest($namespace, $loadArr) {
 
@@ -344,6 +344,14 @@ namespace ngs\request {
      * @return integer|babyclass
      */
     public abstract function load();
+
+    public function afterRequest() {
+      $this->afterLoad();
+    }
+
+    public function afterLoad() {
+      return null;
+    }
 
   }
 

@@ -6,9 +6,9 @@
  *
  * @author Levon Naghashyan <levon@naghashyan.com>
  * @site https://naghashyan.com
- * @year 2009-2018
+ * @year 2009-2019
  * @package ngs.framework.dal.dto
- * @version 3.7.0
+ * @version 3.9.0
  *
  * This file is part of the NGS package.
  *
@@ -23,6 +23,9 @@ namespace ngs\dal\dto {
 
 
   abstract class AbstractDto {
+
+    private $ngs_nullableFields = [];
+
     public function __construct() {
     }
 
@@ -57,7 +60,7 @@ namespace ngs\dal\dto {
 
       // retrieving the field name
       $fieldName = preg_replace_callback('/[A-Z]/', function ($m) {
-        return "_" . strtolower($m[0]);
+        return '_' . strtolower($m[0]);
       }, self::lowerFirstLetter(substr($m, 3)));
       if ($type == 'set'){
         $this->$fieldName = $a[0];
@@ -69,8 +72,8 @@ namespace ngs\dal\dto {
       }
     }
 
-    function __set($property, $value) {
-      $fieldName = "set" . preg_replace_callback('/_([a-z])/', function ($property) {
+    public function __set($property, $value) {
+      $fieldName = 'set' . preg_replace_callback('/_([a-z])/', function ($property) {
           if (isset($property[1])){
             return ucfirst($property[1]);
           }
@@ -79,15 +82,28 @@ namespace ngs\dal\dto {
       $this->$fieldName($value);
     }
 
-    public function getFieldByName($name) {
+
+    public function setNull(string $fieldName): bool {
+      if (!$this->isExsistField($fieldName)){
+        return false;
+      }
+      $this->ngs_nullableFields[] = $fieldName;
+      return true;
+    }
+
+    public function getNgsNullableFealds(): array {
+      return $this->ngs_nullableFields;
+    }
+
+    public function getFieldByName($name): ?string {
       $mapArr = array_flip($this->getMapArray());
       if (isset($mapArr[$name])){
         return $mapArr[$name];
       }
-      return false;
+      return null;
     }
 
-    public function isExsistField($key) {
+    public function isExsistField(string $key): bool {
       $mapArr = $this->getMapArray();
       if (isset($mapArr[$key])){
         return true;
@@ -100,10 +116,14 @@ namespace ngs\dal\dto {
         $mapArr = $this->getMapArray();
       }
       foreach ($mapArray as $key => $value){
-        if (!isset($mapArr[$key]) || is_null($value)){
+        if (!isset($mapArr[$key])){
           continue;
         }
-        $functionName = "set" . "" . ucfirst($mapArr[$key]);
+        if (is_null($value) || $value === 'NULL'){
+          $this->setNull($key);
+          continue;
+        }
+        $functionName = 'set' . '' . ucfirst($mapArr[$key]);
         $this->$functionName($value);
       }
     }
@@ -116,7 +136,7 @@ namespace ngs\dal\dto {
           continue;
         }
 
-        $functionName = "get" . "" . ucfirst($mapArray[$key]);
+        $functionName = 'get' . '' . ucfirst($mapArray[$key]);
         $resultArr[$key] = $this->$functionName();
       }
       return $resultArr;
@@ -134,7 +154,7 @@ namespace ngs\dal\dto {
       if ($time == null){
         $time = time();
       }
-      return date("Y-m-d H:i:s", $time);
+      return date('Y-m-d H:i:s', $time);
     }
 
     /**
@@ -149,7 +169,7 @@ namespace ngs\dal\dto {
       if ($date == null){
         $date = time();
       }
-      return date("Y-m-d", $date);
+      return date('Y-m-d', $date);
     }
 
   }

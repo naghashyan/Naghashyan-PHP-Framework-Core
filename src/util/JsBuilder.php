@@ -47,7 +47,7 @@ namespace ngs\util {
         if ($value["module"] != null){
           $module = $value["module"];
         }
-        $inputFile = NGS()->getHttpUtils()->getHttpHostByNs($module) . "/js/" . trim($value["file"]);
+        $inputFile = NGS()->getHttpUtils()->getHttpHostByNs($module) . "/js/" . trim(str_replace("\\", "/", $value["file"]));
         echo("document.write('<script type=\"text/javascript\" src=\"" . $inputFile . "\"></script>');\n\r");
       }
     }

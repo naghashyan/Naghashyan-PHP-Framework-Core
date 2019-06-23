@@ -6,7 +6,7 @@
  * @author Levon Naghashyan <levon@naghashyan.com>
  * @site https://naghashyan.com
  * @package ngs.framework.dal.mappers
- * @version 3.8.0
+ * @version 3.9.0
  * @year 2009-2019
  *
  * This file is part of the NGS package.
@@ -37,7 +37,7 @@ namespace ngs\dal\mappers {
         $config = NGS()->getNgsConfig();
       }
       $usePdo = true;
-      if (isset(NGS()->getConfig()->DB->mysql->driver) && NGS()->getConfig()->DB->mysql->driver == "mysqli"){
+      if (isset(NGS()->getConfig()->DB->mysql->driver) && NGS()->getConfig()->DB->mysql->driver == 'mysqli'){
         $usePdo = false;
       }
       if ($usePdo){
@@ -45,14 +45,14 @@ namespace ngs\dal\mappers {
         $user = NGS()->getConfig()->DB->mysql->user;
         $pass = NGS()->getConfig()->DB->mysql->pass;
         $name = NGS()->getConfig()->DB->mysql->name;
-        $this->dbms = NGS()->get("NGS_MYSQL_PDO_DRIVER")::getInstance($host, $user, $pass, $name);
+        $this->dbms = NGS()->get('NGS_MYSQL_PDO_DRIVER')::getInstance($host, $user, $pass, $name);
       }
     }
 
     /**
      * Inserts dto into table.
      *
-     * @param object $dto
+     * @param AbstractDto $dto
      * @param object $esc [optional] - shows if the textual values must be escaped before setting to DB
      * @return integer id or -1 if something goes wrong
      */
@@ -60,23 +60,23 @@ namespace ngs\dal\mappers {
 
       //validating input params
       if ($dto == null){
-        throw new DebugException("The input param can not be NULL.");
+        throw new DebugException('The input param can not be NULL.');
       }
 
       $dto_fields = array_values($dto->getMapArray());
       $db_fields = array_keys($dto->getMapArray());
       //creating query
-      $sqlQuery = sprintf("INSERT INTO `%s` SET ", $this->getTableName());
+      $sqlQuery = sprintf('INSERT INTO `%s` SET ', $this->getTableName());
       $params = array();
       for ($i = 0; $i < count($dto_fields); $i++){
-        $functionName = "get" . ucfirst($dto_fields[$i]);
+        $functionName = 'get' . ucfirst($dto_fields[$i]);
         $val = $dto->$functionName();
         if (isset($val)){
-          if ($val == "CURRENT_TIMESTAMP()" || $val == "NOW()" || $val === "NULL"){
-            $sqlQuery .= sprintf(" `%s` = %s,", $db_fields[$i], $val);
+          if ($val == 'CURRENT_TIMESTAMP()' || $val == 'NOW()' || $val === 'NULL'){
+            $sqlQuery .= sprintf(' `%s` = %s,', $db_fields[$i], $val);
           } else{
             $params[$db_fields[$i]] = $val;
-            $sqlQuery .= sprintf(" `%s` = :%s,", $db_fields[$i], $db_fields[$i]);
+            $sqlQuery .= sprintf(' `%s` = :%s,', $db_fields[$i], $db_fields[$i]);
           }
         }
       }
@@ -101,10 +101,10 @@ namespace ngs\dal\mappers {
      */
     public function updateField($id, $fieldName, $fieldValue) {
       // Create query.
-      $sqlQuery = sprintf("UPDATE `%s` SET `%s` = :%s WHERE `%s` = :id", $this->getTableName(), $fieldName, $fieldName, $this->getPKFieldName());
+      $sqlQuery = sprintf('UPDATE `%s` SET `%s` = :%s WHERE `%s` = :id', $this->getTableName(), $fieldName, $fieldName, $this->getPKFieldName());
       $res = $this->dbms->prepare($sqlQuery);
       if ($res){
-        $res->execute(array("id" => $id, $fieldName => $fieldValue));
+        $res->execute(array('id' => $id, $fieldName => $fieldValue));
         return $res->rowCount();
       }
       return null;
@@ -114,7 +114,7 @@ namespace ngs\dal\mappers {
      * Updates table fields by primary key.
      * DTO must contain primary key value.
      *
-     * @param object $dto
+     * @param AbstractDto $dto
      * @param object $esc [optional] shows if the textual values must be escaped before setting to DB
      * @return bool
      */
@@ -122,37 +122,42 @@ namespace ngs\dal\mappers {
 
       //validating input params
       if ($dto == null){
-        throw new DebugException("The input param can not be NULL.");
+        throw new DebugException('The input param can not be NULL.');
       }
-      $getPKFunc = $this->getCorrespondingFunctionName($dto->getMapArray(), $this->getPKFieldName(), "get");
+      $getPKFunc = $this->getCorrespondingFunctionName($dto->getMapArray(), $this->getPKFieldName(), 'get');
       $pk = $dto->$getPKFunc();
       if (!isset($pk)){
-        throw new DebugException("The primary key is not set.");
+        throw new DebugException('The primary key is not set.');
       }
 
       $dto_fields = array_values($dto->getMapArray());
       $db_fields = array_keys($dto->getMapArray());
       //creating query
-      $sqlQuery = sprintf("UPDATE `%s` SET ", $this->getTableName());
+      $sqlQuery = sprintf('UPDATE `%s` SET ', $this->getTableName());
       $params = array();
       for ($i = 0; $i < count($dto_fields); $i++){
         if ($dto_fields[$i] == $this->getPKFieldName()){
           continue;
         }
-        $functionName = "get" . ucfirst($dto_fields[$i]);
+        $functionName = 'get' . ucfirst($dto_fields[$i]);
         $val = $dto->$functionName();
         if (isset($val)){
-          if ($val == "CURRENT_TIMESTAMP()" || $val == "NOW()" || $val === "NULL"){
-            $sqlQuery .= sprintf(" `%s` = %s,", $db_fields[$i], $val);
+          if ($val == 'CURRENT_TIMESTAMP()' || $val == 'NOW()' || $val === 'NULL'){
+            $sqlQuery .= sprintf(' `%s` = %s,', $db_fields[$i], $val);
           } else{
             $params[$db_fields[$i]] = $val;
-            $sqlQuery .= sprintf(" `%s` = :%s,", $db_fields[$i], $db_fields[$i]);
+            $sqlQuery .= sprintf(' `%s` = :%s,', $db_fields[$i], $db_fields[$i]);
           }
         }
       }
+      foreach ($dto->getNgsNullableFealds() as $feald){
+        $sqlQuery .= sprintf(' `%s` = %s,', $feald, 'NULL');
+      }
+
+
       $sqlQuery = substr($sqlQuery, 0, -1);
-      $sqlQuery .= sprintf(" WHERE `%s` = :PKField ", $this->getPKFieldName());
-      $params["PKField"] = $dto->$getPKFunc();
+      $sqlQuery .= sprintf(' WHERE `%s` = :PKField ', $this->getPKFieldName());
+      $params['PKField'] = $dto->$getPKFunc();
       $res = $this->dbms->prepare($sqlQuery);
       if ($res){
         $res->execute($params);
@@ -199,32 +204,33 @@ namespace ngs\dal\mappers {
     /**
      * Sets field value NULL.
      *
-     * @param object $id
-     * @param object $fieldName
+     * @param int $id
+     * @param string $fieldName
      * @return
      */
-    public function setNull($id, $fieldName) {
+    public function setNull($id, string $fieldName) {
       // Create query.
-      $sqlQuery = sprintf("UPDATE `%s` SET `%s` = NULL WHERE `%s` = :id ", $this->getTableName(), $fieldName, $this->getPKFieldName());
+      $sqlQuery = sprintf('UPDATE `%s` SET `%s` = NULL WHERE `%s` = :id ', $this->getTableName(), $fieldName, $this->getPKFieldName());
       $res = $this->dbms->prepare($sqlQuery);
       if ($res){
-        $res->execute(array("id" => $id));
+        $res->execute(['id' => $id]);
         return $res->rowCount();
       }
+      return null;
     }
 
     /**
      * Deletes the row by primary key
      *
-     * @param string $id - the unique identifier of table
+     * @param int $id - the unique identifier of table
      * @return int rows count or -1 if something goes wrong
      */
     public function deleteByPK($id) {
 
-      $sqlQuery = sprintf("DELETE FROM `%s` WHERE `%s` = :id", $this->getTableName(), $this->getPKFieldName());
+      $sqlQuery = sprintf('DELETE FROM `%s` WHERE `%s` = :id', $this->getTableName(), $this->getPKFieldName());
       $res = $this->dbms->prepare($sqlQuery);
       if ($res){
-        $res->execute(array("id" => $id));
+        $res->execute(['id' => $id]);
         return $res->rowCount();
       }
       return null;
@@ -239,14 +245,14 @@ namespace ngs\dal\mappers {
      * @return affected rows count or -1 if something goes wrong
      */
     public function bulkUpdateByPK($dto, $esc = true) {
-      $this->bulkUpdateQuery .= $this->updateByPK($dto, $esc, true) . ";";
+      $this->bulkUpdateQuery .= $this->updateByPK($dto, $esc, true) . ';';
       return true;
     }
 
     public function bulkUpdateByPKCommit() {
       if ($this->bulkUpdateQuery){
         $result = $this->dbms->multiQuery($this->bulkUpdateQuery);
-        $this->bulkUpdateQuery = "";
+        $this->bulkUpdateQuery = '';
         return $result;
       }
       return false;
@@ -306,7 +312,7 @@ namespace ngs\dal\mappers {
       if ($results){
         $fetchedObject = $res->fetchObject();
         if ($fetchedObject === false){
-          return "";
+          return '';
         }
         return $fetchedObject->$fieldName;
       }
@@ -318,7 +324,7 @@ namespace ngs\dal\mappers {
      * @return AbstractDto[]
      */
     public function selectAll() {
-      $sqlQuery = sprintf("SELECT * FROM `%s`", $this->getTableName());
+      $sqlQuery = sprintf('SELECT * FROM `%s`', $this->getTableName());
       return $this->fetchRows($sqlQuery);
     }
 
@@ -327,8 +333,8 @@ namespace ngs\dal\mappers {
      * @return
      */
     public function selectByLimit($offset, $limit) {
-      $sqlQuery = sprintf("SELECT * FROM `%s` LIMIT :offset, :limit", $this->getTableName());
-      return $this->fetchRows($sqlQuery, array("offset" => $offset, "limit" => $limit));
+      $sqlQuery = sprintf('SELECT * FROM `%s` LIMIT :offset, :limit', $this->getTableName());
+      return $this->fetchRows($sqlQuery, array('offset' => $offset, 'limit' => $limit));
     }
 
     /**
@@ -338,8 +344,8 @@ namespace ngs\dal\mappers {
      * @return AbstractDto|null
      */
     public function selectByPK($id) {
-      $sqlQuery = sprintf("SELECT * FROM `%s` WHERE `%s` = :id ", $this->getTableName(), $this->getPKFieldName());
-      return $this->fetchRow($sqlQuery, array("id" => $id));
+      $sqlQuery = sprintf('SELECT * FROM `%s` WHERE `%s` = :id ', $this->getTableName(), $this->getPKFieldName());
+      return $this->fetchRow($sqlQuery, array('id' => $id));
     }
 
     protected function exec($sqlQuery) {
@@ -358,7 +364,7 @@ namespace ngs\dal\mappers {
       if ($time == null){
         $time = time();
       }
-      return date("Y-m-d H:i:s", $time);
+      return date('Y-m-d H:i:s', $time);
     }
 
     /**
@@ -373,7 +379,7 @@ namespace ngs\dal\mappers {
       if ($date == null){
         $date = time();
       }
-      return date("Y-m-d", $date);
+      return date('Y-m-d', $date);
     }
   }
 }

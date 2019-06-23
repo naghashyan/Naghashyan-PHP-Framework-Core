@@ -153,6 +153,11 @@ namespace ngs {
         NGS()->getTemplateEngine()->setTemplate($loadObj->getTemplate());
         NGS()->getTemplateEngine()->setPermalink($loadObj->getPermalink());
         $this->displayResult();
+        if (php_sapi_name() === "fpm-fcgi"){
+          session_write_close();
+          fastcgi_finish_request();
+        }
+        $loadObj->afterRequest();
       } catch (NoAccessException $ex){
         $loadObj->onNoAccess();
 
@@ -189,7 +194,11 @@ namespace ngs {
         NGS()->getTemplateEngine()->setType("json");
         NGS()->getTemplateEngine()->assignJsonParams($actionObj->getParams());
         $this->displayResult();
-
+        if (php_sapi_name() === "fpm-fcgi"){
+          session_write_close();
+          fastcgi_finish_request();
+        }
+        $actionObj->afterRequest();
       } catch (NoAccessException $ex){
         $actionObj->onNoAccess();
         throw $ex;
