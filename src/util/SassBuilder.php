@@ -24,13 +24,14 @@
 namespace ngs\util {
 
   use ngs\exceptions\DebugException;
-  use Leafo\ScssPhp\Compiler;
-  use Leafo\ScssPhp\Formatter\Crunched;
+  use ScssPhp\ScssPhp\Compiler;
+  use ScssPhp\ScssPhp\Formatter\Crunched;
+
   class SassBuilder extends AbstractBuilder {
 
     private $sassParser;
 
-    public function streamFile($module, $file) {
+    public function streamFile(string $module, string $file) {
       if ($this->getEnvironment() == "production"){
         $filePath = realpath(NGS()->getPublicDir() . "/" . $file);
         if (!$filePath){
@@ -48,7 +49,13 @@ namespace ngs\util {
         throw new DebugException("Please add sass files in builder");
       }
       $this->sassParser = new Compiler();
-      $this->sassParser->setImportPaths(NGS()->getSassDir());
+      $this->sassParser->addImportPath(function ($path) {
+        if (strpos($path, '@ngs-cms') >= 0){
+          return NGS()->getSassDir('ngs-cms') . '/' . str_replace('@ngs-cms/', '', $path) . '.scss';
+        }
+        return NGS()->getSassDir() . '/' . $path. '.scss';
+      });
+
       if ($mode){
         $this->sassParser->setFormatter(Crunched::class);
       }
@@ -84,8 +91,7 @@ namespace ngs\util {
           $module = $value["module"];
         }
         $sassHost = NGS()->getHttpUtils()->getHttpHostByNs($modulePath) . "/sass/";
-        $sassDir = realpath(NGS()->getPublicDir($module) . "/" . NGS()->getDefinedValue("SASS_DIR"));
-        $sassFilePath = realpath($sassDir . "/" . $value["file"]);
+        $sassFilePath = realpath(NGS()->getSassDir($module) . "/" . $value["file"]);
         if ($sassFilePath == false){
           throw new DebugException("Please add or check if correct sass file in builder under section " . $value["file"]);
         }

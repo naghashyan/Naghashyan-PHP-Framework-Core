@@ -29,8 +29,8 @@ namespace ngs\util {
 
     private $builderJsonArr = array();
 
-    public function streamFile($module, $file) {
-      if ($this->getEnvironment() == "production"){
+    public function streamFile(string $module, string $file) {
+      if ($this->getEnvironment() === "production"){
 
         $filePath = realpath(NGS()->getPublicDir() . "/" . $file);
         if (strpos($file, NGS()->getDefinedValue("PUBLIC_OUTPUT_DIR")) === false){

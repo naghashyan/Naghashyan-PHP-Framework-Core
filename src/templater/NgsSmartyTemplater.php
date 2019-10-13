@@ -33,6 +33,7 @@ namespace ngs\templater {
 
     public function __construct($isHtml = true) {
       parent::__construct();
+      $this->assign("NGS_CMS_DIR", NGS()->getTemplateDir('ngs-cms'));
       $this->isHtml = $isHtml;
       //register NGS plugins
       $this->registerPlugin("function", "nest", array($this, 'nest'));
@@ -143,12 +144,13 @@ namespace ngs\templater {
         $jsonParams = $nsValue["inc"][$params["ns"]]["jsonParam"];
         $parentLoad = $nsValue["inc"][$params["ns"]]["parent"];
         $jsString = '<script type="text/javascript">';
+        $jsString .= '_setNgsDefaults(function(){';
         if ($parentLoad){
           $jsString .= 'NGS.setNestedLoad("' . $parentLoad . '", "' . $namespace . '", ' . json_encode($jsonParams) . ')';
         } elseif (isset($nsValue["inc"][$params["ns"]]["action"])){
           $jsString .= 'NGS.nestLoad("' . $nsValue["inc"][$params["ns"]]["action"] . '", ' . json_encode($jsonParams) . ', "")';
         }
-
+        $jsString .= '});';
         $jsString .= '</script>';
         $_output = $jsString . $_output;
       }
@@ -186,33 +188,40 @@ namespace ngs\templater {
         $ns = $params['ns'];
       }
       switch ($params['cmd']){
+        case 'get_js_out_path' :
+          $protocol = false;
+          if (isset($params['protocol']) && $params['protocol'] == true){
+            $protocol = true;
+          }
+          return NGS()->getPublicJsOutputHost($ns, $protocol);
+          break;
         case 'get_js_out_dir' :
           $protocol = false;
           if (isset($params['protocol']) && $params['protocol'] == true){
             $protocol = true;
           }
-          return NGS()->getPublicOutputHost($ns, $protocol) . "/js";
+          return NGS()->getPublicOutputHost($ns, $protocol) . '/js';
           break;
         case 'get_css_out_dir' :
           $protocol = false;
           if (isset($params['protocol']) && $params['protocol'] == true){
             $protocol = true;
           }
-          return NGS()->getPublicOutputHost($ns, $protocol) . "/css";
+          return NGS()->getPublicOutputHost($ns, $protocol) . '/css';
           break;
         case 'get_less_out_dir' :
           $protocol = false;
           if (isset($params['protocol']) && $params['protocol'] == true){
             $protocol = true;
           }
-          return NGS()->getPublicOutputHost($ns, $protocol) . "/less";
+          return NGS()->getPublicOutputHost($ns, $protocol) . '/less';
           break;
         case 'get_sass_out_dir' :
           $protocol = false;
           if (isset($params['protocol']) && $params['protocol'] == true){
             $protocol = true;
           }
-          return NGS()->getPublicOutputHost($ns, $protocol) . "/sass";
+          return NGS()->getPublicOutputHost($ns, $protocol) . '/sass';
           break;
         case 'get_template_dir' :
           return NGS()->getTemplateDir($ns);
@@ -246,7 +255,7 @@ namespace ngs\templater {
           break;
         case 'get_media_url' :
           if (isset(NGS()->getConfig()->API->params->media_url)){
-            return "" . NGS()->getConfig()->API->params->media_url;
+            return '' . NGS()->getConfig()->API->params->media_url;
           }
           break;
         default :
@@ -266,7 +275,17 @@ namespace ngs\templater {
         return $tpl_output;
       }
       $jsString .= '<script type="text/javascript">';
+      $jsString .= 'var _ngs_defaults = [];';
+      $jsString .= 'function _setNgsDefaults(calback){_ngs_defaults.push(calback)};';
+      $jsString .= 'function _initNgsDefaults(){for(var i=0; i<_ngs_defaults.length;i++){_ngs_defaults[i]();}};';
+      $jsString .= '_setNgsDefaults(function(){';
       $jsString .= "NGS.setInitialLoad('" . NGS()->getRoutesEngine()->getContentLoad() . "', '" . json_encode($this->params) . "');";
+      $jsModule = '';
+      if (!NGS()->getModulesRoutesEngine()->isDefaultModule()){
+        $jsModule = NGS()->getModulesRoutesEngine()->getModuleNS() . '/';
+      }
+
+      $jsString .= 'NGS.setJsPublicDir("' . $jsModule . NGS()->getPublicJsOutputDir() . '");';
       $jsString .= 'NGS.setModule("' . NGS()->getModulesRoutesEngine()->getModuleNS() . '");';
       $jsString .= 'NGS.setTmst("' . time() . '");';
       $jsString .= 'NGS.setHttpHost("' . NGS()->getHttpUtils()->getHttpHostByNs("", true, false, true) . '");';
@@ -282,6 +301,7 @@ namespace ngs\templater {
         $jsString .= $key . " = '" . $value . "';";
       }
       $jsString .= $this->getCustomHeader();
+      $jsString .= '});';
       $jsString .= '</script>';
       $jsString .= '</head>';
       $tpl_output = str_replace('</head>', $jsString, $tpl_output);

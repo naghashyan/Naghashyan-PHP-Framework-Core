@@ -5,7 +5,7 @@
  * @site https://naghashyan.com
  * @year 2009-2019
  * @package framework
- * @version 3.8.0
+ * @version 4.0.0
  *
  * This file is part of the NGS package.
  *
@@ -26,6 +26,7 @@ namespace ngs {
   use ngs\exceptions\NotFoundException;
   use ngs\exceptions\RedirectException;
   use ngs\util\NgsArgs;
+  use ngs\util\Pusher;
 
   class Dispatcher {
 
@@ -43,33 +44,33 @@ namespace ngs {
         if ($routesArr === null){
           $routesArr = NGS()->getRoutesEngine()->getDynamicLoad(NGS()->getHttpUtils()->getRequestUri());
         }
-        if ($routesArr["matched"] === false){
-          throw new NotFoundException("Load/Action Not found");
+        if ($routesArr['matched'] === false){
+          throw new NotFoundException('Load/Action Not found');
         }
-        if (isset($routesArr["args"])){
-          NgsArgs::getInstance()->setArgs($routesArr["args"]);
+        if (isset($routesArr['args'])){
+          NgsArgs::getInstance()->setArgs($routesArr['args']);
         }
-        switch ($routesArr["type"]){
+        switch ($routesArr['type']){
           case 'load' :
             NGS()->getTemplateEngine();
-            $this->loadPage($routesArr["action"]);
+            $this->loadPage($routesArr['action']);
             break;
           case 'action' :
             NGS()->getTemplateEngine();
-            $this->doAction($routesArr["action"]);
+            $this->doAction($routesArr['action']);
             break;
           case 'file' :
             $this->streamStaticFile($routesArr);
             break;
         }
       } catch (DebugException $ex){
-        if (NGS()->getEnvironment() != "production"){
+        if (NGS()->getEnvironment() != 'production'){
           $ex->display();
           return;
         }
         $routesArr = NGS()->getRoutesEngine()->getNotFoundLoad();
         if ($routesArr == null || $this->isRedirect === true){
-          echo "404";
+          echo '404';
           exit;
         }
         $this->isRedirect = true;
@@ -77,51 +78,51 @@ namespace ngs {
       } catch (RedirectException $ex){
         NGS()->getHttpUtils()->redirect($ex->getRedirectTo());
       } catch (NotFoundException $ex){
-        if ($ex->getRedirectUrl() != ""){
+        if ($ex->getRedirectUrl() != ''){
           NGS()->getHttpUtils()->redirect($ex->getRedirectUrl());
           return;
         }
         $routesArr = NGS()->getRoutesEngine()->getNotFoundLoad();
         if ($routesArr == null || $this->isRedirect === true){
-          echo "404";
+          echo '404';
           exit;
         }
         $this->isRedirect = true;
         $this->dispatch($routesArr);
       } catch (NgsErrorException $ex){
         NGS()->getTemplateEngine()->setHttpStatusCode($ex->getHttpCode());
-        NGS()->getTemplateEngine()->assignJson("code", $ex->getCode());
-        NGS()->getTemplateEngine()->assignJson("msg", $ex->getMessage());
-        NGS()->getTemplateEngine()->assignJson("params", $ex->getParams());
+        NGS()->getTemplateEngine()->assignJson('code', $ex->getCode());
+        NGS()->getTemplateEngine()->assignJson('msg', $ex->getMessage());
+        NGS()->getTemplateEngine()->assignJson('params', $ex->getParams());
         NGS()->getTemplateEngine()->display(true);
       } catch (InvalidUserException $ex){
-        if (!NGS()->getHttpUtils()->isAjaxRequest() && !NGS()->getDefinedValue("display_json")){
+        if (!NGS()->getHttpUtils()->isAjaxRequest() && !NGS()->getDefinedValue('display_json')){
           NGS()->getHttpUtils()->redirect($ex->getRedirectTo());
           return;
         }
         NGS()->getTemplateEngine()->setHttpStatusCode($ex->getHttpCode());
-        NGS()->getTemplateEngine()->assignJson("code", $ex->getCode());
-        NGS()->getTemplateEngine()->assignJson("msg", $ex->getMessage());
-        if ($ex->getRedirectTo() != ""){
-          NGS()->getTemplateEngine()->assignJson("redirect_to", $ex->getRedirectTo());
+        NGS()->getTemplateEngine()->assignJson('code', $ex->getCode());
+        NGS()->getTemplateEngine()->assignJson('msg', $ex->getMessage());
+        if ($ex->getRedirectTo() != ''){
+          NGS()->getTemplateEngine()->assignJson('redirect_to', $ex->getRedirectTo());
         }
-        if ($ex->getRedirectToLoad() != ""){
-          NGS()->getTemplateEngine()->assignJson("redirect_to_load", $ex->getRedirectToLoad());
+        if ($ex->getRedirectToLoad() != ''){
+          NGS()->getTemplateEngine()->assignJson('redirect_to_load', $ex->getRedirectToLoad());
         }
         NGS()->getTemplateEngine()->display(true);
       } catch (NoAccessException $ex){
-        if (!NGS()->getHttpUtils()->isAjaxRequest() && !NGS()->getDefinedValue("display_json")){
+        if (!NGS()->getHttpUtils()->isAjaxRequest() && !NGS()->getDefinedValue('display_json')){
           NGS()->getHttpUtils()->redirect($ex->getRedirectTo());
           return;
         }
         NGS()->getTemplateEngine()->setHttpStatusCode($ex->getHttpCode());
-        NGS()->getTemplateEngine()->assignJson("code", $ex->getCode());
-        NGS()->getTemplateEngine()->assignJson("msg", $ex->getMessage());
-        if ($ex->getRedirectTo() != ""){
-          NGS()->getTemplateEngine()->assignJson("redirect_to", $ex->getRedirectTo());
+        NGS()->getTemplateEngine()->assignJson('code', $ex->getCode());
+        NGS()->getTemplateEngine()->assignJson('msg', $ex->getMessage());
+        if ($ex->getRedirectTo() != ''){
+          NGS()->getTemplateEngine()->assignJson('redirect_to', $ex->getRedirectTo());
         }
-        if ($ex->getRedirectToLoad() != ""){
-          NGS()->getTemplateEngine()->assignJson("redirect_to_load", $ex->getRedirectToLoad());
+        if ($ex->getRedirectToLoad() != ''){
+          NGS()->getTemplateEngine()->assignJson('redirect_to_load', $ex->getRedirectToLoad());
         }
         NGS()->getTemplateEngine()->display(true);
       }
@@ -140,7 +141,7 @@ namespace ngs {
     public function loadPage($action) {
       try{
         if (class_exists($action) == false){
-          throw new DebugException($action . " Load Not found");
+          throw new DebugException($action . ' Load Not found');
         }
         $loadObj = new $action;
         $loadObj->initialize();
@@ -152,8 +153,11 @@ namespace ngs {
         NGS()->getTemplateEngine()->setType($loadObj->getNgsLoadType());
         NGS()->getTemplateEngine()->setTemplate($loadObj->getTemplate());
         NGS()->getTemplateEngine()->setPermalink($loadObj->getPermalink());
+        //Pusher::getInstance()->src('/js/ngs/NGS.js');
+        //Pusher::getInstance()->push();
         $this->displayResult();
-        if (php_sapi_name() === "fpm-fcgi"){
+
+        if (php_sapi_name() === 'fpm-fcgi'){
           session_write_close();
           fastcgi_finish_request();
         }
@@ -182,7 +186,7 @@ namespace ngs {
     private function doAction($action) {
       try{
         if (class_exists($action) == false){
-          throw new DebugException($action . " Action Not found");
+          throw new DebugException($action . ' Action Not found');
         }
         $actionObj = new $action;
         $actionObj->initialize();
@@ -191,10 +195,10 @@ namespace ngs {
         }
         $actionObj->service();
         //passing arguments
-        NGS()->getTemplateEngine()->setType("json");
+        NGS()->getTemplateEngine()->setType('json');
         NGS()->getTemplateEngine()->assignJsonParams($actionObj->getParams());
         $this->displayResult();
-        if (php_sapi_name() === "fpm-fcgi"){
+        if (php_sapi_name() === 'fpm-fcgi'){
           session_write_close();
           fastcgi_finish_request();
         }
@@ -209,8 +213,8 @@ namespace ngs {
     }
 
     private function streamStaticFile($fileArr) {
-      $stramer = NGS()->getFileStreamerByType($fileArr["file_type"]);
-      $stramer->streamFile($fileArr["module"], $fileArr["file_url"]);
+      $stramer = NGS()->getFileStreamerByType($fileArr['file_type']);
+      $stramer->streamFile($fileArr['module'], $fileArr['file_url']);
     }
 
     /**

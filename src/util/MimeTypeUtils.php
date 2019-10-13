@@ -502,6 +502,7 @@ namespace ngs\util {
                                 '.sv4crc' => 'application/x-sv4crc',
                                 '.svf' => 'image/vnd.dwg',
                                 '.svf' => 'image/x-dwg',
+                                '.svg' => 'image/svg+xml',
                                 '.svr' => 'application/x-world',
                                 '.svr' => 'x-world/x-svr',
                                 '.swf' => 'application/x-shockwave-flash',
