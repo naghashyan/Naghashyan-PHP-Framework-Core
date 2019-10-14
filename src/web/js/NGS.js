@@ -4,10 +4,10 @@
  * vissible from any classes
  *
  * @author Levon Naghashyan <levon@naghashyan.com>
- * @site http://naghashyan.com
- * @year 2014-2015
+ * @site https://naghashyan.com
+ * @year 2014-2019
  * @package ngs.framework
- * @version 2.1.1
+ * @version 4.0.0
  *
  *
  * This file is part of the NGS package.
@@ -459,6 +459,57 @@ window.NGS = {
     }
     this._sessionId = this.guid();
     return this._sessionId;
+  },
+  _isInitedUtilities: false,
+  _initUtilities: function () {
+    if(this._isInitedUtilities){
+      return;
+    }
+    //utilities
+    window.$$ = function (selector) {
+      return document.querySelectorAll(selector);
+    };
+//removeClass
+    NodeList.prototype.removeClass = function (className) {
+      if(this.length < 0){
+        return false;
+      }
+      this.forEach((elem) => {
+        elem.classList.remove(className);
+      });
+      return true;
+    };
+//addClass
+    NodeList.prototype.addClass = function (className) {
+      if(this.length < 0){
+        return false;
+      }
+      this.forEach((elem) => {
+        elem.classList.add(className);
+      });
+      return true;
+    };
+//add event listener
+    NodeList.prototype.on = function (type, listner, options) {
+      if(this.length < 0){
+        return false;
+      }
+      this.forEach((elem) => {
+        elem.addEventListener(type, listner, options);
+      });
+      return true;
+    };
+//remove event listener
+    NodeList.prototype.off = function (type, listner, options) {
+      if(this.length < 0){
+        return false;
+      }
+      this.forEach((elem) => {
+        elem.removeEventListener(type, listner, options);
+      });
+      return true;
+    };
+    this._isInitedUtilities = true;
   }
 };
-
+NGS._initUtilities();
