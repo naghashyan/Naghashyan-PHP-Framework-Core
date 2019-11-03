@@ -152,9 +152,11 @@ namespace ngs {
         $loadObj->service();
         NGS()->getTemplateEngine()->setType($loadObj->getNgsLoadType());
         NGS()->getTemplateEngine()->setTemplate($loadObj->getTemplate());
-        NGS()->getTemplateEngine()->setPermalink($loadObj->getPermalink());
-        //Pusher::getInstance()->src('/js/ngs/NGS.js');
-        //Pusher::getInstance()->push();
+        NGS()->getTemplateEngine()->setPermalink(NGS()->getLoadMapper()->getNgsPermalink());
+        if (NGS()->get('SEND_HTTP_PUSH')){
+          Pusher::getInstance()->push();
+        }
+
         $this->displayResult();
 
         if (php_sapi_name() === 'fpm-fcgi'){

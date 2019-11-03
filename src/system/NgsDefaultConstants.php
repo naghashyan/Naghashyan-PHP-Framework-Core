@@ -85,6 +85,8 @@ NGS()->define('ENVIRONMENT', $environment);
 
 NGS()->define('JS_FRAMEWORK_ENABLE', true);
 
+NGS()->define('SEND_HTTP_PUSH', true);
+
 /*
 |--------------------------------------------------------------------------
 | DEFINNING DEFAULT DIRS

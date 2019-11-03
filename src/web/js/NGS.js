@@ -69,9 +69,16 @@ window.NGS = {
   load: function (loadName, params, callback) {
     this.getNGSItemObjectByNameAndType(loadName, "load").then(function (laodObj) {
       this.nestedLoads = {};
+      let _loadCallbackFunction = function () {
+        onComplateCallback.forEach(calback => {
+          calback.apply(this, arguments);
+        })
+      };
+      let onComplateCallback = [laodObj.onComplate];
       if(typeof (callback) === "function"){
-        laodObj.onComplate = callback;
+        onComplateCallback.push(callback);
       }
+      laodObj.onComplate = _loadCallbackFunction;
       if(typeof (callback) === "object"){
         laodObj = Object.assign(laodObj, callback);
       }
@@ -165,18 +172,33 @@ window.NGS = {
   /**
    * Method for sending single request
    *
-   * @param  string urlPath
-   * @param  ibject params
-   * @param  Function callBack
+   * @param action string
+   * @param  params Object
+   * @param  onComplate Function
+   * @param  onError Function
    *
    */
   action: function (action, params, onComplate, onError) {
     this.getNGSItemObjectByNameAndType(action, "action").then(function (actionObject) {
+      let _actionCallbackFunction = function () {
+        onComplateCallback.forEach(calback => {
+          calback.apply(this, arguments);
+        });
+        resolve(arguments);
+      };
+      let _actionErrorCallbackFunction = function () {
+        onErrorCallback.forEach(calback => {
+          calback.apply(this, arguments);
+        });
+        reject(arguments);
+      };
+      let onComplateCallback = [actionObject.onComplate];
       if(typeof (onComplate) === "function"){
-        actionObject.onComplate = onComplate;
+        onComplateCallback.push(onComplate);
       }
+      let onErrorCallback = [actionObject.onError];
       if(typeof (onError) === "function"){
-        actionObject.onError = onError;
+        onErrorCallback.push(onError);
         actionObject.onNoAccess = onError;
         actionObject.onInvalidUser = onError;
       }
@@ -184,7 +206,6 @@ window.NGS = {
     }).catch(function (e) {
       throw e;
     });
-
   },
 
 
@@ -245,7 +266,9 @@ window.NGS = {
       let action = itemName;
       let ngsItemType = type.charAt(0).toUpperCase() + type.slice(1);
       let ngsItemPackage = itemName.substr(0, itemName.lastIndexOf("."));
-      ngsItemPackage = ngsItemPackage.substr(ngsItemPackage.indexOf(".") + 1);
+      if(ngsItemPackage.indexOf(this.getModule()) === 0){
+        ngsItemPackage = ngsItemPackage.substr(ngsItemPackage.indexOf(".") + 1);
+      }
       let ngsItemModule = ngsItemPackage.replace(/\./g, '/', function (delim) {
         return delim.replace('_', '/');
       });
@@ -470,22 +493,28 @@ window.NGS = {
       return document.querySelectorAll(selector);
     };
 //removeClass
+    Node.prototype.removeClass = function (className) {
+      this.classList.remove(className);
+    };
     NodeList.prototype.removeClass = function (className) {
       if(this.length < 0){
         return false;
       }
       this.forEach((elem) => {
-        elem.classList.remove(className);
+        elem.removeClass(className);
       });
       return true;
     };
 //addClass
+    Node.prototype.addClass = function (className) {
+      this.classList.add(className);
+    };
     NodeList.prototype.addClass = function (className) {
       if(this.length < 0){
         return false;
       }
       this.forEach((elem) => {
-        elem.classList.add(className);
+        elem.addClass(className);
       });
       return true;
     };
@@ -508,6 +537,46 @@ window.NGS = {
         elem.removeEventListener(type, listner, options);
       });
       return true;
+    };
+    let setElemAttribute = function (elem, name, value) {
+      if(elem instanceof Node){
+        return elem.setAttribute(name, value);
+      }
+      return false;
+    };
+    let getElemAttribute = function (elem, name) {
+      if(elem instanceof Node){
+        return elem.getAttribute(name);
+      }
+      return false;
+    };
+    //add Attribute
+    Node.prototype.attr = function (name, value) {
+      if(value){
+        return setElemAttribute(this, name, value);
+      }
+      return getElemAttribute(this, name);
+    };
+    NodeList.prototype.attr = function (atribute, value) {
+      if(this.length < 0){
+        return false;
+      }
+      let statusArr = [];
+      this.forEach((elem) => {
+        statusArr.push(elem.attr(atribute, value));
+      });
+      return statusArr;
+    };
+    //click event listener
+    NodeList.prototype.click = function (listner, options) {
+      if(this.length < 0){
+        return false;
+      }
+      let statusArr = [];
+      this.forEach((elem) => {
+        statusArr.push(elem.addEventListener('click', listner, options));
+      });
+      return statusArr;
     };
     this._isInitedUtilities = true;
   }

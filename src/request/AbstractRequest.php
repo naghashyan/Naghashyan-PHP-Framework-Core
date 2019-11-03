@@ -3,8 +3,9 @@
  * parent class for all ngs requests (loads/action)
  *
  * @author Zaven Naghashyan <zaven@naghashyan.com>, Levon Naghashyan <levon@naghashyan.com>
+ * @site https://naghashyan.com
  * @year 2009-2019
- * @version 3.8.0
+ * @version 4.0.0
  * @package ngs.framework
  *
  * This file is part of the NGS package.
@@ -20,12 +21,14 @@ namespace ngs\request {
 
   use ngs\exceptions\NoAccessException;
   use ngs\util\NgsArgs;
+  use ngs\util\Pusher;
 
   abstract class AbstractRequest {
 
     protected $requestGroup;
     protected $params = array();
     protected $ngsStatusCode = 200;
+    private $ngsPushParams = ['link' => [], 'script' => [], 'img' => []];
 
     public function initialize() {
     }
@@ -134,8 +137,7 @@ namespace ngs\request {
     }
 
 
-    public function onNoAccess() {
-    }
+    protected abstract function onNoAccess(): void;
 
     /**
      * public method helper method for do http redirect
@@ -148,6 +150,44 @@ namespace ngs\request {
      */
     protected function redirect($url) {
       NGS()->getHttpUtils()->redirect($url);
+    }
+
+    /**
+     * set http2 push params
+     * it will add in response header
+     * suppored types img, script and link
+     *
+     * @param string $type
+     * @param string $value
+     * @return bool
+     */
+    protected function setHttpPushParam(string $type, string $value): bool {
+      if (isset($this->ngsPushParams[$type])){
+        $this->ngsPushParams[$type] = $value;
+        return true;
+      }
+      return false;
+    }
+
+    /**
+     * set http2 push params
+     * it will add in response header
+     * suppored types img, script and link
+     *
+     * @param string $type
+     * @param string $value
+     * @return bool
+     */
+    protected function insertHttpPushParams(): void {
+      foreach ($this->ngsPushParams['script'] as $script){
+        Pusher::getInstance()->src($script);
+      }
+      foreach ($this->ngsPushParams['link'] as $link){
+        Pusher::getInstance()->link($link);
+      }
+      foreach ($this->ngsPushParams['img'] as $img){
+        Pusher::getInstance()->img($img);
+      }
     }
 
     protected abstract function afterRequest();

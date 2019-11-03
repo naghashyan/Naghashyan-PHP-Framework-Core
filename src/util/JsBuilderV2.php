@@ -36,6 +36,7 @@ namespace ngs\util {
     }
 
     public function streamDevFile(string $module, string $file) {
+
       $jsFile = substr($file, stripos($file, NGS()->get('JS_DIR')) + strlen(NGS()->get('JS_DIR')) + 1);
       $realFile = realpath(NGS()->getJsDir($module) . '/' . $jsFile);
       if (file_exists($realFile)){

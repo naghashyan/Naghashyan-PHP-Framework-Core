@@ -55,7 +55,6 @@ let Dispatcher = {
   },
 
   action: function (actionObject, params) {
-    console.log(actionObject.getPackage(), "do_" + actionObject.getName());
     let _url = this.computeUrl(actionObject.getPackage(), "do_" + actionObject.getName());
     let onComplete = function (responseText) {
       var res = JSON.parse(responseText);

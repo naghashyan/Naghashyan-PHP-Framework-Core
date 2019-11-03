@@ -100,7 +100,7 @@ class Pusher {
    * @param string $type
    * @return string
    */
-  public function getHeader(string $type = null): string {
+  public function getHeader(string $type = null): ?string {
     $line = [];
 
     if ($type === null && (bool)$this->links){
@@ -114,8 +114,7 @@ class Pusher {
       $line[] = $this->toHeader($type, $this->links[$type]);
 
     } else{
-
-      throw new \Exception("header type is not valid");
+      return null;
     }
 
     return implode($line, ', ');
@@ -130,8 +129,10 @@ class Pusher {
     if (headers_sent($f, $l)){
       throw new \Exception("headers already sent at file: {$f}, line: {$l}");
     }
-
-    header("Link: " . $this->getHeader());
+    if ($headers = $this->getHeader()){
+      header("Link: " . $headers);
+    }
+    return;
   }
 
   /**
