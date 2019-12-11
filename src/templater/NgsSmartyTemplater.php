@@ -121,8 +121,10 @@ namespace ngs\templater {
         trigger_error("nest: missing 'ns' parameter");
         return;
       }
-
       $nsValue = $template->tpl_vars["ns"]->value;
+      if (!isset($nsValue["inc"][$params["ns"]])){
+        return '';
+      }
       $namespace = $nsValue["inc"][$params["ns"]]["namespace"];
 
       $include_file = $nsValue["inc"][$params["ns"]]["filename"];

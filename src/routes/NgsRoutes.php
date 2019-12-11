@@ -318,58 +318,40 @@ namespace ngs\routes {
           $route = substr($route, 1);
         }
         $route = str_replace('/', '\/', $route) . '\/';
-        $newUri = preg_replace('/^' . $route . '/', '', $fullUri . '/', -1, $count);
-        if ($count == 0){
+
+        $newUri = preg_replace('/^' . $route . '$/', '', $fullUri . '/', -1, $count);
+        if ($count === 0){
           return false;
         }
         preg_match_all('/([^\/\?]+)/', $newUri, $matches);
         return $matches[1];
       }
-      preg_match_all('/\[([0-9A-Za-z\:\/\-\_]+)\]|([0-9A-Za-z\-\_])+/', $routeArr['route'], $matches, PREG_SET_ORDER);
-      $urlMatchArgs = array();
-      foreach ((array)$matches as $matchKey => $matchedValues){
-        $value = $matchedValues[1];
-        if ($value == ''){
-          $value = $matchedValues[0];
-        }
-        $isAddParam = true;
-        if (strpos($value, ':') === false){
-          $value = str_replace('/', '', $value);
-          $key = $value;
-          $routeArr['constraints'][$key] = $value;
-          $isAddParam = false;
-        } else{
-          $key = substr($value, strpos($value, ':') + 1);
-        }
-        $isNecessary = true;
-        if (strpos($value, '/') !== false){
-          $isNecessary = false;
-        }
-
-        if (!isset($routeArr['constraints'][$key])){
+      $routeUrlExp = $routeArr['route'];
+      $originalUrl = implode('/', $uriParams);
+      foreach ((array)$routeArr['constraints'] as $item => $constraint){
+        if (strpos($routeUrlExp, ':' . $item) === false){
           throw new \ngs\exceptions\DebugException('constraints and routs params note matched, please check in ' . NGS()->get('NGS_ROUTS') . 'in this rout section ' . $route);
         }
-
-        if (isset($uriParams[0])){
-          preg_match('/' . $routeArr['constraints'][$key] . '+/', $uriParams[0], $args);
+        // $replaceValue = '(' . $constraint . ')';
+        //is  Necessary
+        if (strpos($routeUrlExp, '/:' . $item) === false){
+          $routeUrlExp = str_replace('[:' . $item . ']', '(?<'.$item.'>' . $constraint . ')', $routeUrlExp);
         } else{
-          if ($isNecessary){
-            return false;
-          }
-          break;
+          $routeUrlExp = str_replace('[/:' . $item . ']', '/?(?<'.$item.'>' . $constraint . ')?', $routeUrlExp);
         }
-        if (count($args) == 0 && $isNecessary){
-          return false;
-        } else if (!isset($args[0])){
-          $urlMatchArgs[$key] = null;
-        } else{
-          if ($isAddParam){
-            $urlMatchArgs[$key] = $args[0];
-          }
-        }
-        array_shift($uriParams);
       }
-      return array_merge($urlMatchArgs, $uriParams);
+      $routeUrlExp = str_replace('/', '\/' , $routeUrlExp);
+      preg_match('/'.$routeUrlExp.'$/', $originalUrl, $matches);
+      if(!$matches){
+        return false;
+      }
+      $urlMatchArgs = [];
+      foreach ((array)$routeArr['constraints'] as $item => $constraint){
+        if(isset($matches[$item])){
+          $urlMatchArgs[$item] = $matches[$item];
+        }
+      }
+      return $urlMatchArgs;
     }
 
 

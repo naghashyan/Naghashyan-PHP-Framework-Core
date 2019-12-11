@@ -1,0 +1,21 @@
+{
+  "builders": [
+    {
+      "source_dir": "src",
+      "out_dir": "ngs",
+      "module": "ngs",
+      "files": [
+        "NGS.js",
+        "Dispatcher.js",
+        "AbstractRequest.js",
+        "AbstractLoad.js",
+        "AbstractAction.js",
+        "AjaxLoader.js",
+        "CustomEvent.js",
+        "NgsEvents.js",
+        "UrlObserver.js",
+        "util/NgsFormValidator.js"
+      ]
+    }
+  ]
+}

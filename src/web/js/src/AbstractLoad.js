@@ -183,6 +183,7 @@ export default class AbstractLoad extends AbstractRequest {
 
 
   setPermalink(permalink) {
+    console.log(permalink);
     this.ngsPermalink = permalink;
   }
 

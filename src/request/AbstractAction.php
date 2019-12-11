@@ -27,6 +27,16 @@ namespace ngs\request {
       $this->afterAction();
     }
 
+    /**
+     * this function invoked when user hasn't permistion
+     *
+     * @abstract
+     * @access
+     * @return void
+     */
+    public function onNoAccess(): void {
+    }
+
     public function afterAction() {
       return null;
     }

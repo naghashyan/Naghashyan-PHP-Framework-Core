@@ -75,15 +75,15 @@ let Dispatcher = {
       onComplete: onComplete.bind(this),
       onXHRError: requestObject.onXHRError,
       onError: function (responseText) {
-        var res = JSON.parse(responseText);
+        let res = JSON.parse(responseText);
         requestObject.onError(res);
       }.bind(this),
       onInvalidUser: function (responseText) {
-        var res = JSON.parse(responseText);
+        let res = JSON.parse(responseText);
         requestObject.onInvalidUser(res);
       }.bind(this),
       onNoAccess: function (responseText) {
-        var res = JSON.parse(responseText);
+        let res = JSON.parse(responseText);
         requestObject.onNoAccess(res);
       }.bind(this)
     };
@@ -92,7 +92,7 @@ let Dispatcher = {
 
   apiCall: function (_url, params, onSucces) {
     _url = NGS.getConfig().apiUrl + "/" + _url.replace(".", "/");
-    var options = {
+    let options = {
       method: actionObject.getMethod(),
       params: params,
       onComplete: function (responseText) {
@@ -113,7 +113,7 @@ let Dispatcher = {
    * @see
    */
   computeUrl: function () {
-    let _package = arguments[0].replace(".", "_");
+    let _package = arguments[0].replace(/\./g, '_');
     let command = "";
     if(arguments.length === 2){
       command = arguments[1];
