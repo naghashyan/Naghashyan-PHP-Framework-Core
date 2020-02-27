@@ -30,25 +30,25 @@ namespace ngs\util {
     private $builderJsonArr = array();
 
     public function streamFile(string $module, string $file) {
-      if ($this->getEnvironment() === "production"){
+      if ($this->getEnvironment() === 'production'){
 
-        $filePath = realpath(NGS()->getPublicDir() . "/" . $file);
-        if (strpos($file, NGS()->getDefinedValue("PUBLIC_OUTPUT_DIR")) === false){
+        $filePath = realpath(NGS()->getPublicDir() . '/' . $file);
+        if (strpos($file, NGS()->getDefinedValue('PUBLIC_OUTPUT_DIR')) === false){
           if (!$filePath){
-            throw new DebugException(NGS()->getPublicDir() . "/" . $file . " NOT FOUND");
+            throw new DebugException(NGS()->getPublicDir() . '/' . $file . ' NOT FOUND');
           }
         } elseif (file_exists($filePath) == false){
           $this->build($file);
         }
-        NGS()->getFileUtils()->sendFile($filePath, array("mimeType" => $this->getContentType(), "cache" => true));
+        NGS()->getFileUtils()->sendFile($filePath, array('mimeType' => $this->getContentType(), 'cache' => true));
         return;
       }
-      if (strpos($file, "devout") !== false){
-        $realFile = substr($file, strpos($file, "/") + 1);
+      if (strpos($file, 'devout') !== false){
+        $realFile = substr($file, strpos($file, '/') + 1);
 
-        $realFile = realpath(NGS()->getPublicDir($module) . "/" . $realFile);
+        $realFile = realpath(NGS()->getPublicDir($module) . '/' . $realFile);
         if ($realFile == null){
-          throw new DebugException($file . " not found");
+          throw new DebugException($file . ' not found');
         }
         $buffer = file_get_contents($realFile);
         $buffer = $this->customBufferUpdates($buffer);
@@ -56,15 +56,15 @@ namespace ngs\util {
         echo $buffer;
         return;
       }
-      $realFile = realpath(NGS()->getPublicDir($module) . "/" . $file);
+      $realFile = realpath(NGS()->getPublicDir($module) . '/' . $file);
       if (file_exists($realFile)){
-        NGS()->getFileUtils()->sendFile($realFile, array("mimeType" => $this->getContentType(), "cache" => false));
+        NGS()->getFileUtils()->sendFile($realFile, array('mimeType' => $this->getContentType(), 'cache' => false));
         return;
       }
 
       $files = $this->getBuilderArr($this->getBuilderJsonArr(), $file);
       if (count($files) == 0){
-        throw new DebugException("Please add file in builder under section " . $file);
+        throw new DebugException('Please add file in builder under section ' . $file);
       }
       $this->doDevOutput($files);
     }
@@ -95,34 +95,34 @@ namespace ngs\util {
             continue;
           }
           $tmpArr = array();
-          $tmpArr["output_file"] = (string)$value->output_file;
-          $tmpArr["debug"] = false;
+          $tmpArr['output_file'] = (string)$value->output_file;
+          $tmpArr['debug'] = false;
           if (isset($value->compress)){
-            $tmpArr["compress"] = $value->compress;
+            $tmpArr['compress'] = $value->compress;
           }
           if (isset($value->type)){
-            $tmpArr["type"] = $value->type;
+            $tmpArr['type'] = $value->type;
           }
-          $tmpArr["files"] = (array)$value->files;
+          $tmpArr['files'] = (array)$value->files;
         } else{
           $tmpArr = array();
-          $tmpArr["output_file"] = (string)$value->output_file;
-          $tmpArr["debug"] = false;
+          $tmpArr['output_file'] = (string)$value->output_file;
+          $tmpArr['debug'] = false;
           if (isset($value->compress)){
-            $tmpArr["compress"] = $value->compress;
+            $tmpArr['compress'] = $value->compress;
           }
           if (isset($value->type)){
-            $tmpArr["type"] = $value->type;
+            $tmpArr['type'] = $value->type;
           }
-          $tmpArr["files"] = array();
+          $tmpArr['files'] = array();
           if (isset($value->builders) && is_array($value->builders)){
             foreach ($value->builders as $builder){
               if (!is_array($builder)){
                 $builder = array($builder);
               }
               $tempArr = $this->getBuilderArr($builder, $builder[0]->output_file);
-              if (isset($tempArr["files"])){
-                $tmpArr["files"] = array_merge($tmpArr["files"], $tempArr["files"]);
+              if (isset($tempArr['files'])){
+                $tmpArr['files'] = array_merge($tmpArr['files'], $tempArr['files']);
               }
             }
           } else{
@@ -141,9 +141,9 @@ namespace ngs\util {
             if (isset($value->files)){
               foreach ((array)$value->files as $file){
                 $_tmpArr = array();
-                $_tmpArr["module"] = $module;
-                $_tmpArr["file"] = $file;
-                $_tmpArr["type"] = $type;
+                $_tmpArr['module'] = $module;
+                $_tmpArr['file'] = $file;
+                $_tmpArr['type'] = $type;
                 $tmpFileArr[] = $_tmpArr;
               }
             }
@@ -152,10 +152,10 @@ namespace ngs\util {
               $dir = $value->dir;
               if (!isset($dir->path)){
 
-                new DebugException("please provide directory path");
+                new DebugException('please provide directory path');
               }
               if (!isset($dir->ext)){
-                new DebugException("please provide extenstion");
+                new DebugException('please provide extenstion');
               }
               if (!isset($dir->recursively) || !is_bool($dir->recursively)){
                 $dir->recursively = true;
@@ -163,7 +163,7 @@ namespace ngs\util {
               $tmpFileArr = $this->readDirFiles($dir->path, $dir->ext, $dir->recursively, $module, $type);
             }
 
-            $tmpArr["files"] = $tmpFileArr;
+            $tmpArr['files'] = $tmpFileArr;
           }
         }
       }
@@ -171,7 +171,7 @@ namespace ngs\util {
     }
 
     protected function readDirFiles($dirPath, $ext, $recursively, $module, $_type): array {
-      $realPath = realpath($this->getItemDir($module) . "/" . $dirPath);
+      $realPath = realpath($this->getItemDir($module) . '/' . $dirPath);
       $itemFiles = [];
       if (!is_dir($realPath)){
         return [];
@@ -181,20 +181,20 @@ namespace ngs\util {
         return [];
       }
       while (($file = readdir($dh)) !== false){
-        if ($file != "." && $file != ".."){
-          $type = filetype($realPath . "/" . $file);
-          if ($type == "dir" && $recursively === true){
-            $tmpArr = $this->readDirFiles($dirPath . "/" . $file, $ext, $recursively, $module, $_type);
+        if ($file != '.' && $file != '..'){
+          $type = filetype($realPath . '/' . $file);
+          if ($type == 'dir' && $recursively === true){
+            $tmpArr = $this->readDirFiles($dirPath . '/' . $file, $ext, $recursively, $module, $_type);
             $itemFiles = array_merge($itemFiles, $tmpArr);
-          } elseif ($type == "file"){
-            $filePath = realpath($realPath . "/" . $file);
+          } elseif ($type == 'file'){
+            $filePath = realpath($realPath . '/' . $file);
             $fileInfo = pathinfo($filePath);
-            $fileExt = $fileInfo["extension"];
+            $fileExt = $fileInfo['extension'];
             if ($fileExt == $ext){
               $_tmpArr = [];
-              $_tmpArr["module"] = $module;
-              $_tmpArr["file"] = substr($filePath, strlen($this->getItemDir($module)) + 1);
-              $_tmpArr["type"] = $_type;
+              $_tmpArr['module'] = $module;
+              $_tmpArr['file'] = substr($filePath, strlen($this->getItemDir($module)) + 1);
+              $_tmpArr['type'] = $_type;
               $itemFiles[] = $_tmpArr;
             }
           }
@@ -211,23 +211,23 @@ namespace ngs\util {
         return;
       }
       $outDir = $this->getOutputDir();
-      $buffer = "";
-      foreach ($files["files"] as $value){
-        $module = "";
-        if ($value["module"] == null){
-          $module = "ngs";
+      $buffer = '';
+      foreach ($files['files'] as $value){
+        $module = '';
+        if ($value['module'] == null){
+          $module = 'ngs';
         }
-        $inputFile = realpath($this->getItemDir($module) . "/" . trim($value["file"]));
+        $inputFile = realpath($this->getItemDir($module) . '/' . trim($value['file']));
         if (!$inputFile){
-          throw new DebugException($this->getItemDir($module) . "/" . trim($value["file"]) . " not found");
+          throw new DebugException($this->getItemDir($module) . '/' . trim($value['file']) . ' not found');
         }
-        $buffer .= file_get_contents($inputFile) . "\n\r";
+        $buffer .= file_get_contents($inputFile) . '\n\r';
       }
       $buffer = $this->customBufferUpdates($buffer);
-      if ($files["compress"] == true){
+      if ($files['compress'] == true){
         $buffer = $this->doCompress($buffer);
       }
-      $outFile = $this->getOutputDir() . "/" . $files["output_file"];
+      $outFile = $this->getOutputDir() . '/' . $files['output_file'];
       //set file time same with builder.json
       touch($outFile, fileatime($this->getBuilderFile()));
       file_put_contents($outFile, $buffer);
@@ -249,6 +249,9 @@ namespace ngs\util {
     public function getBuilderJsonArr() {
       if (count($this->builderJsonArr) > 0){
         return $this->builderJsonArr;
+      }
+      if(!$this->getBuilderFile()){
+        return [];
       }
       return $this->builderJsonArr = json_decode(file_get_contents($this->getBuilderFile()));
     }

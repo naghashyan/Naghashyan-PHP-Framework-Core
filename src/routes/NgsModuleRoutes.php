@@ -212,21 +212,6 @@ namespace ngs\routes {
     }
 
     /**
-     * return module by domain
-     *
-     * @param String $domain
-     *
-     * @return string
-     */
-    private function getModuleByDomain($domain) {
-      $routes = $this->getRouteConfig();
-      if (isset($routes['domain'][$domain])){
-        return $this->getMatchedModule($routes['domain'][$domain], $domain, 'domain');
-      }
-      return null;
-    }
-
-    /**
      * return module by subdomain
      *
      * @param String $domain

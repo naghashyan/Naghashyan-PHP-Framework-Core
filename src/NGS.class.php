@@ -191,7 +191,7 @@ class NGS {
    * @return String config dir path
    */
   public function getNgsCmsDir(): string {
-    return realpath(__DIR__ . '../../../ngs-php-cms/src');
+    return realpath(__DIR__ . '/../../ngs-php-cms/src');
   }
 
   /**

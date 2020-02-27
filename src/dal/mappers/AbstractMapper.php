@@ -19,7 +19,10 @@
  */
 namespace ngs\dal\mappers {
 
-	abstract class AbstractMapper {
+  use ngs\dal\dto\AbstractDto;
+  use ngs\exceptions\DebugException;
+
+  abstract class AbstractMapper {
 
 		/**
 		 * The child class must implemet this method to return table name.
@@ -39,7 +42,7 @@ namespace ngs\dal\mappers {
 		 * The child class must implement this method
 		 * to return an instance of corresponding DTO class.
 		 *
-		 * @return
+		 * @return AbstractDto
 		 */
 		public abstract function createDto();
 

@@ -85,39 +85,39 @@ namespace ngs\routes {
     }
 
     /**
+     *
      * this method return pakcage and command from url
      * check url if set dynamic container return manage using standart routing
      * if not manage url using routes file if matched succsess return array if not false
      * this method can be overrided from users for they custom routing scenarios
      *
-     * @param String $url
-     *
-     * @return array|false
+     * @param string $url
+     * @param bool $is404
+     * @return array|null
+     * @throws DebugException
+     * @throws NotFoundException
      */
-    public function getDynamicLoad($url, $is404 = false) {
+    public function getDynamicLoad(string $url, bool $is404 = false): ?array {
       $loadsArr = array('matched' => false);
       //do check if uri exist if not get default route
       preg_match_all('/(\/([^\/\?]+))/', $url, $urlMatches);
       $urlMatches = $urlMatches[2];
       $matches = $urlMatches;
       $staticFile = false;
-      if (($staticfilePos = strrpos(end($matches), '.')) !== false){
-        $staticFile = true;
-      }
       $package = array_shift($matches);
       $fileUrl = $url;
-      if ($fileUrl[0] == '/'){
+      if (strpos($fileUrl, '/') === 0){
         $fileUrl = substr($fileUrl, 1);
       }
       $urlPartsArr = $matches;
-      if ($package == $this->getDynContainer()){
+      if ($package === $this->getDynContainer()){
         $package = array_shift($urlPartsArr);
-        if ($package == NGS()->getModulesRoutesEngine()->getModuleNS()){
+        if ($package === NGS()->getModulesRoutesEngine()->getModuleNS()){
           $package = array_shift($urlPartsArr);
         }
         $loadsArr = $this->getStandartRoutes($package, $urlPartsArr);
       } else{
-        if ($package == null){
+        if ($package === null){
           $package = 'default';
         }
         $loadsArr = $this->getDynRoutesLoad($url, $package, $urlPartsArr, $is404, $staticFile);
@@ -126,6 +126,9 @@ namespace ngs\routes {
         $actionArr = $this->getLoadORActionByAction($loadsArr['action']);
         $loadsArr['type'] = $actionArr['type'];
         $loadsArr['action'] = $actionArr['action'];
+      }
+      if ((strrpos(end($matches), '.')) !== false){
+        $staticFile = true;
       }
       //if static file
       if ($loadsArr['matched'] == false && $staticFile == true){
@@ -208,22 +211,27 @@ namespace ngs\routes {
     }
 
     /**
+     *
      * NGS dynamic routing using routes json file for url match
      * first url part use for json array key match
      *
-     * @param String $package
+     * @param string $url
+     * @param string $package
      * @param array $urlPartsArr
-     *
+     * @param bool $is404
+     * @param bool $staticFile
      * @return array|false
+     * @throws DebugException
+     * @throws NotFoundException
      */
-    private function getDynRoutesLoad($url, $package, $urlPartsArr, $is404 = false, $staticFile = false) {
+    private function getDynRoutesLoad(string $url, string $package, array $urlPartsArr, bool $is404 = false, bool $staticFile = false) {
       $routes = $this->getRouteConfig();
       if (!isset($routes[$package])){
         return array('matched' => false);
       }
 
       $matchedRoutesArr = array();
-      if ($package == 'default'){
+      if ($package === 'default'){
         $matchedRoutesArr[][$package] = $routes[$package];
       } else{
         $matchedRoutesArr = $routes[$package];
@@ -233,7 +241,7 @@ namespace ngs\routes {
       foreach ($matchedRoutesArr as $route){
 
         if (isset($route['default'])){
-          if ($route['default'] == 'dyn'){
+          if ($route['default'] === 'dyn'){
             $dynRoute = true;
             continue;
           }
@@ -261,14 +269,14 @@ namespace ngs\routes {
           unset($route['action']);
         }
       }
-      if ($args == false && !isset($route['action'])){
-        if ($dynRoute == true){
+      if ($args === false && !isset($route['action'])){
+        if ($dynRoute === true){
           return $this->getStandartRoutes($package, $urlPartsArr);
         }
         if ($staticFile){
           return array('matched' => false);
         }
-        if (NGS()->getEnvironment() == 'development'){
+        if (NGS()->getEnvironment() === 'development'){
           throw new DebugException('No Matched Routes');
         }
         throw new NotFoundException();
@@ -300,13 +308,13 @@ namespace ngs\routes {
      * if in routes rule found constraints
      * using url others part of url for matching
      *
-     * @param String $uriParams
-     * @param String $route
-     * @param array $constraints
+     * @param array $uriParams
+     * @param array $routeArr
      *
      * @return array|false
+     * @throws DebugException
      */
-    private function getMatchedRoute($uriParams, $routeArr) {
+    private function getMatchedRoute(array $uriParams, array $routeArr) {
       $route = '';
       if (!isset($routeArr['route'])){
         $routeArr['route'] = '';
@@ -314,7 +322,7 @@ namespace ngs\routes {
       $route = $routeArr['route'];
       if (strpos($route, '[:') === false && strpos($route, '[/:') === false){
         $fullUri = implode('/', $uriParams);
-        if (isset($route[0]) && $route[0] == '/'){
+        if (isset($route[0]) && strpos($route, '/') === 0){
           $route = substr($route, 1);
         }
         $route = str_replace('/', '\/', $route) . '\/';
@@ -329,25 +337,26 @@ namespace ngs\routes {
       $routeUrlExp = $routeArr['route'];
       $originalUrl = implode('/', $uriParams);
       foreach ((array)$routeArr['constraints'] as $item => $constraint){
+
         if (strpos($routeUrlExp, ':' . $item) === false){
           throw new \ngs\exceptions\DebugException('constraints and routs params note matched, please check in ' . NGS()->get('NGS_ROUTS') . 'in this rout section ' . $route);
         }
         // $replaceValue = '(' . $constraint . ')';
         //is  Necessary
         if (strpos($routeUrlExp, '/:' . $item) === false){
-          $routeUrlExp = str_replace('[:' . $item . ']', '(?<'.$item.'>' . $constraint . ')', $routeUrlExp);
+          $routeUrlExp = str_replace('[:' . $item . ']', '(?<' . $item . '>' . $constraint . ')', $routeUrlExp);
         } else{
-          $routeUrlExp = str_replace('[/:' . $item . ']', '/?(?<'.$item.'>' . $constraint . ')?', $routeUrlExp);
+          $routeUrlExp = str_replace('[/:' . $item . ']', '/?(?<' . $item . '>' . $constraint . ')?', $routeUrlExp);
         }
       }
-      $routeUrlExp = str_replace('/', '\/' , $routeUrlExp);
-      preg_match('/'.$routeUrlExp.'$/', $originalUrl, $matches);
-      if(!$matches){
+      $routeUrlExp = str_replace('/', '\/', $routeUrlExp);
+      preg_match('/' . $routeUrlExp . '$/', $originalUrl, $matches);
+      if (!$matches){
         return false;
       }
       $urlMatchArgs = [];
       foreach ((array)$routeArr['constraints'] as $item => $constraint){
-        if(isset($matches[$item])){
+        if (isset($matches[$item])){
           $urlMatchArgs[$item] = $matches[$item];
         }
       }

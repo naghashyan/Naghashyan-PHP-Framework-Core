@@ -14,7 +14,7 @@
     }
   ],
   "require": {
-    "php": ">=7.2.0",
+    "php": ">=7.3.0",
     "smarty/smarty": "~3.1",
     "oyejorge/less.php": "~1.7.0.9",
     "scssphp/scssphp": "^1.0",

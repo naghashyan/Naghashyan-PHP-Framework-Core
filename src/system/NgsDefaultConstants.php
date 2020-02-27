@@ -142,7 +142,7 @@ NGS()->define('LOADS_DIR', 'loads');
 NGS()->define('ACTIONS_DIR', 'actions');
 //defining routs file path
 NGS()->define('NGS_ROUTS', 'routes.json');
-
+NGS()->define('NGS_ROUTS_ARRAY', 'routes.json');
 
 //defining database connector class path
 

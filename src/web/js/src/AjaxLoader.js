@@ -98,10 +98,14 @@ let AjaxLoader = {
 
     let sendingData = null;
     let urlParams = "";
-    if(options.method.toUpperCase() === 'DELETE' || options.method.toUpperCase() === 'GET' || options.paramsIn === "query"){
+    if(options.method.toUpperCase() === 'DELETE' || options.method.toUpperCase() === 'GET' || options.paramsIn === "query" || options.method.toUpperCase() === 'DOWNLOAD'){
       urlParams = this.serializeUrl(options.params);
       if(urlParams){
         _url = _url + "?" + urlParams;
+      }
+      if(options.method.toUpperCase() === 'DOWNLOAD') {
+        window.location = _url;
+        return;
       }
     } else if(options.paramsIn === "formData"){
       if(options.params instanceof FormData){

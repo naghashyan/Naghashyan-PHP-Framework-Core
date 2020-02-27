@@ -5,7 +5,7 @@
  * @author Levon Naghashyan
  * @site http://naghashyan.com
  * @mail levon@naghashyan.com
- * @year 2010-2019
+ * @year 2010-2020
  * @package ngs.framwork
  * @version 3.0.0
  */
@@ -36,15 +36,14 @@ export default class AbstractLoad extends AbstractRequest {
 
     let containerElem = this._getContentElem();
     if(containerElem){
-      var parentElem = containerElem.parentElement.closest("[data-ngs-uuid]");
+      let parentElem = containerElem.parentElement.closest("[data-ngs-uuid]");
       if(parentElem){
-        var parentLoad = NGS.getActiveLoadByUUID(parentElem.getAttribute("data-ngs-uuid"));
+        let parentLoad = NGS.getActiveLoadByUUID(parentElem.getAttribute("data-ngs-uuid"));
         if(parentLoad){
           this.setNGSParentLoad(parentLoad);
         }
       }
     }
-
     if(containerElem){
       this._ngsUUID = NGS.guid();
       containerElem.setAttribute("data-ngs-uuid", this._ngsUUID);
@@ -55,18 +54,18 @@ export default class AbstractLoad extends AbstractRequest {
     if(this.getPermalink() != null){
       NgsEvents.fireEvent('onUrlUpdate', {"load": this});
     }
-
     //fire after load event
     NgsEvents.fireEvent('onAfterLoad', {"load": this});
-    this.onPageUpdateLoadHandler = function () {
+    let onPageUpdateLoadHandler = function () {
+      let containerElem = this._getContentElem();
       if(!containerElem){
-        document.removeEventListener("ngs-onAfterLoad", this.onPageUpdateLoadHandler);
+        document.removeEventListener("ngs-onAfterLoad", onPageUpdateLoadHandler);
         this.onUnLoad({containerNotFound: true});
         this.terminate();
         return;
       }
       if(containerElem.getAttribute("data-ngs-uuid") !== this.getLoadUUID()){
-        document.removeEventListener("ngs-onAfterLoad", this.onPageUpdateLoadHandler);
+        document.removeEventListener("ngs-onAfterLoad", onPageUpdateLoadHandler);
         NGS.removeActiveLoad(this._ngsUUID);
         this.terminate();
         this.onUnLoad();
@@ -74,13 +73,13 @@ export default class AbstractLoad extends AbstractRequest {
     }.bind(this);
     this.initializeLoad();
     this.afterLoad(params);
-    document.addEventListener("ngs-onAfterLoad", this.onPageUpdateLoadHandler);
-    let laodsArr = NGS.getNestedLoadByParent(this.getAction());
-    if(laodsArr == null){
+    document.addEventListener("ngs-onAfterLoad", onPageUpdateLoadHandler);
+    let loadsArr = NGS.getNestedLoadByParent(this.getAction());
+    if(loadsArr == null){
       return;
     }
-    for (let i = 0; i < laodsArr.length; i++) {
-      NGS.nestLoad(laodsArr[i].load, laodsArr[i].params, this.getAction());
+    for (let i = 0; i < loadsArr.length; i++) {
+      NGS.nestLoad(loadsArr[i].load, loadsArr[i].params, this.getAction());
     }
   }
 
@@ -117,9 +116,9 @@ export default class AbstractLoad extends AbstractRequest {
 
    */
   nestLoad(parent, params) {
+    this.setArgs(params);
     this.beforeLoad();
     this.setParentLoadName(parent);
-    this.setArgs(params);
     this.service(params);
 
   }
@@ -132,7 +131,7 @@ export default class AbstractLoad extends AbstractRequest {
   /**
    * Abstract method for returning container of the load, Children of the AbstractLoad class should override this method
    *
-   * @return  The container of the load.
+   * @return  string
 
    */
   getContainer() {
@@ -140,9 +139,9 @@ export default class AbstractLoad extends AbstractRequest {
   }
 
   /**
-   * In case of the pagging framework uses own containers, for indicating the container of the main content,
+   * In case of the  framework uses own containers, for indicating the container of the main content,
    * without pagging panels
-   * @return  The own container of the load
+   * @return  string
 
    */
   getOwnContainer() {
@@ -153,7 +152,7 @@ export default class AbstractLoad extends AbstractRequest {
   /**
    * Abstract function, Child classes should be override this function,
    * and should return the name of the server load, formated with framework's URL nameing convention
-   * @return The name of the server load, formated with framework's URL nameing convention
+   * @return string name of the server load, formated with framework's URL nameing convention
 
    */
   getUrl() {
@@ -183,7 +182,6 @@ export default class AbstractLoad extends AbstractRequest {
 
 
   setPermalink(permalink) {
-    console.log(permalink);
     this.ngsPermalink = permalink;
   }
 
@@ -207,19 +205,27 @@ export default class AbstractLoad extends AbstractRequest {
     return this._parentLoad;
   }
 
+  /**
+   *
+   * return container DOM element
+   *
+   * @returns {string|null|HTMLElement}
+   * @private
+   */
   _getContentElem() {
-    if(typeof this.getContainer() === "object"){
+    if(!this.getContainer()){
+      return null;
+    }
+    if(this.getContainer() instanceof Node){
       return this.getContainer();
     }
     let containerElem = document.getElementById(this.getContainer());
-    if(!containerElem && this.getContainer()){
+    if(!containerElem){
       try {
-        containerElem = document.querySelector("." + this.getContainer());
+        containerElem = document.querySelector(this.getContainer());
       } catch (error) {
-        console.log(error);
         return null;
       }
-
     }
     return containerElem;
   }
@@ -291,5 +297,25 @@ export default class AbstractLoad extends AbstractRequest {
 
   pauseLoad() {
     this.abort = true;
+  }
+
+  /**
+   *
+   * @param template
+   * @param data
+   * @param toObject
+   * @returns {HTMLCollection|null|Element|*}
+   */
+
+  renderTemplate(template, data, toObject = true) {
+    let htmlStr = template.replace(
+      /\$\{\s*([^\s\}]+)\s*\}/g,
+      (_, capturedIdentifier) =>
+        data[capturedIdentifier]
+    );
+    if(toObject){
+      return NGS.toNode(htmlStr);
+    }
+    return htmlStr;
   }
 };

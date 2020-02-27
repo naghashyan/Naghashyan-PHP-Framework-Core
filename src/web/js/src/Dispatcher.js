@@ -31,7 +31,7 @@ let Dispatcher = {
     }
     var onComplete = function (responseText) {
       try {
-        var res = JSON.parse(responseText);
+        let res = JSON.parse(responseText);
         if(typeof (res) == "object" && typeof (res.nl)){
           for (var p in res.nl) {
             if(res.nl.hasOwnProperty(p)){

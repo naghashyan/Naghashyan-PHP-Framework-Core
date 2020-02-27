@@ -184,24 +184,28 @@ window.NGS = {
         onComplateCallback.forEach(calback => {
           calback.apply(this, arguments);
         });
-        resolve(arguments);
       };
       let _actionErrorCallbackFunction = function () {
-        onErrorCallback.forEach(calback => {
-          calback.apply(this, arguments);
-        });
-        reject(arguments);
+        for (let i = 0; i < onErrorCallback.length; i++) {
+          let result = onErrorCallback[i].apply(this, arguments);
+          if(result === false){
+            break;
+          }
+        }
       };
       let onComplateCallback = [actionObject.onComplate];
       if(typeof (onComplate) === "function"){
         onComplateCallback.push(onComplate);
       }
-      let onErrorCallback = [actionObject.onError];
+      let onErrorCallback = [];
       if(typeof (onError) === "function"){
         onErrorCallback.push(onError);
         actionObject.onNoAccess = onError;
         actionObject.onInvalidUser = onError;
       }
+      onErrorCallback.push(actionObject.onError);
+      actionObject.onComplate = _actionCallbackFunction;
+      actionObject.onError = _actionErrorCallbackFunction;
       actionObject.action(params);
     }).catch(function (e) {
       throw e;
@@ -483,14 +487,53 @@ window.NGS = {
     this._sessionId = this.guid();
     return this._sessionId;
   },
+  toNode: function (str) {
+    let template = document.createElement("template");
+    template.innerHTML = str;
+    let nodelist = template.content;
+    if(!nodelist.children){
+      return null;
+    }
+    if(nodelist.children.length === 1){
+      return nodelist.children[0];
+    }
+    return nodelist.children;
+  },
   _isInitedUtilities: false,
   _initUtilities: function () {
     if(this._isInitedUtilities){
       return;
     }
+
     //utilities
-    window.$$ = function (selector) {
-      return document.querySelectorAll(selector);
+    window.$$ = function (htmlStr) {
+      return NGS.toNode(htmlStr);
+    };
+//hide element
+    Node.prototype.hide = function () {
+      this.style.display = 'none';
+    };
+    NodeList.prototype.hide = function () {
+      if(this.length < 0){
+        return false;
+      }
+      this.forEach((elem) => {
+        elem.hide();
+      });
+      return true;
+    };
+//hide element
+    Node.prototype.show = function (type = 'block') {
+      this.style.display = type;
+    };
+    NodeList.prototype.show = function (type = 'block') {
+      if(this.length < 0){
+        return false;
+      }
+      this.forEach((elem) => {
+        elem.show(type);
+      });
+      return true;
     };
 //removeClass
     Node.prototype.removeClass = function (className) {
