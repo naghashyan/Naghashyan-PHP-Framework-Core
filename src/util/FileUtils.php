@@ -1,4 +1,5 @@
-<?php /**
+<?php
+/**
  * Helper class that works with files
  * have 3 general function
  * 1. send file to user using remote or local file
@@ -236,7 +237,7 @@ namespace ngs\util {
         $new_length = $range_end - $range + 1;
         header('HTTP/1.1 206 Partial Content');
         header('Content-Length: $new_length');
-        header('Content-Range: bytes ' . $range - $range_end . '/' . $size);
+        header('Content-Range: bytes ' . ($range - $range_end) . '/' . $size);
       } else{
         $new_length = filesize($filePath);
       }
