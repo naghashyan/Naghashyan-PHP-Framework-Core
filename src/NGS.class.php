@@ -6,7 +6,7 @@
  *
  * @author Levon Naghashyan <levon@naghashyan.com>
  * @site https://naghashyan.com
- * @year 2014-2019
+ * @year 2014-2020
  * @package ngs.framework
  * @version 4.0.0
  *
@@ -22,6 +22,8 @@
  */
 
 use ngs\exceptions\DebugException;
+use ngs\routes\NgsModuleRoutes;
+use ngs\util\HttpUtils;
 use ngs\util\NgsArgs;
 
 require_once('routes/NgsModuleRoutes.php');
@@ -191,7 +193,7 @@ class NGS {
    * @return String config dir path
    */
   public function getNgsCmsDir(): string {
-    return realpath(__DIR__ . '/../../ngs-php-cms/src');
+    return dirname(__DIR__, 2) . '/ngs-php-cms/src';
   }
 
   /**
@@ -215,7 +217,7 @@ class NGS {
    *
    * @return String template dir path
    */
-  public function getTemplateDir($ns = '') {
+  public function getTemplateDir($ns = ''): string {
     return realpath($this->getModuleDirByNS($ns) . '/' . $this->get('TEMPLATES_DIR'));
   }
 
@@ -228,7 +230,7 @@ class NGS {
    *
    * @return String temp dir path
    */
-  public function getTempDir($ns = '') {
+  public function getTempDir($ns = ''): string {
     return realpath($this->getModuleDirByNS($ns) . '/' . $this->get('TEMP_DIR'));
   }
 
@@ -241,7 +243,7 @@ class NGS {
    *
    * @return String data dir path
    */
-  public function getDataDir($ns = '') {
+  public function getDataDir($ns = ''): string {
     return realpath($this->getModuleDirByNS($ns) . '/' . $this->get('DATA_DIR'));
   }
 
@@ -254,7 +256,7 @@ class NGS {
    *
    * @return String public dir path
    */
-  public function getPublicDir($ns = '') {
+  public function getPublicDir($ns = ''): string {
     return realpath($this->getModuleDirByNS($ns) . '/' . $this->get('PUBLIC_DIR'));
   }
 
@@ -267,7 +269,7 @@ class NGS {
    *
    * @return String public dir path
    */
-  public function getWEbDir($ns = '') {
+  public function getWEbDir($ns = ''): string {
     return realpath($this->getModuleDirByNS($ns) . '/' . $this->get('WEB_DIR'));
   }
 
@@ -282,8 +284,11 @@ class NGS {
    */
   public function getPublicOutputDir($ns = '') {
     $outDir = realpath($this->getPublicDir($ns) . '/' . $this->get('PUBLIC_OUTPUT_DIR'));
-    if ($outDir == false){
-      mkdir($this->getPublicDir($ns) . '/' . $this->get('PUBLIC_OUTPUT_DIR'), 0755, true);
+    if ($outDir === false){
+      if (!mkdir($concurrentDirectory = $this->getPublicDir($ns) . '/' . $this->get('PUBLIC_OUTPUT_DIR'), 0755, true)
+        && !is_dir($concurrentDirectory)){
+        throw new \RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
+      }
     } else{
       return $outDir;
     }
@@ -306,8 +311,11 @@ class NGS {
       $webDir = $this->getPublicDir($ns);
     }
     $cssDir = realpath($webDir . '/' . $this->get('CSS_DIR'));
-    if ($cssDir == false){
-      mkdir($webDir . '/' . $this->get('CSS_DIR'), 0755, true);
+    if ($cssDir === false){
+      if (!mkdir($concurrentDirectory = $webDir . '/' . $this->get('CSS_DIR'), 0755, true) &&
+        !is_dir($concurrentDirectory)){
+        throw new \RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
+      }
     } else{
       return $cssDir;
     }
@@ -330,8 +338,10 @@ class NGS {
       $webDir = $this->getPublicDir($ns);
     }
     $lessDir = realpath($webDir . '/' . $this->get('SASS_DIR'));
-    if ($lessDir == false){
-      mkdir($webDir . '/' . $this->get('SASS_DIR'), 0755, true);
+    if ($lessDir === false){
+      if (!mkdir($concurrentDirectory = $webDir . '/' . $this->get('SASS_DIR'), 0755, true) && !is_dir($concurrentDirectory)){
+        throw new \RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
+      }
     } else{
       return $lessDir;
     }
@@ -354,8 +364,10 @@ class NGS {
       $webDir = $this->getPublicDir($ns);
     }
     $lessDir = realpath($webDir . '/' . $this->get('LESS_DIR'));
-    if ($lessDir == false){
-      mkdir($webDir . '/' . $this->get('LESS_DIR'), 0755, true);
+    if ($lessDir === false){
+      if (!mkdir($concurrentDirectory = $webDir . '/' . $this->get('LESS_DIR'), 0755, true) && !is_dir($concurrentDirectory)){
+        throw new \RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
+      }
     } else{
       return $lessDir;
     }
@@ -378,8 +390,10 @@ class NGS {
       $webDir = $this->getPublicDir($ns);
     }
     $jsDir = realpath($webDir . '/' . $this->get('JS_DIR'));
-    if ($jsDir == false){
-      mkdir($webDir . '/' . $this->get('JS_DIR'), 0755, true);
+    if ($jsDir === false){
+      if (!mkdir($concurrentDirectory = $webDir . '/' . $this->get('JS_DIR'), 0755, true) && !is_dir($concurrentDirectory)){
+        throw new \RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
+      }
     } else{
       return $jsDir;
     }
@@ -423,9 +437,14 @@ class NGS {
    |--------------------------------------------------------------------------
    */
 
-
-  public function getPublicHostByNS($ns = '', $withProtocol = false) {
-    if ($ns == ''){
+  /**
+   * @param string $ns
+   * @param bool $withProtocol
+   * @return mixed|string|null
+   * @throws DebugException
+   */
+  public function getPublicHostByNS(string $ns = '', bool $withProtocol = false) {
+    if ($ns === ''){
       if ($this->getModulesRoutesEngine()->isDefaultModule()){
         return $this->getHttpUtils()->getHttpHost(true, $withProtocol);
       }
@@ -460,7 +479,7 @@ class NGS {
    */
 
   public function getSessionManager() {
-    if ($this->sessionManager != null){
+    if ($this->sessionManager !== null){
       return $this->sessionManager;
     }
     try{
@@ -482,7 +501,7 @@ class NGS {
    *
    */
   public function getRoutesEngine() {
-    if ($this->routesEngine != null){
+    if ($this->routesEngine !== null){
       return $this->routesEngine;
     }
     try{
@@ -501,12 +520,12 @@ class NGS {
    *
    * @params $force string
    *
-   * @return \ngs\routes\NgsModuleRoutes
+   * @param bool $force
+   * @return NgsModuleRoutes
    * @throws DebugException if MODULES_ROUTES_ENGINE Not found
-   *
    */
-  public function getModulesRoutesEngine($force = false) {
-    if ($this->moduleRoutesEngine != null && $force == false){
+  public function getModulesRoutesEngine(bool $force = false): NgsModuleRoutes {
+    if ($this->moduleRoutesEngine !== null && $force === false){
       return $this->moduleRoutesEngine;
     }
     try{
@@ -611,12 +630,12 @@ class NGS {
    * fileutils if defined by user it return it if not
    * return ngs default fileutils
    *
-   * @return \ngs\util\HttpUtils
+   * @return HttpUtils
    * @throws DebugException if HTTP_UTILS Not found
    *
    */
-  public function getHttpUtils() {
-    if ($this->httpUtils != null){
+  public function getHttpUtils(): HttpUtils {
+    if ($this->httpUtils !== null){
       return $this->httpUtils;
     }
     try{

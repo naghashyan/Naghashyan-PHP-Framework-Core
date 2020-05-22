@@ -6,9 +6,9 @@
  *
  * @author Levon Naghashyan <levon@naghashyan.com>
  * @site https://naghashyan.com
- * @year 2009-2019
+ * @year 2009-2020
  * @package ngs.framework.dal.dto
- * @version 3.9.0
+ * @version 4.0.0
  *
  * This file is part of the NGS package.
  *
@@ -22,20 +22,22 @@
 namespace ngs\dal\dto {
 
 
+  use ngs\util\AnnotationParser;
+
   abstract class AbstractDto {
 
     private $ngs_nullableFields = [];
 
-    public function __construct() {
-    }
 
-    public abstract function getMapArray();
+    public function getMapArray(): ?array {
+      return null;
+    }
 
     /*
      The first letter of input string changes to Lower case
      */
-    public static function lowerFirstLetter($str) {
-      $first = substr($str, 0, 1);
+    public static function lowerFirstLetter(string $str) {
+      $first = $str[0];
       $asciiValue = ord($first);
       if ($asciiValue >= 65 && $asciiValue <= 90){
         $asciiValue += 32;
@@ -57,14 +59,13 @@ namespace ngs\dal\dto {
     public function __call($m, $a) {
       // retrieving the method type (setter or getter)
       $type = substr($m, 0, 3);
-
       // retrieving the field name
       $fieldName = preg_replace_callback('/[A-Z]/', function ($m) {
         return '_' . strtolower($m[0]);
       }, self::lowerFirstLetter(substr($m, 3)));
-      if ($type == 'set'){
+      if ($type === 'set'){
         $this->$fieldName = $a[0];
-      } else if ($type == 'get'){
+      } else if ($type === 'get'){
         if (isset($this->$fieldName)){
           return $this->$fieldName;
         }
@@ -111,35 +112,114 @@ namespace ngs\dal\dto {
       return false;
     }
 
-    public function fillDtoFromArray($mapArray = [], $mapArr = null) {
-      if (is_null($mapArr)){
-        $mapArr = $this->getMapArray();
-      }
-      foreach ($mapArray as $key => $value){
-        if (!isset($mapArr[$key])){
-          continue;
-        }
-        if (is_null($value) || $value === 'NULL'){
-          $this->setNull($key);
-          continue;
-        }
-        $functionName = 'set' . '' . ucfirst($mapArr[$key]);
-        $this->$functionName($value);
+    /**
+     *
+     * fill dto from data array
+     *
+     * @param array $dataArr
+     */
+    public function fillDtoFromArray(array $dataArr = []): void {
+      foreach ($dataArr as $key => $data){
+        $setterFunction = 'set' . preg_replace_callback('/_(\w)/', function ($m) {
+            return strtoupper($m[1]);
+          }, ucfirst($key));
+        $this->$setterFunction($data);
       }
     }
 
-    public function toArray() {
+    /**
+     *
+     * convert dto to array
+     *
+     * @return array
+     */
+    public function toArray(): array {
       $resultArr = [];
-      $mapArray = $this->getMapArray();
-      foreach ($mapArray as $key => $value){
-        if (!isset($mapArray[$key]) || is_null($value)){
-          continue;
+      try{
+        $reflectionClass = new \ReflectionClass($this);
+        $properties = $reflectionClass->getProperties();
+        foreach ($properties as $property){
+          $property->setAccessible(true);
+          if (!$property->isInitialized($this)){
+            continue;
+          }
+          $getterFunction = 'get' . '' . ucfirst($property->getName());
+          $resultArr[] = $this->$getterFunction();
         }
-
-        $functionName = 'get' . '' . ucfirst($mapArray[$key]);
-        $resultArr[$key] = $this->$functionName();
+      } catch (\ReflectionException $exception){
+        return [];
       }
       return $resultArr;
+    }
+
+    /**
+     *
+     * return dto properties annotation values
+     * by annotation name
+     *
+     * @param string $name
+     * @param bool $isInitialized
+     *
+     * @return array|null
+     */
+    public function getNgsPropertyAnnotationsByName(string $name, bool $isInitialized = false): ?array {
+      $name = strtolower($name);
+      try{
+        $reflectionClass = new \ReflectionClass($this);
+        $properties = $reflectionClass->getProperties();
+        $annotationsArr = [];
+        foreach ($properties as $property){
+          if ($isInitialized){
+            $property->setAccessible(true);
+            if (!$property->isInitialized($this)){
+              continue;
+            }
+          }
+          preg_match_all('/@(.*) +(.*)/', $property->getDocComment(), $annotations, PREG_SET_ORDER);
+          foreach ($annotations as $annotation){
+            if ($name === strtolower($annotation[1])){
+              $annotationsArr[trim($property->getName())] = trim($annotation[2]);
+              break;
+            }
+          }
+        }
+        return $annotationsArr;
+      } catch (\ReflectionException $exception){
+        return null;
+      }
+    }
+
+    /**
+     *
+     * return dto property annotation values
+     * by property and annotation name
+     *
+     * @param string $property
+     * @param string $name
+     * @param bool $isInitialized
+     *
+     * @return string|null
+     */
+    public function getNgsPropertyAnnotationByName(string $property, string $name, bool $isInitialized = false): ?string {
+      $name = strtolower($name);
+      try{
+        $reflectionProperty = new \ReflectionProperty($this, $property);
+        if ($isInitialized){
+          $reflectionProperty->setAccessible(true);
+          if (!$reflectionProperty->isInitialized($this)){
+            return null;
+          }
+        }
+        preg_match_all('/@(.*) +(.*)/', $reflectionProperty->getDocComment(), $annotations, PREG_SET_ORDER);
+        foreach ($annotations as $annotation){
+          if ($name === strtolower($annotation[1])){
+            return trim($annotation[2]);
+          }
+        }
+      } catch (\ReflectionException $exception){
+        return null;
+      }
+      return null;
     }
 
     /**
@@ -151,7 +231,7 @@ namespace ngs\dal\dto {
      * @return false|string
      */
     public function getMysqlFormatedTime($time = null) {
-      if ($time == null){
+      if ($time === null){
         $time = time();
       }
       return date('Y-m-d H:i:s', $time);
@@ -166,7 +246,7 @@ namespace ngs\dal\dto {
      * @return false|string
      */
     public function getMysqlFormatedDate($date = null) {
-      if ($date == null){
+      if ($date === null){
         $date = time();
       }
       return date('Y-m-d', $date);

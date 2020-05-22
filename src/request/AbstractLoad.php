@@ -7,8 +7,8 @@
  *
  * @author Levon Naghashyan <levon@naghashyan.com>
  * @site http://naghashyan.com
- * @year 2009-2019
- * @version 3.8.0
+ * @year 2009-2020
+ * @version 4.0.0
  * @package ngs.framework
  *
  * This file is part of the NGS package.
@@ -55,8 +55,9 @@ namespace ngs\request {
      * @abstract
      * @access
      * @return void
+     * @throws \ngs\exceptions\DebugException
      */
-    public final function service() {
+    final public function service(): void {
       $this->load();
       //initialize template engine pass load params to templater
       NGS()->getTemplateEngine()->setType($this->getNgsLoadType());
@@ -93,9 +94,10 @@ namespace ngs\request {
     }
 
     public final function ngsInitializeTemplateEngine() {
-      if ($this->getNgsLoadType() == 'json'){
-        NGS()->getTemplateEngine()->assignJsonParams($this->getParams());
-      } else if ($this->getNgsLoadType() == 'smarty'){
+      if ($this->getNgsLoadType() === 'json'){
+        NGS()->define('JS_FRAMEWORK_ENABLE', false);
+        NGS()->getTemplateEngine()->assign('ns', $this->getParams());
+      } else if ($this->getNgsLoadType() === 'smarty'){
         NGS()->getTemplateEngine()->assignJsonParams($this->getJsonParams());
         NGS()->getTemplateEngine()->assign('ns', $this->getParams());
       }
@@ -114,7 +116,7 @@ namespace ngs\request {
      * @throws NoAccessException
      *
      */
-    public final function nest($namespace, $loadArr) {
+    public final function nest(string $namespace, array $loadArr): void {
 
       $actionArr = NGS()->getRoutesEngine()->getLoadORActionByAction($loadArr['action']);
 
@@ -185,7 +187,7 @@ namespace ngs\request {
      *
      * @return void
      */
-    public function addJsonParam($name, $value) {
+    public function addJsonParam(string $name, $value): void {
       $this->jsonParam[$name] = $value;
     }
 
@@ -195,9 +197,9 @@ namespace ngs\request {
      * @abstract
      * @access public
      *
-     * @return array|params
+     * @return array
      */
-    protected function getParentParams() {
+    protected function getParentParams(): array {
       return $this->parentParams;
 
     }
@@ -207,9 +209,9 @@ namespace ngs\request {
      * @abstract
      * @access public
      *
-     * @return array|jsonParam
+     * @return array
      */
-    public function getJsonParams() {
+    public function getJsonParams(): array {
       return $this->jsonParam;
     }
 
@@ -219,10 +221,10 @@ namespace ngs\request {
      * @abstract
      * @access public
      *
-     * @return array|nestedlaods
+     * @return array
      */
-    public function getDefaultLoads() {
-      return array();
+    public function getDefaultLoads(): array {
+      return [];
     }
 
     /**
@@ -231,9 +233,9 @@ namespace ngs\request {
      * @abstract
      * @access public
      *
-     * @return string|templatePath
+     * @return string
      */
-    public function getTemplate() {
+    public function getTemplate(): ?string {
       return null;
     }
 

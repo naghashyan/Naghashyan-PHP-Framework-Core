@@ -122,7 +122,7 @@ namespace ngs\request {
      * @return array
      *
      */
-    public function getParams() {
+    public function getParams(): array {
       return $this->params;
     }
 

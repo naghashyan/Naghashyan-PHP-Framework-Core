@@ -6,8 +6,8 @@
  * @author Levon Naghashyan <levon@naghashyan.com>
  * @site http://naghashyan.com
  * @package ngs.framework.templater
- * @version 3.2.0
- * @year 2010-2017
+ * @version 4.0.0
+ * @year 2010-2020
  *
  * This file is part of the NGS package.
  *
@@ -19,26 +19,33 @@
 
 namespace ngs\templater {
 
+  use ngs\exceptions\DebugException;
   use Smarty;
 
   class NgsSmartyTemplater extends Smarty {
 
-    private $isHtml = true;
-    private $customJsHeader = "";
+    private bool $isHtml = true;
+    private string $customJsHeader = '';
     /**
      * constructor
      * reading Smarty config and setting up smarty environment accordingly
      */
     private $params = array();
 
-    public function __construct($isHtml = true) {
+    /**
+     * NgsSmartyTemplater constructor.
+     * @param bool $isHtml
+     * @throws \SmartyException
+     * @throws \ngs\exceptions\DebugException
+     */
+    public function __construct(bool $isHtml = true) {
       parent::__construct();
-      $this->assign("NGS_CMS_DIR", NGS()->getTemplateDir('ngs-cms'));
+      $this->assign('NGS_CMS_DIR', NGS()->getTemplateDir('ngs-cms'));
       $this->isHtml = $isHtml;
       //register NGS plugins
-      $this->registerPlugin("function", "nest", array($this, 'nest'));
-      $this->registerPlugin("function", "nestLoad", array($this, 'nestLoad'));
-      $this->registerPlugin("function", "ngs", array($this, 'NGS'));
+      $this->registerPlugin('function', 'nest', [$this, 'nest']);
+      $this->registerPlugin('function', 'nestLoad', [$this, 'nestLoad']);
+      $this->registerPlugin('function', 'ngs', [$this, 'NGS']);
       $moduleList = NGS()->getModulesRoutesEngine()->getAllModules();
       $tmpTplArr = [];
       foreach ($moduleList as $value){
@@ -51,7 +58,7 @@ namespace ngs\templater {
       $this->compile_check = true;
       if ($isHtml){
         // register the outputfilter
-        $this->registerFilter("output", array($this, "addScripts"));
+        $this->registerFilter('output', array($this, 'addScripts'));
       }
     }
 
@@ -68,7 +75,7 @@ namespace ngs\templater {
      */
     public function nestLoad($params, $template) {
       if (!isset($params['action'])){
-        trigger_error("nest: missing 'action' parameter");
+        trigger_error('nest: missing action parameter');
         return;
       }
       $parent = NGS()->getLoadMapper()->getGlobalParentLoad();
@@ -76,15 +83,15 @@ namespace ngs\templater {
         $parent = $params['parent'];
       }
       $actionArr = NGS()->getRoutesEngine()->getLoadORActionByAction($params['action']);
-      if ($actionArr["type"] != "load"){
-        throw new DebugException($action . " Load Not found");
+      $action = $actionArr['action'];
+      if ($actionArr['type'] !== 'load'){
+        throw new DebugException($action . ' Load Not found');
       }
-      $action = $actionArr["action"];
       if (class_exists($action) == false){
-        throw new DebugException($action . " Load Not found");
+        throw new DebugException($action . ' Load Not found');
       }
-      if (isset($params["args"]) && is_array($params["args"])){
-        NgsArgs::getInstance()->setArgs($params["args"]);
+      if (isset($params['args']) && is_array($params['args'])){
+        NgsArgs::getInstance()->setArgs($params['args']);
       }
       $loadObj = new $action;
       $loadObj->setIsNestedLoad(true);
@@ -94,15 +101,15 @@ namespace ngs\templater {
         $loadObj->onNoAccess();
       }
       $loadObj->service();
-      NGS()->getLoadMapper()->setNestedLoads($parent, $params["action"], $loadObj->getJsonParams());
-      $template->tpl_vars["ns"]->value["inc"][$action]["filename"] = $loadObj->getTemplate();
-      $template->tpl_vars["ns"]->value["inc"][$action]["params"] = $loadObj->getParams();
-      $template->tpl_vars["ns"]->value["inc"][$action]["namespace"] = $params['action'];
-      $template->tpl_vars["ns"]->value["inc"][$action]["action"] = $params['action'];
-      $template->tpl_vars["ns"]->value["inc"][$action]["parent"] = $parent;
-      $template->tpl_vars["ns"]->value["inc"][$action]["jsonParam"] = $loadObj->getJsonParams();
-      $template->tpl_vars["ns"]->value["inc"][$action]["permalink"] = $loadObj->getPermalink();
-      return $this->nest(["ns" => $action], $template);
+      NGS()->getLoadMapper()->setNestedLoads($parent, $params['action'], $loadObj->getJsonParams());
+      $template->tpl_vars['ns']->value['inc'][$action]['filename'] = $loadObj->getTemplate();
+      $template->tpl_vars['ns']->value['inc'][$action]['params'] = $loadObj->getParams();
+      $template->tpl_vars['ns']->value['inc'][$action]['namespace'] = $params['action'];
+      $template->tpl_vars['ns']->value['inc'][$action]['action'] = $params['action'];
+      $template->tpl_vars['ns']->value['inc'][$action]['parent'] = $parent;
+      $template->tpl_vars['ns']->value['inc'][$action]['jsonParam'] = $loadObj->getJsonParams();
+      $template->tpl_vars['ns']->value['inc'][$action]['permalink'] = $loadObj->getPermalink();
+      return $this->nest(['ns' => $action], $template);
     }
 
     /**
@@ -115,42 +122,46 @@ namespace ngs\templater {
      * @param array $params parameters
      * @param object $template template object
      * @return string html
+     * @throws DebugException
      */
     public function nest($params, $template) {
       if (!isset($params['ns'])){
-        trigger_error("nest: missing 'ns' parameter");
-        return;
+        throw new DebugException('missing tpl nest parameter');
       }
-      $nsValue = $template->tpl_vars["ns"]->value;
-      if (!isset($nsValue["inc"][$params["ns"]])){
+
+      if (!isset($template->tpl_vars['ns'])){
+        throw new DebugException('missing "' . $params['ns'] . '" nest load');
+      }
+
+      $nsValue = $template->tpl_vars['ns']->value;
+      if (!isset($nsValue['inc'][$params['ns']])){
         return '';
       }
-      $namespace = $nsValue["inc"][$params["ns"]]["namespace"];
+      $namespace = $nsValue['inc'][$params['ns']]['namespace'];
 
-      $include_file = $nsValue["inc"][$params["ns"]]["filename"];
+      $include_file = $nsValue['inc'][$params['ns']]['filename'];
       if (!file_exists($include_file)){
-        trigger_error("nest: missing 'file' " . $include_file);
-        return;
+        throw new DebugException('nest: missing file' . $include_file);
       }
-      $_tpl = $template->createTemplate($include_file, null, null, $nsValue["inc"][$params["ns"]]["params"]);
+      $_tpl = $template->createTemplate($include_file, null, null, $nsValue['inc'][$params['ns']]['params']);
       foreach ($template->tpl_vars as $key => $tplVars){
         $_tpl->assign($key, $tplVars);
       }
-      $_tpl->assign("ns", $nsValue["inc"][$params["ns"]]["params"]);
+      $_tpl->assign('ns', $nsValue['inc'][$params['ns']]['params']);
       if ($_tpl->mustCompile()){
         $_tpl->compileTemplateSource();
       }
       //$_tpl->renderTemplate();
       $_output = $_tpl->display();
       if (NGS()->isJsFrameworkEnable() && !NGS()->getHttpUtils()->isAjaxRequest()){
-        $jsonParams = $nsValue["inc"][$params["ns"]]["jsonParam"];
-        $parentLoad = $nsValue["inc"][$params["ns"]]["parent"];
+        $jsonParams = $nsValue['inc'][$params['ns']]['jsonParam'];
+        $parentLoad = $nsValue['inc'][$params['ns']]['parent'];
         $jsString = '<script type="text/javascript">';
         $jsString .= '_setNgsDefaults(function(){';
         if ($parentLoad){
-          $jsString .= 'NGS.setNestedLoad("' . $parentLoad . '", "' . $namespace . '", ' . json_encode($jsonParams) . ')';
+          $jsString .= 'NGS.setNestedLoad("' . $parentLoad . '", "' . $namespace . '", ' . json_encode($jsonParams, JSON_THROW_ON_ERROR, 512) . ')';
         } elseif (isset($nsValue["inc"][$params["ns"]]["action"])){
-          $jsString .= 'NGS.nestLoad("' . $nsValue["inc"][$params["ns"]]["action"] . '", ' . json_encode($jsonParams) . ', "")';
+          $jsString .= 'NGS.nestLoad("' . $nsValue["inc"][$params["ns"]]["action"] . '", ' . json_encode($jsonParams, JSON_THROW_ON_ERROR, 512) . ', "")';
         }
         $jsString .= '});';
         $jsString .= '</script>';

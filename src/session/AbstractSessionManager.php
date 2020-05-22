@@ -1,6 +1,6 @@
 <?php
 /**
- * AbstractSessionManager 
+ * AbstractSessionManager
  * this class provide abstract function
  * for users manipulates
  *
@@ -10,7 +10,7 @@
  * @year 2009-2016
  * @package ngs.framework
  * @version 3.1.0
- * 
+ *
  * This file is part of the NGS package.
  *
  * @copyright Naghashyan Solutions LLC
@@ -19,53 +19,57 @@
  * file that was distributed with this source code.
  *
  */
+
 namespace ngs\session {
-	abstract class AbstractSessionManager {
 
-		/**
-		 * Abstract method for get user
-		 * Children of the AbstractSessionManager class should override this method
-		 * 
-		 * @abstract
-		 * @return mixed user Object| $user
-		 */
-		public abstract function getUser();
+  use ngs\dal\dto\AbstractDto;
+  use ngs\request\AbstractAction;
 
-		/**
-		 * Abstract method for set user,
-		 * Children of the AbstractSessionManager class should override this method
-		 * 
-		 * @abstract
-		 * @access
-		 * @param mixed user Object| $user
-		 * @return 
-		 */
-		public abstract function setUser($user);
-		
+  abstract class AbstractSessionManager {
+
+    /**
+     * Abstract method for get user
+     * Children of the AbstractSessionManager class should override this method
+     *
+     * @abstract
+     * @return mixed user Object| $user
+     */
+    abstract public function getUser();
+
+    /**
+     * Abstract method for set user,
+     * Children of the AbstractSessionManager class should override this method
+     *
+     * @abstract
+     * @access
+     * @param mixed user Object| $user
+     * @return
+     */
+    abstract public function setUser(string $user);
 
 
-		/**
-		 * Abstract method for delete user,
-		 * Children of the AbstractSessionManager class should override this method
-		 * 
-		 * @abstract
-		 * @param mixed user Object| $user
-		 * @return
-		 */
-		public abstract function deleteUser();
-		
-		
-		/**
-		 * Abstract method for validate request,
-		 * Children of the AbstractSessionManager class should override this method
-		 * 
-		 * @abstract
-		 * @access
-		 * @param load|action Object $request
-		 * @return boolean
-		 */
-		public abstract function validateRequest($request);
+    /**
+     * Abstract method for delete user,
+     * Children of the AbstractSessionManager class should override this method
+     *
+     * @abstract
+     * @param mixed user Object| $user
+     * @return
+     */
+    abstract public function deleteUser();
 
-	}
+
+    /**
+     * Abstract method for validate request,
+     * Children of the AbstractSessionManager class should override this method
+     *
+     * @abstract
+     * @access
+     * @param AbstractDto|AbstractAction Object $request
+     * @return boolean
+     */
+    abstract public function validateRequest($request): bool;
+
+  }
 
 }

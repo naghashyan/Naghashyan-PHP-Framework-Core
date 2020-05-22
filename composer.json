@@ -14,9 +14,9 @@
     }
   ],
   "require": {
-    "php": ">=7.3.0",
-    "smarty/smarty": "~3.1",
-    "oyejorge/less.php": "~1.7.0.9",
+    "php": ">=7.4.0",
+    "smarty/smarty": "~3.*",
+    "wikimedia/less.php": "~3.*",
     "scssphp/scssphp": "^1.0",
     "melbahja/http2-pusher": "^1.0"
   },

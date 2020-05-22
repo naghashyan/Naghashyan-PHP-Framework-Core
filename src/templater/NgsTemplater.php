@@ -6,8 +6,8 @@
  * @author Levon Naghashyan <levon@naghashyan.com>
  * @site https://naghashyan.com
  * @package ngs.framework.templater
- * @version 3.8.0
- * @year 2010-2019
+ * @version 4.0.0
+ * @year 2010-2020
  *
  * This file is part of the NGS package.
  *
@@ -30,12 +30,12 @@ namespace ngs\templater {
      */
     private $smarty = null;
     private $template = null;
-    private $params = array();
+    private array $params = [];
     private $permalink = null;
-    private $smartyParams = array();
-    private $httpStatusCode = 200;
-    private $type = "json";
-    private $ngsFromException = false;
+    private array $smartyParams = [];
+    private int $httpStatusCode = 200;
+    private string $type = 'json';
+    private bool $ngsFromException = false;
 
     public function __construct() {
     }
@@ -77,7 +77,7 @@ namespace ngs\templater {
      *
      * @return void
      */
-    public function assign($key, $value) {
+    public function assign($key, $value): void {
       $this->smartyParams[$key] = $value;
     }
 
@@ -91,7 +91,7 @@ namespace ngs\templater {
      *
      * @return void
      */
-    public function assignJson($key, $value) {
+    public function assignJson($key, $value): void {
       $this->params[$key] = $value;
     }
 
@@ -174,7 +174,7 @@ namespace ngs\templater {
      * @access public
      *
      */
-    public function display($fromExaption = false) {
+    public function display(bool $fromExaption = false) {
       $this->setNgsFromException($fromExaption);
       $this->beforeDisplay();
       http_response_code($this->getHttpStatusCode());
@@ -186,7 +186,7 @@ namespace ngs\templater {
       foreach ($this->smartyParams as $key => $value){
         $this->smarty->assign($key, $value);
       }
-      if ($this->getType() == "json"){
+      if ($this->getType() === 'json'){
         $this->displayJson();
         return;
       }
@@ -195,17 +195,17 @@ namespace ngs\templater {
         return;
       }
       $ext = pathinfo($this->getTemplate(), PATHINFO_EXTENSION);
-      if ($ext != "json" && (NGS()->isJsFrameworkEnable() && !NGS()->getHttpUtils()->isAjaxRequest())){
+      if ($ext !== 'json' && (NGS()->isJsFrameworkEnable() && !NGS()->getHttpUtils()->isAjaxRequest())){
         $this->smarty->setCustomHeader($this->getCustomHeader());
         $this->displaySmarty($this->getTemplate());
         return;
       }
       if (NGS()->isJsFrameworkEnable() && NGS()->getHttpUtils()->isAjaxRequest()){
         $params = [];
-        $params["html"] = $this->smarty->fetch($this->getTemplate());
-        $params["nl"] = NGS()->getLoadMapper()->getNestedLoads();
-        $params["pl"] = $this->getPermalink();
-        $params["params"] = $this->params;
+        $params['html'] = $this->smarty->fetch($this->getTemplate());
+        $params['nl'] = NGS()->getLoadMapper()->getNestedLoads();
+        $params['pl'] = $this->getPermalink();
+        $params['params'] = $this->params;
         $this->displayJson($params);
         return;
       }
@@ -213,10 +213,10 @@ namespace ngs\templater {
     }
 
 
-    private function displayJson($params = null) {
+    private function displayJson($params = null): void {
       header('Content-Type: application/json; charset=utf-8');
       if ($params !== null){
-        echo json_encode($params);
+        echo json_encode($params, JSON_THROW_ON_ERROR, 512);
         return;
       }
       foreach ($this->params as $key => $value){
@@ -251,7 +251,7 @@ namespace ngs\templater {
      * @return string
      */
     protected function getCustomHeader() {
-      return "";
+      return '';
     }
 
   }

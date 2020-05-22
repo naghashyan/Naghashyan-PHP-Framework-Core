@@ -6,7 +6,7 @@
  *
  * @author Levon Naghashyan <levon@naghashyan.com>
  * @site https://naghashyan.com
- * @year 2015-2019
+ * @year 2015-2020
  * @package ngs.framework.routes
  * @version 4.0.0
  *
@@ -314,7 +314,7 @@ namespace ngs\routes {
      *
      * @return String
      */
-    public function getModuleNS() {
+    public function getModuleNS(): string {
       return $this->ns;
     }
 

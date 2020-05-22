@@ -6,8 +6,8 @@
  * @author Levon Naghashyan <levon@naghashyan.com>
  * @site https://naghashyan.com
  * @package framework.dal.mappers
- * @version 3.8.0
- * @year 2014-2019
+ * @version 4.0.0
+ * @year 2014-2020
  * @copyright Naghashyan Solutions LLC
  */
 
@@ -17,7 +17,7 @@ namespace ngs\dal\mappers {
   use ngs\dal\connectors\SolrDBMS;
   use ngs\dal\dto\AbstractDto;
   use ngs\exceptions\DebugException;
-  use \Solarium\QueryType\Update\Query\Document\Document;
+  use \Solarium\QueryType\Update\Query\Document;
 
   abstract class AbstractSolrMapper extends AbstractMapper {
 
@@ -247,7 +247,7 @@ namespace ngs\dal\mappers {
      * @param array $results
      * @return array array
      */
-    protected function createDtoFromResultArray($results) {
+    protected function createDtoFromResultArray($results): array {
       $resultArr = array();
       foreach ($results as $result){
         $tmpArr = [];
