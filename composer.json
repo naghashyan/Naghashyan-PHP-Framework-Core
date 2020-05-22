@@ -15,8 +15,8 @@
   ],
   "require": {
     "php": ">=7.4.0",
-    "smarty/smarty": "~3.*",
-    "wikimedia/less.php": "~3.*",
+    "smarty/smarty": "~3",
+    "wikimedia/less.php": "~3",
     "scssphp/scssphp": "^1.0",
     "melbahja/http2-pusher": "^1.0"
   },
