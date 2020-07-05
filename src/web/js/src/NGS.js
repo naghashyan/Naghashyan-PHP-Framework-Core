@@ -64,28 +64,35 @@ window.NGS = {
    * @param  loadName:String
    * @param  params:Object
    * @param  callback:function
+   * @param  childLoadParams:Object
    *
    */
-  load: function (loadName, params, callback) {
-    this.getNGSItemObjectByNameAndType(loadName, "load").then(function (laodObj) {
-      this.nestedLoads = {};
-      let _loadCallbackFunction = function () {
-        onComplateCallback.forEach(calback => {
-          calback.apply(this, arguments);
-        })
-      };
-      let onComplateCallback = [laodObj.onComplate];
-      if(typeof (callback) === "function"){
-        onComplateCallback.push(callback);
+  load: function (loadName, params, callback, childLoadParams) {
+      if(!childLoadParams) {
+          childLoadParams = null;
       }
-      laodObj.onComplate = _loadCallbackFunction;
-      if(typeof (callback) === "object"){
-        laodObj = Object.assign(laodObj, callback);
-      }
-      laodObj.load(params);
-    }.bind(this)).catch(function (e) {
-      throw e;
-    });
+      this.getNGSItemObjectByNameAndType(loadName, "load", childLoadParams).then(function (laodObj) {
+          this.nestedLoads = {};
+          let _loadCallbackFunction = function () {
+              onComplateCallback.forEach(calback => {
+                  calback.apply(this, arguments);
+              })
+          };
+          let onComplateCallback = [laodObj.onComplate];
+          if(typeof (callback) === "function"){
+              onComplateCallback.push(callback);
+          }
+          laodObj.onComplate = _loadCallbackFunction;
+          if(typeof (callback) === "object"){
+              laodObj = Object.assign(laodObj, callback);
+          }
+          if(childLoadParams) {
+              laodObj.setChildLoadParams(childLoadParams);
+          }
+          laodObj.load(params);
+      }.bind(this)).catch(function (e) {
+          throw e;
+      });
 
   },
 
@@ -610,6 +617,8 @@ window.NGS = {
       });
       return statusArr;
     };
+
+    NodeList.prototype.clickListeners = [];
     //click event listener
     NodeList.prototype.click = function (listner, options) {
       if(this.length < 0){
@@ -618,9 +627,40 @@ window.NGS = {
       let statusArr = [];
       this.forEach((elem) => {
         statusArr.push(elem.addEventListener('click', listner, options));
+          NodeList.prototype.clickListeners.push({element: elem, listener: listner});
       });
       return statusArr;
     };
+
+    NodeList.prototype.change = function (listner, options) {
+      if(this.length < 0){
+        return false;
+      }
+      let statusArr = [];
+      this.forEach((elem) => {
+        statusArr.push(elem.addEventListener('change', listner, options));
+      });
+      return statusArr;
+    };
+
+      NodeList.prototype.unbindClick = function () {
+          if(this.length < 0){
+              return false;
+          }
+          let leftHandlers = [];
+          this.forEach((elem) => {
+              for(let i=0; i<NodeList.prototype.clickListeners.length; i++) {
+                  if(NodeList.prototype.clickListeners[i].element !== elem) {
+                      leftHandlers.push(NodeList.prototype.clickListeners[i]);
+                  }
+                  else {
+                      elem.removeEventListener('click', NodeList.prototype.clickListeners[i].listener);
+                  }
+              }
+          });
+          NodeList.prototype.clickListeners = leftHandlers;
+          return this;
+      };
     this._isInitedUtilities = true;
   }
 };
