@@ -187,7 +187,7 @@ namespace ngs {
      */
     private function doAction($action) {
       try{
-        if (class_exists($action) == false){
+          if (class_exists($action) === false){
           throw new DebugException($action . ' Action Not found');
         }
         $actionObj = new $action;

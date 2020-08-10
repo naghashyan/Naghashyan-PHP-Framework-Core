@@ -112,7 +112,7 @@ class NGS {
    *
    * @return array config
    */
-  public function getNgsConfig() {
+  public function getNgsConfig(): array {
     if (isset($this->ngsConfig)){
       return $this->ngsConfig;
     }
@@ -125,10 +125,12 @@ class NGS {
    *
    * @params $prefix
    *
+   * @param null $prefix
    * @return array config
+   * @throws DebugException
    */
   public function getConfig($prefix = null) {
-    if (NGS()->getModulesRoutesEngine()->getModuleNS() == null){
+    if (NGS()->getModulesRoutesEngine()->getModuleNS() === null){
       return $this->getNgsConfig();
     }
     if ($prefix == null){
@@ -147,11 +149,11 @@ class NGS {
   }
 
 
-  public function setDispatcher($dispatcher) {
+  public function setDispatcher(\ngs\Dispatcher $dispatcher): void {
     $this->dispatcher = $dispatcher;
   }
 
-  public function getDispatcher() {
+  public function getDispatcher(): \ngs\Dispatcher {
     return $this->dispatcher;
   }
 
@@ -170,7 +172,7 @@ class NGS {
    *
    * @return String config dir path
    */
-  public function getModuleDirByNS(string $ns = '') {
+  public function getModuleDirByNS(string $ns = ''): string {
     return NGS()->getModulesRoutesEngine()->getRootDir($ns);
   }
 
@@ -282,7 +284,7 @@ class NGS {
    *
    * @return String public output dir path
    */
-  public function getPublicOutputDir($ns = '') {
+  public function getPublicOutputDir($ns = ''): string {
     $outDir = realpath($this->getPublicDir($ns) . '/' . $this->get('PUBLIC_OUTPUT_DIR'));
     if ($outDir === false){
       if (!mkdir($concurrentDirectory = $this->getPublicDir($ns) . '/' . $this->get('PUBLIC_OUTPUT_DIR'), 0755, true)
@@ -304,7 +306,7 @@ class NGS {
    *
    * @return String public output dir path
    */
-  public function getCssDir($ns = '') {
+  public function getCssDir($ns = ''): string {
     if ($this->get('WEB_DIR')){
       $webDir = $this->getWEbDir($ns);
     } else{
@@ -331,7 +333,7 @@ class NGS {
    *
    * @return String public less dir path
    */
-  public function getSassDir($ns = '') {
+  public function getSassDir($ns = ''): string {
     if ($this->get('WEB_DIR')){
       $webDir = $this->getWEbDir($ns);
     } else{
@@ -357,7 +359,7 @@ class NGS {
    *
    * @return String public less dir path
    */
-  public function getLessDir(string $ns = '') {
+  public function getLessDir(string $ns = ''): string {
     if ($this->get('WEB_DIR')){
       $webDir = $this->getWEbDir($ns);
     } else{
@@ -383,7 +385,7 @@ class NGS {
    *
    * @return String public output dir path
    */
-  public function getJsDir($ns = '') {
+  public function getJsDir($ns = ''): string {
     if ($this->get('WEB_DIR')){
       $webDir = $this->getWEbDir($ns);
     } else{
@@ -409,7 +411,7 @@ class NGS {
    *
    * @return String classes dir path
    */
-  public function getClassesDir($ns = '') {
+  public function getClassesDir($ns = ''): string {
     return realpath($this->getModuleDirByNS($ns) . '/' . $this->get('CLASSES_DIR'));
   }
 
@@ -418,7 +420,7 @@ class NGS {
    *
    * @return String loads namespace
    */
-  public function getLoadsPackage() {
+  public function getLoadsPackage(): string {
     return $this->get('LOADS_DIR');
   }
 
@@ -427,7 +429,7 @@ class NGS {
    *
    * @return String actions namespace
    */
-  public function getActionPackage() {
+  public function getActionPackage(): string {
     return $this->get('ACTIONS_DIR');
   }
 
@@ -478,7 +480,7 @@ class NGS {
    *
    */
 
-  public function getSessionManager() {
+  public function getSessionManager(): \ngs\session\AbstractSessionManager {
     if ($this->sessionManager !== null){
       return $this->sessionManager;
     }
@@ -500,7 +502,7 @@ class NGS {
    * @throws DebugException if ROUTES_ENGINE Not found
    *
    */
-  public function getRoutesEngine() {
+  public function getRoutesEngine(): \ngs\routes\NgsRoutes {
     if ($this->routesEngine !== null){
       return $this->routesEngine;
     }
@@ -546,8 +548,8 @@ class NGS {
    * @throws DebugException if MAPPER Not found
    *
    */
-  public function getLoadMapper() {
-    if ($this->loadMapper != null){
+  public function getLoadMapper(): \ngs\routes\NgsLoadMapper {
+    if ($this->loadMapper !== null){
       return $this->loadMapper;
     }
     try{
@@ -568,8 +570,8 @@ class NGS {
    * @throws DebugException if TEMPLATE_ENGINE Not found
    *
    */
-  public function getTemplateEngine() {
-    if ($this->tplEngine != null){
+  public function getTemplateEngine(): \ngs\templater\NgsTemplater {
+    if ($this->tplEngine !== null){
       return $this->tplEngine;
     }
     try{
@@ -590,8 +592,8 @@ class NGS {
    * @throws DebugException if NGS_UTILS Not found
    *
    */
-  public function getNgsUtils() {
-    if ($this->ngsUtils != null){
+  public function getNgsUtils(): \ngs\util\NgsUtils {
+    if ($this->ngsUtils !== null){
       return $this->ngsUtils;
     }
     try{
@@ -612,8 +614,8 @@ class NGS {
    * @throws DebugException if FILE_UTILS Not found
    *
    */
-  public function getFileUtils() {
-    if ($this->fileUtils != null){
+  public function getFileUtils(): \ngs\util\FileUtils {
+    if ($this->fileUtils !== null){
       return $this->fileUtils;
     }
     try{
@@ -654,8 +656,8 @@ class NGS {
    * @throws DebugException if JS_BUILDER Not found
    *
    */
-  public function getJsBuilder() {
-    if ($this->jsBuilder != null){
+  public function getJsBuilder(): \ngs\util\JsBuilder {
+    if ($this->jsBuilder !== null){
       return $this->jsBuilder;
     }
     try{
@@ -674,8 +676,8 @@ class NGS {
    * @throws DebugException if CSS_BUILDER Not found
    *
    */
-  public function getCssBuilder() {
-    if ($this->cssBuilder != null){
+  public function getCssBuilder(): \ngs\util\CssBuilder {
+    if ($this->cssBuilder !== null){
       return $this->cssBuilder;
     }
     try{
@@ -695,7 +697,7 @@ class NGS {
    *
    */
   public function getLessBuilder() {
-    if ($this->lessBuilder != null){
+    if ($this->lessBuilder !== null){
       return $this->lessBuilder;
     }
     try{
@@ -714,8 +716,8 @@ class NGS {
    * @throws DebugException if SASS_BUILDER Not found
    *
    */
-  public function getSassBuilder() {
-    if ($this->sassBuilder != null){
+  public function getSassBuilder(): \ngs\util\SassBuilder {
+    if ($this->sassBuilder !== null){
       return $this->sassBuilder;
     }
     try{
@@ -757,7 +759,7 @@ class NGS {
    * return project prefix
    * @return String $namespace
    */
-  public function getEnvironment() {
+  public function getEnvironment(): string {
     $definedValue = $this->getDefinedValue('ENVIRONMENT');
     switch ($definedValue){
       case 'development':
@@ -775,11 +777,11 @@ class NGS {
    * @access
    * @return String $env
    */
-  public function getShortEnvironment() {
+  public function getShortEnvironment(): string {
     $env = 'prod';
-    if ($this->getEnvironment() == 'development'){
+    if ($this->getEnvironment() === 'development'){
       $env = 'dev';
-    } elseif ($this->getEnvironment() == 'staging'){
+    } elseif ($this->getEnvironment() === 'staging'){
       return 'stage';
     }
     return $env;
@@ -788,14 +790,14 @@ class NGS {
   /**
    * @return mixed|null
    */
-  public function getVersion() {
+  public function getVersion(): ?string {
     return $this->getDefinedValue('VERSION');
   }
 
   /**
    * @return mixed|null
    */
-  public function getNGSVersion() {
+  public function getNGSVersion(): string {
     return $this->getDefinedValue('NGSVERSION');
   }
 
@@ -804,11 +806,11 @@ class NGS {
    *
    * @return bool
    */
-  public function isJsFrameworkEnable() {
+  public function isJsFrameworkEnable(): bool {
     return $this->getDefinedValue('JS_FRAMEWORK_ENABLE');
   }
 
-  public function getDynObject() {
+  public function getDynObject(): \ngs\util\NgsDynamic {
     return new \ngs\util\NgsDynamic();
   }
 

@@ -4,9 +4,9 @@
  *
  * @author Levon Naghashyan <levon@naghashyan.com>
  * @site https://naghashyan.com
- * @year 2016-2019
+ * @year 2016-2020
  * @package ngs.framework.util
- * @version 3.8.0
+ * @version 4.0.0
  *
  * This file is part of the NGS package.
  *
@@ -26,31 +26,29 @@ namespace ngs\util {
     /**
      * @var $instance
      */
-    private static $instance;
+    private static $instance = [];
     private $args = array();
-    private $requestParams = null;
+    private $requestParams = [];
     private $inputArgs = null;
     private $inputParams = null;
     private $headerParams = null;
-    private $trim = false;
 
-    public function __construct($trim = false) {
-      $this->trim = $trim;
+    private function __construct() {
     }
 
     /**
      * Returns an singleton instance of this class
      *
-     * @param bool $trim
+     * @param string $className
      *
      * @return NgsArgs
      */
-    public static function getInstance($trim = true) {
-      if (self::$instance == null){
-        self::$instance = new NgsArgs($trim);
-        self::$instance->mergeInputData();
+    public static function getInstance(string $className = 'main'): NgsArgs {
+      if (!isset(self::$instance[$className])){
+        self::$instance[$className] = new NgsArgs();
+        self::$instance[$className]->mergeInputData();
       }
-      return self::$instance;
+      return self::$instance[$className];
     }
 
 
@@ -64,36 +62,40 @@ namespace ngs\util {
      * @return mixed
      */
     public function __get($name) {
-      if (isset($this->args()[$name])){
-        if ($this->trim){
-          if (is_string($this->args()[$name])){
-            return trim($this->args()[$name]);
-          }
-          return $this->args()[$name];
-        }
-        return $this->args()[$name];
+      if(!$this->requestParams) {
+        $this->requestParams = array_merge((array)$this->getArgs(), $_REQUEST);
+      }
+      if (isset($this->requestParams[$name])){
+        return $this->requestParams[$name];
       }
       return null;
     }
 
+    public function __set($name, $value) {
+      $this->requestParams[$name] = $value;
+    }
+
+    public function __isset($name) {
+      return isset($this->requestParams[$name]);
+    }
 
     /*
 		 Overloads getter and setter methods
 		 */
     public function __call($m, $a) {
+
       // retrieving the method type (setter or getter)
       $type = substr($m, 0, 3);
+
       // retrieving the field name
-      $fieldName = preg_replace_callback('/[A-Z]/', function ($m) {
-        return "_" . strtolower($m[0]);
-      }, NGS()->getNgsUtils()->lowerFirstLetter(substr($m, 3)));
-      if ($type == 'set'){
+      $fieldName = NGS()->getNgsUtils()->lowerFirstLetter(substr($m, 3));
+      if ($type === 'set'){
         if (count($a) == 1){
           $this->$fieldName = $a[0];
         } else{
           $this->$fieldName = $a;
         }
-      } else if ($type == 'get'){
+      } else if ($type === 'get'){
         return $this->$fieldName;
       }
       return null;
@@ -118,26 +120,28 @@ namespace ngs\util {
      *
      * @return bool
      */
-    public function setArgs($args) {
-      if (!is_array($args)){
+    public function setArgs(?array $args = null): bool {
+
+      if ($args === null){
         return false;
       }
-      $this->requestParams = null;
+
       $this->args = array_merge($this->args, $args);
       return true;
     }
 
     public function args() {
-      if ($this->requestParams != null){
+      if ($this->requestParams){
         return $this->requestParams;
       }
+
       $this->requestParams = array_merge((array)$this->getArgs(), $_REQUEST);
       return $this->requestParams;
     }
 
     public function mergeInputData() {
       if (NGS()->getNgsUtils()->isJson($this->inputData())){
-        $this->setArgs(json_decode($this->inputData(), true));
+        $this->setArgs(json_decode($this->inputData(), true, 512, JSON_THROW_ON_ERROR));
       } else{
         parse_str($this->inputData(), $parsedRequestBody);
         if (is_array($parsedRequestBody)){
@@ -148,7 +152,7 @@ namespace ngs\util {
     }
 
     public function input() {
-      if ($this->inputArgs == null){
+      if ($this->inputArgs === null){
         if (!NGS()->getNgsUtils()->isJson($this->inputData())){
           throw new DebugException("response body is not json");
         }

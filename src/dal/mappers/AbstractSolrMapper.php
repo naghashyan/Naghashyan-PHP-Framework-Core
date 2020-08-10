@@ -21,7 +21,7 @@ namespace ngs\dal\mappers {
 
   abstract class AbstractSolrMapper extends AbstractMapper {
 
-    public $dbms;
+    public SolrDBMS $dbms;
 
     /**
      * Initializes DBMS pointer.
@@ -63,7 +63,7 @@ namespace ngs\dal\mappers {
       $dto_fields = array_values($dto->getSchemeArray());
       $db_fields = array_keys($dto->getSchemeArray());
       for ($i = 0; $i < count($dto_fields); $i++){
-        $functionName = "get" . ucfirst($dto_fields[$i]);
+        $functionName = 'get' . ucfirst($dto_fields[$i]);
         $val = $dto->$functionName();
         if (isset($val)){
           $doc->setField($db_fields[$i], $val);
@@ -82,8 +82,8 @@ namespace ngs\dal\mappers {
      */
     public function insertDto($dto): bool {
       //validating input params
-      if ($dto == null){
-        throw new DebugException("The input param can not be NULL.");
+      if ($dto === null){
+        throw new DebugException('The input param can not be NULL.');
       }
       return $this->insertDtos([$dto]);
     }
@@ -98,7 +98,7 @@ namespace ngs\dal\mappers {
     public function insertDtos($dtos): bool {
       //validating input params
       if ($dtos == null){
-        throw new DebugException("The input param can not be NULL.");
+        throw new DebugException('The input param can not be NULL.');
       }
 
       $addDocsArr = [];
@@ -106,7 +106,7 @@ namespace ngs\dal\mappers {
       foreach ($dtos as $key => $dto){
         $doc = $this->fillSolariumDocumentFromDto($dto);
         $addDocsArr[] = $doc;
-        if ($key % NGS()->get("BULK_UPDATE_LIMIT")){
+        if ($key % NGS()->get('BULK_UPDATE_LIMIT')){
           if (!$this->addCommit($addDocsArr)){
             $commitStatus = false;
           }
@@ -148,12 +148,12 @@ namespace ngs\dal\mappers {
 
       //validating input params
       if ($dto == null){
-        throw new DebugException("The input param can not be NULL.");
+        throw new DebugException('The input param can not be NULL.');
       }
-      $getPKFunc = $this->getCorrespondingFunctionName($dto->getMapArray(), $this->getPKFieldName(), "get");
+      $getPKFunc = $this->getCorrespondingFunctionName($dto->getMapArray(), $this->getPKFieldName(), 'get');
       $pk = $dto->$getPKFunc();
       if (!isset($pk)){
-        throw new DebugException("The primary key is not set.");
+        throw new DebugException('The primary key is not set.');
       }
 
       $dto_fields = array_values($dto->getMapArray());
@@ -166,7 +166,7 @@ namespace ngs\dal\mappers {
         if ($dto_fields[$i] == $this->getPKFieldName()){
           continue;
         }
-        $functionName = "get" . ucfirst($dto_fields[$i]);
+        $functionName = 'get' . ucfirst($dto_fields[$i]);
         $val = $dto->$functionName();
         if (isset($val)){
           $doc->setFieldModifier($db_fields[$i], 'set');
@@ -203,7 +203,7 @@ namespace ngs\dal\mappers {
      * @param int $id - the unique identifier of table
      * @return bool
      */
-    public function deleteByPK($id): bool {
+    public function deleteByPK($id): ?bool {
       if (is_numeric($id)){
         return $this->deleteByPKeys(array($id));
       }
@@ -218,15 +218,13 @@ namespace ngs\dal\mappers {
      */
     public function deleteByPKeys($ids): bool {
       if ($ids == null || !is_array($ids)){
-        throw new DebugException("The input param can not be NULL.");
+        throw new DebugException('The input param can not be NULL.');
       }
       $query = $this->getUpdateQuery();
       $query->addDeleteByIds($ids);
       $query->addCommit(true, true, false);
-      if ($this->dbms->update($query)->getStatus() === 0){
-        return true;
-      }
-      return false;
+
+      return $this->dbms->update($query)->getStatus() === 0;
     }
 
     /**
@@ -238,7 +236,7 @@ namespace ngs\dal\mappers {
     public function fetchRows($query) {
       $response = $this->dbms->select($query);
       $resultArr = $this->createDtoFromResultArray($response);
-      return ["count" => $response->count(), "dtos" => $resultArr];
+      return ['count' => $response->count(), 'dtos' => $resultArr];
     }
 
     /**
@@ -255,7 +253,8 @@ namespace ngs\dal\mappers {
           $tmpArr[$key] = $value;
         }
         $dto = $this->createDto();
-        $this->initializeDto($dto, $tmpArr);
+
+        $dto->fillDtoFromArray($tmpArr);
         $resultArr[] = $dto;
       }
       return $resultArr;

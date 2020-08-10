@@ -29,6 +29,7 @@ namespace ngs\request {
     protected $params = array();
     protected $ngsStatusCode = 200;
     private $ngsPushParams = ['link' => [], 'script' => [], 'img' => []];
+    private ?NgsArgs $ngsArgs = null;
 
     public function initialize() {
     }
@@ -148,7 +149,7 @@ namespace ngs\request {
      *
      * @return void
      */
-    protected function redirect($url) {
+    protected function redirect(string $url): void {
       NGS()->getHttpUtils()->redirect($url);
     }
 
@@ -188,6 +189,11 @@ namespace ngs\request {
       foreach ($this->ngsPushParams['img'] as $img){
         Pusher::getInstance()->img($img);
       }
+    }
+
+
+    public final function args(): NgsArgs {
+      return NgsArgs::getInstance(get_class($this));
     }
 
     protected abstract function afterRequest();

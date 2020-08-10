@@ -335,7 +335,7 @@ namespace ngs\routes {
         return $matches[1];
       }
       $routeUrlExp = $routeArr['route'];
-      $originalUrl = implode('/', $uriParams);
+      $originalUrl = '/' . implode('/', $uriParams);
       foreach ((array)$routeArr['constraints'] as $item => $constraint){
 
         if (strpos($routeUrlExp, ':' . $item) === false){

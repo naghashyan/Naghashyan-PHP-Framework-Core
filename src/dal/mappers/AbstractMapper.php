@@ -111,13 +111,13 @@ namespace ngs\dal\mappers {
     public function dtoToArray($dto) {
       $dto_fields = array_values($dto->getMapArray());
       $db_fields = array_keys($dto->getMapArray());
-
-      for ($i = 0; $i < count($dto_fields); $i++){
+      $fieldsCount = count($dto_fields);
+      for ($i = 0; $i < $fieldsCount; $i++){
         $functionName = "get" . ucfirst($dto_fields[$i]);
         $val = $dto->$functionName();
-        if ($val != null){
+        if ($val !== null){
           if (NGS()->isJson($val)){
-            $params[$db_fields[$i]] = json_decode($val, true);
+            $params[$db_fields[$i]] = json_decode($val, true, 512, JSON_THROW_ON_ERROR);
             continue;
           }
           $params[$db_fields[$i]] = $val;
@@ -134,7 +134,7 @@ namespace ngs\dal\mappers {
      * @return json object
      */
     public function jsonToDto($json, $dto = null) {
-      if ($dto == null){
+      if ($dto === null){
         $dto = $this->createDto();
       }
       $db_fields = $dto->getMapArray();

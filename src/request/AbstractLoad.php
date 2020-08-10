@@ -67,7 +67,7 @@ namespace ngs\request {
       $ns = get_class($this);
       $moduleNS = NGS()->getModulesRoutesEngine()->getModuleNS();
       $ns = substr($ns, strpos($ns, $moduleNS) + strlen($moduleNS) + 1);
-      $ns = str_replace(array('Load', '\\'), array('', '.'), $ns);
+      $ns = str_replace(['Load', '\\'], ['', '.'], $ns);
       $ns = preg_replace_callback('/[A-Z]/', function ($m) {
         return '_' . strtolower($m[0]);
       }, $ns);
@@ -75,13 +75,11 @@ namespace ngs\request {
 
       $nestedLoads = NGS()->getRoutesEngine()->getNestedRoutes($ns);
       $loadDefaultLoads = $this->getDefaultLoads();
-      $defaultLoads = array();
+      $defaultLoads = [];
       if (isset($loadDefaultLoads) && is_array($loadDefaultLoads)){
         $defaultLoads = array_merge($nestedLoads, $loadDefaultLoads);
-      } else{
-        if (is_array($nestedLoads)){
-          $defaultLoads = $nestedLoads;
-        }
+      } else if (is_array($nestedLoads)){
+        $defaultLoads = $nestedLoads;
       }
       //set nested loads for each load
       foreach ($defaultLoads as $key => $value){
@@ -93,7 +91,10 @@ namespace ngs\request {
       $this->ngsInitializeTemplateEngine();
     }
 
-    public final function ngsInitializeTemplateEngine() {
+    /**
+     * @throws \ngs\exceptions\DebugException
+     */
+    public final function ngsInitializeTemplateEngine(): void {
       if ($this->getNgsLoadType() === 'json'){
         NGS()->define('JS_FRAMEWORK_ENABLE', false);
         NGS()->getTemplateEngine()->assign('ns', $this->getParams());
@@ -125,7 +126,7 @@ namespace ngs\request {
       $loadObj->setIsNestedLoad(true);
       $loadObj->setNgsWrappingLoad($this);
       if (isset($loadArr['args'])){
-        NgsArgs::getInstance()->setArgs($loadArr['args']);
+        NgsArgs::getInstance(get_class($loadObj))->setArgs($loadArr['args']);
       }
       $loadObj->setLoadName($loadArr['action']);
       $loadObj->initialize();
@@ -152,7 +153,7 @@ namespace ngs\request {
      * @param string $fileNs
      * @param AbstractLoad $loadObj
      */
-    protected function setNestedLoadParams($namespace, $fileNs, $loadObj) {
+    protected function setNestedLoadParams(string $namespace, string $fileNs, AbstractLoad $loadObj): void {
       $this->params['inc'][$namespace]['filename'] = $loadObj->getTemplate();
       $this->params['inc'][$namespace]['params'] = $loadObj->getParams();
       $this->params['inc'][$namespace]['namespace'] = $fileNs;
@@ -172,7 +173,7 @@ namespace ngs\request {
      *
      * @return void
      */
-    protected final function addParentParam($name, $value) {
+    protected final function addParentParam(string $name, $value): void {
       $this->parentParams[$name] = $value;
 
     }
@@ -282,12 +283,12 @@ namespace ngs\request {
      *
      * @return string $type
      */
-    public function getNgsLoadType() {
-      if ($this->ngsLoadType != null){
+    public function getNgsLoadType(): string {
+      if ($this->ngsLoadType !== null){
         return $this->ngsLoadType;
       }
       //todo add additional header ngs framework checker
-      if ($_SERVER['HTTP_ACCEPT'] == 'application/json' || $this->getTemplate() == null
+      if ($_SERVER['HTTP_ACCEPT'] === 'application/json' || $this->getTemplate() === null
         || strpos($this->getTemplate(), '.json')){
         $this->ngsLoadType = 'json';
       } else{
@@ -303,7 +304,7 @@ namespace ngs\request {
      *
      * @return void
      */
-    public function setLoadName($name) {
+    public function setLoadName(string $name): void {
       $this->load_name = $name;
     }
 
@@ -313,18 +314,18 @@ namespace ngs\request {
      *
      * @return string load_name
      */
-    public function getLoadName() {
+    public function getLoadName(): string {
       return $this->load_name;
     }
 
     /**
      * set wrapping load object(if load is nested)
      *
-     * @param NgsLoadObject $loadObj
+     * @param AbstractLoad $loadObj
      *
      * @return void
      */
-    protected function setNgsWrappingLoad($loadObj) {
+    protected function setNgsWrappingLoad(AbstractLoad $loadObj): void {
       $this->ngsWrappingLoad = $loadObj;
     }
 
@@ -333,7 +334,7 @@ namespace ngs\request {
      *
      * @return AbstractLoad $ngsWrappingLoad
      */
-    protected function getWrappingLoad() {
+    protected function getWrappingLoad(): ?AbstractLoad {
       return $this->ngsWrappingLoad;
     }
 
