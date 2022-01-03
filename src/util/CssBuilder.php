@@ -57,31 +57,36 @@ namespace ngs\util {
       return str_replace(array("@NGS_PATH", "@NGS_MODULE_PATH"), array(NGS()->getHttpUtils()->getHttpHost(true), NGS()->getPublicHostByNS()), $buffer);
     }
 
-    public function getOutputDir() {
-      $_outDir = NGS()->getPublicOutputDir()."/".NGS()->getDefinedValue("CSS_DIR");
-      $outDir = realpath($_outDir);
-      if ($outDir == false) {
-        mkdir($_outDir, 0755, true);
-        $outDir = realpath($_outDir);
-      }
-      return $outDir;
-    }
-
-    protected function doCompress($buf) {
-      return \ngs\lib\minify\CssCompressor::process($buf);
-    }
-
-    protected function doDevOutput($files) {
-      header('Content-type: text/css');
-      foreach ($files["files"] as $value) {
-        $module = "";
-        if ($value["module"] != null) {
-          $module = $value["module"];
+        public function getOutputDir()
+        {
+            $_outDir = NGS()->getPublicOutputDir() . "/" . NGS()->getDefinedValue("CSS_DIR");
+            $outDir = realpath($_outDir);
+            if ($outDir == false) {
+                if (!mkdir($_outDir, 0755, true) && !is_dir($_outDir)) {
+                    throw new \RuntimeException(sprintf('Directory "%s" was not created', $_outDir));
+                }
+                $outDir = realpath($_outDir);
+            }
+            return $outDir;
         }
-        $inputFile = NGS()->getHttpUtils()->getHttpHostByNs($module)."/devout/css/".trim($value["file"]);
-        echo '@import url("'.$inputFile.'");';
-      }
-    }
+
+        protected function doCompress($buf)
+        {
+            return \ngs\lib\minify\CssCompressor::process($buf);
+        }
+
+        protected function doDevOutput($files)
+        {
+            header('Content-type: text/css');
+            foreach ($files["files"] as $value) {
+                $module = "";
+                if ($value["module"] != null) {
+                    $module = $value["module"];
+                }
+                $inputFile = NGS()->getHttpUtils()->getHttpHostByNs($module) . "/devout/css/" . trim($value["file"]);
+                echo '@import url("' . $inputFile . '");';
+            }
+        }
 
     protected function getItemDir($module) {
       return NGS()->getCssDir($module);

@@ -8,9 +8,9 @@
  *
  * @author Levon Naghashyan <levon@naghashyan.com>
  * @site http://naghashyan.com
- * @year 2017
+ * @year 2017-2020
  * @package ngs.framework.util
- * @version 3.5.0
+ * @version 4.0.0
  *
  * This file is part of the NGS package.
  *
@@ -31,17 +31,18 @@ namespace ngs\util {
 
     private $sassParser;
 
-    public function streamFile(string $module, string $file) {
-      if ($this->getEnvironment() == "production"){
-        $filePath = realpath(NGS()->getPublicDir() . "/" . $file);
-        if (!$filePath){
-          $this->build($file, true);
+        public function streamFile(string $module, string $file): void
+        {
+            if ($this->getEnvironment() === "production") {
+                $filePath = realpath(NGS()->getPublicDir() . "/" . $file);
+                if (!$filePath) {
+                    $this->build($file, true);
+                }
+                NGS()->getFileUtils()->sendFile($filePath, array("mimeType" => $this->getContentType(), "cache" => true));
+                return;
+            }
+            $this->build($file, false);
         }
-        NGS()->getFileUtils()->sendFile($filePath, array("mimeType" => $this->getContentType(), "cache" => true));
-        return;
-      }
-      $this->build($file, false);
-    }
 
     public function build($file, $mode = false) {
       $files = $this->getBuilderArr($this->getBuilderJsonArr(), $file);

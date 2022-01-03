@@ -43,15 +43,17 @@ let AjaxLoader = {
    */
 
   request: function (_url, options) {
-    NGS.showAjaxLoader();
-    var defaultOptions = {
+    if(!options.withoutLoader){
+      NGS.showAjaxLoader();
+    }
+    let defaultOptions = {
       method: "get",
       timeout: 60000,
       async: true,
       paramsIn: "query",
       params: {},
       headers: {
-        imversion: NGS.getImusicVersion(),//TODO move this to abstract actions/loads
+        ...NGS.getHttpDefaultHeaders(),
         accept: null,
         contentType: "application/x-www-form-urlencoded"
       },
@@ -67,7 +69,7 @@ let AjaxLoader = {
       onXHRError: NGS.emptyFunction
     };
     options = NGS.extend(defaultOptions, options);
-    var xmlhttp = new XMLHttpRequest();
+    let xmlhttp = new XMLHttpRequest();
     if(!(!!window.MSInputMethodContext && !!document.documentMode)){
       xmlhttp.timeout = options.timeout;
     }
@@ -85,9 +87,10 @@ let AjaxLoader = {
         } else if(xmlhttp.status === 403){
           options.onNoAccess(xmlhttp.responseText);
         }
-        NGS.hideAjaxLoader();
+        if(!options.withoutLoader){
+          NGS.hideAjaxLoader();
+        }
       }
-
     }.bind(this);
     xmlhttp.onerror = options.onXHRError;
     xmlhttp.upload.addEventListener("progress", function (evt) {
@@ -103,7 +106,8 @@ let AjaxLoader = {
       if(urlParams){
         _url = _url + "?" + urlParams;
       }
-      if(options.method.toUpperCase() === 'DOWNLOAD') {
+      if(options.method.toUpperCase() === 'DOWNLOAD'){
+        NGS.hideAjaxLoader();
         window.location = _url;
         return;
       }
@@ -125,9 +129,13 @@ let AjaxLoader = {
     }
 
     xmlhttp.open(options.method.toUpperCase(), _url, options.async);
-    xmlhttp.setRequestHeader("imversion", NGS.getImusicVersion());
-    if(NGS.getImToken()){
-      xmlhttp.setRequestHeader("imtoken", NGS.getImToken());
+    let headersArr = options.headers;
+    for (let key in headersArr) {
+      if(!headersArr.hasOwnProperty(key)){
+        continue;
+      }
+      let header = headersArr[key];
+      xmlhttp.setRequestHeader(key, header);
     }
     xmlhttp.setRequestHeader("X-Requested-With", "XMLHttpRequest");
     if(options.crossDomain === true || NGS.getConfig().crossDomain === true){

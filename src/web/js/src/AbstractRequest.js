@@ -13,6 +13,7 @@ export default class AbstractRequest {
 
 
   constructor() {
+    this.ngsModule = "ngs";
     this.ngsPackage = "";
     this.ngsName = "";
     this.ngsAction = "";
@@ -28,6 +29,9 @@ export default class AbstractRequest {
   service(params) {
   }
 
+  isWithoutLoader() {
+    return false;
+  }
 
   getMethod() {
     return "POST";
@@ -53,6 +57,26 @@ export default class AbstractRequest {
    */
   isSecure() {
     return false;
+  }
+
+  /**
+   * Abstract function, Child classes should be override this function,
+   * and should return the name of the server load, formated with framework's URL nameing convention
+   * @return The name of the server load, formated with framework's URL nameing convention
+
+   */
+  setNgsModule(module) {
+    this.ngsModule = module;
+  }
+
+  /**
+   * Returns the server side package of the load, if there are included packages, "_" delimiter should be used
+   *
+   * @return  The server side package of the load
+
+   */
+  getNgsModule() {
+    return this.ngsModule;
   }
 
 

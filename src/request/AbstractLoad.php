@@ -7,8 +7,8 @@
  *
  * @author Levon Naghashyan <levon@naghashyan.com>
  * @site http://naghashyan.com
- * @year 2009-2020
- * @version 4.0.0
+ * @year 2009-2022
+ * @version 4.2.0
  * @package ngs.framework
  *
  * This file is part of the NGS package.
@@ -20,21 +20,24 @@
  *
  */
 
-namespace ngs\request {
+namespace ngs\request;
 
-  use ngs\exceptions\NoAccessException;
-  use ngs\util\NgsArgs;
+use ngs\exceptions\NoAccessException;
+use ngs\util\NgsArgs;
 
-  abstract class AbstractLoad extends AbstractRequest {
+abstract class AbstractLoad extends AbstractRequest
+{
 
-    protected $parentParams = array();
-    private $jsonParam = array();
-    private $load_name = '';
-    private $isNestedLoad = false;
+    protected array $parentParams = array();
+    private array $jsonParam = array();
+    private string $loadName = '';
+    private string $parentLoadName = '';
+    private bool $isNestedLoad = false;
     private $ngsWrappingLoad = null;
     private $ngsLoadType = null;
-    private $ngsPermalink = '';
-    private $ngsQueryParams = [];
+    private array $ngsRequestParams = [];
+    private string $loadClassName = '';
+    private array $ngsQueryParams = [];
 
     /**
      * this method use for initialize
@@ -45,8 +48,9 @@ namespace ngs\request {
      *
      * @return void;
      */
-    public function initialize() {
-      parent::initialize();
+    public function initialize()
+    {
+        parent::initialize();
     }
 
     /**
@@ -57,51 +61,62 @@ namespace ngs\request {
      * @return void
      * @throws \ngs\exceptions\DebugException
      */
-    final public function service(): void {
-      $this->load();
-      //initialize template engine pass load params to templater
-      NGS()->getTemplateEngine()->setType($this->getNgsLoadType());
-      if (!$this->isNestedLoad() && $this->getLoadName()){
-        NGS()->getLoadMapper()->setGlobalParentLoad($this->getLoadName());
-      }
-      $ns = get_class($this);
-      $moduleNS = NGS()->getModulesRoutesEngine()->getModuleNS();
-      $ns = substr($ns, strpos($ns, $moduleNS) + strlen($moduleNS) + 1);
-      $ns = str_replace(['Load', '\\'], ['', '.'], $ns);
-      $ns = preg_replace_callback('/[A-Z]/', function ($m) {
-        return '_' . strtolower($m[0]);
-      }, $ns);
-      $ns = str_replace('._', '.', $ns);
+    final public function service(): void
+    {
+        $this->load();
+        $this->loadClassName = get_class($this);
+        $ns = $this->loadClassName;
+        //initialize template engine pass load params to templater
+        NGS()->getTemplateEngine()->setType($this->getNgsLoadType());
+        if (!$this->isNestedLoad() && $this->getLoadName()) {
+            NGS()->getLoadMapper()->setGlobalParentLoad($this->getLoadName());
+        }
+        $ns = get_class($this);
+        $moduleNS = NGS()->getModulesRoutesEngine()->getModuleNS();
+        $ns = substr($ns, strpos($ns, $moduleNS) + strlen($moduleNS) + 1);
+        $ns = str_replace(['Load', '\\'], ['', '.'], $ns);
+        $className = lcfirst(substr($ns, strrpos($ns, '.') + 1));
+        $nameSpace = substr($ns, 0, strrpos($ns, '.'));
+        $className = preg_replace_callback('/[A-Z]/', function ($m) {
+            return '_' . strtolower($m[0]);
+        }, $className);
+        $nameSpace = str_replace('._', '.', $nameSpace);
 
-      $nestedLoads = NGS()->getRoutesEngine()->getNestedRoutes($ns);
-      $loadDefaultLoads = $this->getDefaultLoads();
-      $defaultLoads = [];
-      if (isset($loadDefaultLoads) && is_array($loadDefaultLoads)){
-        $defaultLoads = array_merge($nestedLoads, $loadDefaultLoads);
-      } else if (is_array($nestedLoads)){
-        $defaultLoads = $nestedLoads;
-      }
-      //set nested loads for each load
-      foreach ($defaultLoads as $key => $value){
-        $this->nest($key, $value);
-      }
-      NGS()->getLoadMapper()->setPermalink($this->getPermalink());
-      NGS()->getLoadMapper()->setNgsQueryParams($this->getNgsQueryParams());
+        $nestedLoads = NGS()->getRoutesEngine()->getNestedRoutes($nameSpace . '.' . $className);
+        $loadDefaultLoads = $this->getDefaultLoads();
+        $defaultLoads = [];
+        if (isset($loadDefaultLoads) && is_array($loadDefaultLoads)) {
+            $defaultLoads = array_merge($loadDefaultLoads, $nestedLoads);
+        } else if (is_array($nestedLoads)) {
+            $defaultLoads = $nestedLoads;
+        }
+        //set nested loads for each load
+        foreach ($defaultLoads as $key => $value) {
+            $this->nest($key, $value);
+        }
+        NGS()->getLoadMapper()->setPermalink($this->getPermalink());
+        NGS()->getLoadMapper()->setNgsQueryParams($this->getNgsQueryParams());
+        $this->ngsInitializeTemplateEngine();
+    }
 
-      $this->ngsInitializeTemplateEngine();
+
+    public function validate(): void
+    {
+
     }
 
     /**
      * @throws \ngs\exceptions\DebugException
      */
-    public final function ngsInitializeTemplateEngine(): void {
-      if ($this->getNgsLoadType() === 'json'){
-        NGS()->define('JS_FRAMEWORK_ENABLE', false);
-        NGS()->getTemplateEngine()->assign('ns', $this->getParams());
-      } else if ($this->getNgsLoadType() === 'smarty'){
-        NGS()->getTemplateEngine()->assignJsonParams($this->getJsonParams());
-        NGS()->getTemplateEngine()->assign('ns', $this->getParams());
-      }
+    final public function ngsInitializeTemplateEngine(): void
+    {
+        if ($this->getNgsLoadType() === 'json') {
+            NGS()->define('JS_FRAMEWORK_ENABLE', false);
+            NGS()->getTemplateEngine()->assign('ns', $this->getParams());
+        } else if ($this->getNgsLoadType() === 'smarty') {
+            NGS()->getTemplateEngine()->assignJsonParams($this->getJsonParams());
+            NGS()->getTemplateEngine()->assign('ns', $this->getParams());
+        }
     }
 
     /**
@@ -115,36 +130,39 @@ namespace ngs\request {
      *
      * @return void
      * @throws NoAccessException
+     * @throws \JsonException
      *
      */
-    public final function nest(string $namespace, array $loadArr): void {
+    final public function nest(string $namespace, array $loadArr): void
+    {
 
-      $actionArr = NGS()->getRoutesEngine()->getLoadORActionByAction($loadArr['action']);
+        $actionArr = NGS()->getRoutesEngine()->getLoadORActionByAction($loadArr['action']);
 
-      $loadObj = new $actionArr['action'];
-      //set that this load is nested
-      $loadObj->setIsNestedLoad(true);
-      $loadObj->setNgsWrappingLoad($this);
-      if (isset($loadArr['args'])){
-        NgsArgs::getInstance(get_class($loadObj))->setArgs($loadArr['args']);
-      }
-      $loadObj->setLoadName($loadArr['action']);
-      $loadObj->initialize();
+        $loadObj = new $actionArr['action'];
+        //set that this load is nested
+        $loadObj->setIsNestedLoad(true);
+        $loadObj->setNgsParenLoadName($this->loadClassName);
+        $loadObj->setNgsWrappingLoad($this);
+        if (isset($loadArr['args'])) {
+            NgsArgs::getInstance($loadObj->getNgsRequestUUID(), $loadArr['args']);
+        }
+        $loadObj->setLoadName($loadArr['action']);
+        $loadObj->initialize();
 
-      if (NGS()->getSessionManager()->validateRequest($loadObj) === false){
-        $loadObj->onNoAccess();
-      }
+        if (NGS()->getSessionManager()->validateRequest($loadObj) === false) {
+            $loadObj->onNoAccess();
+        }
 
-      $loadObj->service();
+        $loadObj->service();
 
-      if (NGS()->isJsFrameworkEnable() && NGS()->getHttpUtils()->isAjaxRequest()){
-        NGS()->getLoadMapper()->setNestedLoads($this->getLoadName(), $loadArr['action'], $loadObj->getJsonParams());
-      }
-      if (!isset($this->params['inc'])){
-        $this->params['inc'] = array();
-      }
-      $this->setNestedLoadParams($namespace, $loadArr['action'], $loadObj);
-      $this->params = array_merge($this->getParams(), $loadObj->getParentParams());
+        if (NGS()->isJsFrameworkEnable() && NGS()->getHttpUtils()->isAjaxRequest()) {
+            NGS()->getLoadMapper()->setNestedLoads($this->getLoadName(), $loadArr['action'], $loadObj->getJsonParams());
+        }
+        if (!isset($this->params['inc'])) {
+            $this->params['inc'] = array();
+        }
+        $this->setNestedLoadParams($namespace, $loadArr['action'], $loadObj);
+        $this->params = array_merge($this->getParams(), $loadObj->getParentParams());
 
     }
 
@@ -153,15 +171,25 @@ namespace ngs\request {
      * @param string $fileNs
      * @param AbstractLoad $loadObj
      */
-    protected function setNestedLoadParams(string $namespace, string $fileNs, AbstractLoad $loadObj): void {
-      $this->params['inc'][$namespace]['filename'] = $loadObj->getTemplate();
-      $this->params['inc'][$namespace]['params'] = $loadObj->getParams();
-      $this->params['inc'][$namespace]['namespace'] = $fileNs;
-      $this->params['inc'][$namespace]['jsonParam'] = $loadObj->getJsonParams();
-      $this->params['inc'][$namespace]['parent'] = $this->getLoadName();
-      $this->params['inc'][$namespace]['permalink'] = $loadObj->getPermalink();
+    protected function setNestedLoadParams(string $namespace, string $fileNs, AbstractLoad $loadObj): void
+    {
+        $this->params['inc'][$namespace]['filename'] = $loadObj->getTemplate();
+        $this->params['inc'][$namespace]['params'] = $loadObj->getParams();
+        $this->params['inc'][$namespace]['namespace'] = $fileNs;
+        $this->params['inc'][$namespace]['jsonParam'] = $loadObj->getJsonParams();
+        $this->params['inc'][$namespace]['parent'] = $this->getLoadName();
+        $this->params['inc'][$namespace]['permalink'] = $loadObj->getPermalink();
     }
 
+    private function setNgsParenLoadName(string $load): void
+    {
+        $this->parentLoadName = $load;
+    }
+
+    public function getNgsParentLoadName(): string
+    {
+        return $this->parentLoadName;
+    }
 
     /**
      * this method add template varialble
@@ -173,8 +201,9 @@ namespace ngs\request {
      *
      * @return void
      */
-    protected final function addParentParam(string $name, $value): void {
-      $this->parentParams[$name] = $value;
+    protected final function addParentParam(string $name, $value): void
+    {
+        $this->parentParams[$name] = $value;
 
     }
 
@@ -188,8 +217,9 @@ namespace ngs\request {
      *
      * @return void
      */
-    public function addJsonParam(string $name, $value): void {
-      $this->jsonParam[$name] = $value;
+    public function addJsonParam(string $name, $value): void
+    {
+        $this->jsonParam[$name] = $value;
     }
 
 
@@ -200,8 +230,9 @@ namespace ngs\request {
      *
      * @return array
      */
-    protected function getParentParams(): array {
-      return $this->parentParams;
+    protected function getParentParams(): array
+    {
+        return $this->parentParams;
 
     }
 
@@ -212,8 +243,9 @@ namespace ngs\request {
      *
      * @return array
      */
-    public function getJsonParams(): array {
-      return $this->jsonParam;
+    public function getJsonParams(): array
+    {
+        return $this->jsonParam;
     }
 
     /**
@@ -224,8 +256,9 @@ namespace ngs\request {
      *
      * @return array
      */
-    public function getDefaultLoads(): array {
-      return [];
+    public function getDefaultLoads(): array
+    {
+        return [];
     }
 
     /**
@@ -236,8 +269,9 @@ namespace ngs\request {
      *
      * @return string
      */
-    public function getTemplate(): ?string {
-      return null;
+    public function getTemplate(): ?string
+    {
+        return null;
     }
 
     /**
@@ -249,8 +283,9 @@ namespace ngs\request {
      *
      * @return bool
      */
-    public function isNestable($namespace, $load) {
-      return true;
+    public function isNestable($namespace, $load)
+    {
+        return true;
     }
 
     /**
@@ -260,8 +295,9 @@ namespace ngs\request {
      *
      * @return void
      */
-    public final function setIsNestedLoad($isNestedLoad) {
-      $this->isNestedLoad = $isNestedLoad;
+    public final function setIsNestedLoad($isNestedLoad)
+    {
+        $this->isNestedLoad = $isNestedLoad;
     }
 
     /**
@@ -269,12 +305,14 @@ namespace ngs\request {
      *
      * @return boolean|$isNestedLoad
      */
-    public final function isNestedLoad() {
-      return $this->isNestedLoad;
+    public final function isNestedLoad(): bool
+    {
+        return $this->isNestedLoad;
     }
 
-    protected function setNgsLoadType($ngsLoadType) {
-      $this->ngsLoadType = $ngsLoadType;
+    protected function setNgsLoadType($ngsLoadType)
+    {
+        $this->ngsLoadType = $ngsLoadType;
     }
 
     /**
@@ -283,18 +321,19 @@ namespace ngs\request {
      *
      * @return string $type
      */
-    public function getNgsLoadType(): string {
-      if ($this->ngsLoadType !== null){
+    public function getNgsLoadType(): string
+    {
+        if ($this->ngsLoadType !== null) {
+            return $this->ngsLoadType;
+        }
+        //todo add additional header ngs framework checker
+        if ($_SERVER['HTTP_ACCEPT'] === 'application/json' || $this->getTemplate() === null
+            || strpos($this->getTemplate(), '.json')) {
+            $this->ngsLoadType = 'json';
+        } else {
+            $this->ngsLoadType = 'smarty';
+        }
         return $this->ngsLoadType;
-      }
-      //todo add additional header ngs framework checker
-      if ($_SERVER['HTTP_ACCEPT'] === 'application/json' || $this->getTemplate() === null
-        || strpos($this->getTemplate(), '.json')){
-        $this->ngsLoadType = 'json';
-      } else{
-        $this->ngsLoadType = 'smarty';
-      }
-      return $this->ngsLoadType;
     }
 
     /**
@@ -304,8 +343,9 @@ namespace ngs\request {
      *
      * @return void
      */
-    public function setLoadName(string $name): void {
-      $this->load_name = $name;
+    public function setLoadName(string $name): void
+    {
+        $this->load_name = $name;
     }
 
     /**
@@ -314,8 +354,9 @@ namespace ngs\request {
      *
      * @return string load_name
      */
-    public function getLoadName(): string {
-      return $this->load_name;
+    public function getLoadName(): string
+    {
+        return $this->load_name;
     }
 
     /**
@@ -325,8 +366,9 @@ namespace ngs\request {
      *
      * @return void
      */
-    protected function setNgsWrappingLoad(AbstractLoad $loadObj): void {
-      $this->ngsWrappingLoad = $loadObj;
+    protected function setNgsWrappingLoad(AbstractLoad $loadObj): void
+    {
+        $this->ngsWrappingLoad = $loadObj;
     }
 
     /**
@@ -334,16 +376,19 @@ namespace ngs\request {
      *
      * @return AbstractLoad $ngsWrappingLoad
      */
-    protected function getWrappingLoad(): ?AbstractLoad {
-      return $this->ngsWrappingLoad;
+    protected function getWrappingLoad(): ?AbstractLoad
+    {
+        return $this->ngsWrappingLoad;
     }
 
-    protected function setNgsQueryParams(array $queryParamsArr): void {
-      $this->ngsQueryParams = array_merge($queryParamsArr, $this->ngsQueryParams);
+    protected function setNgsQueryParams(array $queryParamsArr): void
+    {
+        $this->ngsQueryParams = array_merge($queryParamsArr, $this->ngsQueryParams);
     }
 
-    protected function getNgsQueryParams(): array {
-      return $this->ngsQueryParams;
+    protected function getNgsQueryParams(): array
+    {
+        return $this->ngsQueryParams;
     }
 
     /**
@@ -351,9 +396,27 @@ namespace ngs\request {
      *
      * @return string
      */
-    public function getPermalink(): string {
-      return '';
+    public function getPermalink(): string
+    {
+        return '';
     }
+
+    /**
+     * @return array
+     */
+    public function getNgsRequestParams(): array
+    {
+        return $this->ngsRequestParams;
+    }
+
+    /**
+     * @param array $ngsRequestParams
+     */
+    public function setNgsRequestParams(array $ngsRequestParams): void
+    {
+        $this->ngsRequestParams = $ngsRequestParams;
+    }
+
 
     /**
      * this function invoked when user hasn't permistion
@@ -362,7 +425,8 @@ namespace ngs\request {
      * @access
      * @return void
      */
-    public function onNoAccess(): void {
+    public function onNoAccess(): void
+    {
     }
 
     /**
@@ -372,14 +436,15 @@ namespace ngs\request {
      */
     public abstract function load();
 
-    public function afterRequest() {
-      $this->afterLoad();
+    public function afterRequest()
+    {
+        $this->afterLoad();
     }
 
-    public function afterLoad() {
-      return null;
+    public function afterLoad()
+    {
+        return null;
     }
 
-  }
 
 }

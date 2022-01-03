@@ -134,7 +134,15 @@ namespace ngs\dal\dto {
                 $setterFunction = 'set' . preg_replace_callback('/_(\w)/', function ($m) {
                         return strtoupper($m[1]);
                     }, ucfirst($key));
-                $this->$setterFunction($data);
+                if(method_exists($this, $setterFunction)) {
+                    if($data === null) {
+                        $this->setNull($key);
+                    }
+                    else {
+                        $this->$setterFunction($data);
+                    }
+
+                }
             }
         }
 

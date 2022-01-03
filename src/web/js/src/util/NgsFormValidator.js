@@ -16,7 +16,12 @@ let NgsFormValidator = function (formElement, options) {
       if(!validateLength){
         validateLength = 4;
       }
-      item.value = item.value.trim();
+
+
+      if(item.tagName !== 'SELECT') {
+        item.value = item.value.trim();
+      }
+
       switch (validateType) {
         case "number":
           status = imValidator.validateNumber(item.value);
@@ -154,9 +159,9 @@ let imValidator = {
     if(!str){
       return "You can't leave this empty.";
     }
-    const filter = /^[A-Za-z0-9\_\-\.\@\s\,\+\%\$\&]*$/;
+    const filter = /^[/A-Za-z0-9\_\-\.\@\s\,\+\%\$\&]*$/;
     if(!filter.test(str)){
-      return "Please use only letters (a-z), numbers, and periods.";
+      return "Please use only letters (a-z), numbers slashes, and periods.";
     }
 
     return true;

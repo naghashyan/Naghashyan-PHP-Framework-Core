@@ -133,6 +133,19 @@ namespace ngs\session {
       return null;
     }
 
+
+      /**
+       * return harco current logined or not
+       * user object
+       *
+       * @return mixed
+       * @throws
+       */
+      public function getUser($force = false) {
+
+          return true;
+      }
+
     public function setNoCache() {
       header("Expires: Tue, 03 Jul 2001 06:00:00 GMT");
       header("Last-Modified: ".gmdate("D, d M Y H:i:s")." GMT");

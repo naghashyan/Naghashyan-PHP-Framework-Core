@@ -23,41 +23,49 @@ let Dispatcher = {
   },
 
   load: function (loadObject, params) {
-    var _url = "";
+    let _url = "";
     if(loadObject.getUrl() !== ""){
       _url = this.computeUrl(loadObject.getUrl());
     } else{
-      _url = this.computeUrl(loadObject.getPackage(), loadObject.getName());
+      _url = this.computeUrl(loadObject.getPackage(), loadObject.getName(),loadObject.getNgsModule());
     }
-    var onComplete = function (responseText) {
+    let onComplete = function (responseText) {
       try {
         let res = JSON.parse(responseText);
-        if(typeof (res) == "object" && typeof (res.nl)){
-          for (var p in res.nl) {
-            if(res.nl.hasOwnProperty(p)){
-              var nestedLoad = res.nl[p];
-              for (var i = 0; i < nestedLoad.length; i++) {
-                NGS.setNestedLoad(p, nestedLoad[i].action, nestedLoad[i].params);
+        if(res.ngsValidator) {
+          loadObject.setArgs(res);
+          loadObject.onComplate(res);
+        }
+        else {
+          if(typeof (res) == "object" && typeof (res.nl)){
+            for (var p in res.nl) {
+              if(res.nl.hasOwnProperty(p)){
+                var nestedLoad = res.nl[p];
+                for (var i = 0; i < nestedLoad.length; i++) {
+                  NGS.setNestedLoad(p, nestedLoad[i].action, nestedLoad[i].params);
+                }
               }
             }
           }
+          loadObject.setArgs(res.params);
+          loadObject.setPermalink(res.pl);
+          loadObject._updateContent(res.html, res.params);
+          loadObject.onComplate(res.params);
         }
-        loadObject.setArgs(res.params);
-        loadObject.setPermalink(res.pl);
-        loadObject._updateContent(res.html, res.params);
-        loadObject.onComplate(res.params);
+
       } catch (e) {
         throw (e);
       }
 
     };
+
     this.doRequest(_url, loadObject, params, onComplete);
   },
 
   action: function (actionObject, params) {
-    let _url = this.computeUrl(actionObject.getPackage(), "do_" + actionObject.getName());
+    let _url = this.computeUrl(actionObject.getPackage(), "do_" + actionObject.getName(), actionObject.getNgsModule());
     let onComplete = function (responseText) {
-      var res = JSON.parse(responseText);
+      let res = JSON.parse(responseText);
       actionObject.setArgs(res);
       actionObject.afterAction(res);
       actionObject.onComplate(res);
@@ -71,6 +79,7 @@ let Dispatcher = {
       method: requestObject.getMethod(),
       paramsIn: requestObject.getParamsIn(),
       params: params,
+      withoutLoader: requestObject.isWithoutLoader(),
       onProgress: requestObject.ngsOnProgress,
       onComplete: onComplete.bind(this),
       onXHRError: requestObject.onXHRError,
@@ -115,18 +124,22 @@ let Dispatcher = {
   computeUrl: function () {
     let _package = arguments[0].replace(/\./g, '_');
     let command = "";
-    if(arguments.length === 2){
+    if(arguments.length === 3){
       command = arguments[1];
+    }
+    let module = null;
+    if(arguments.length === 3){
+      module = arguments[2];
     }
     let dynContainer = "";
     if(NGS.getConfig().dynContainer !== ""){
       dynContainer = "/" + NGS.getConfig().dynContainer + "/";
     }
-    let module = "";
-    if(NGS.getModule() != null){
+
+    if(NGS.getModule() != null && !module){
       module = NGS.getModule() + "/";
     }
-    return NGS.getHttpHost() + dynContainer + _package + "/" + command;
+    return NGS.getHttpHost() + dynContainer + module + "/" + _package + "/" + command;
   }
 };
 export default Dispatcher;

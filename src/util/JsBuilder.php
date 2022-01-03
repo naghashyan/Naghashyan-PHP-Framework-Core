@@ -30,7 +30,9 @@ namespace ngs\util {
       $_outDir = NGS()->getPublicOutputDir() . "/" . NGS()->getDefinedValue("JS_DIR");
       $outDir = realpath($_outDir);
       if ($outDir == false){
-        mkdir($_outDir, 0755, true);
+          if (!mkdir($_outDir, 0755, true) && !is_dir($_outDir)) {
+              throw new \RuntimeException(sprintf('Directory "%s" was not created', $_outDir));
+          }
         $outDir = realpath($_outDir);
       }
       return $outDir;

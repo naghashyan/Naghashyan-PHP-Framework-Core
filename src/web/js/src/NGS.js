@@ -19,7 +19,8 @@
  *
  *
  */
-window.NGS = {
+
+var NGS = {
   namespace: "",
   loadsContainer: {}, //private attribute for collect all loads
   actionsContainer: {}, //private attribute for collect all actions
@@ -68,31 +69,31 @@ window.NGS = {
    *
    */
   load: function (loadName, params, callback, childLoadParams) {
-      if(!childLoadParams) {
-          childLoadParams = null;
+    if(!childLoadParams){
+      childLoadParams = null;
+    }
+    this.getNGSItemObjectByNameAndType(loadName, "load", childLoadParams).then(function (laodObj) {
+      this.nestedLoads = {};
+      let _loadCallbackFunction = function () {
+        onComplateCallback.forEach(calback => {
+          calback.apply(this, arguments);
+        })
+      };
+      let onComplateCallback = [laodObj.onComplate];
+      if(typeof (callback) === "function"){
+        onComplateCallback.push(callback);
       }
-      this.getNGSItemObjectByNameAndType(loadName, "load", childLoadParams).then(function (laodObj) {
-          this.nestedLoads = {};
-          let _loadCallbackFunction = function () {
-              onComplateCallback.forEach(calback => {
-                  calback.apply(this, arguments);
-              })
-          };
-          let onComplateCallback = [laodObj.onComplate];
-          if(typeof (callback) === "function"){
-              onComplateCallback.push(callback);
-          }
-          laodObj.onComplate = _loadCallbackFunction;
-          if(typeof (callback) === "object"){
-              laodObj = Object.assign(laodObj, callback);
-          }
-          if(childLoadParams) {
-              laodObj.setChildLoadParams(childLoadParams);
-          }
-          laodObj.load(params);
-      }.bind(this)).catch(function (e) {
-          throw e;
-      });
+      laodObj.onComplate = _loadCallbackFunction;
+      if(typeof (callback) === "object"){
+        laodObj = Object.assign(laodObj, callback);
+      }
+      if(childLoadParams){
+        laodObj.setChildLoadParams(childLoadParams);
+      }
+      laodObj.load(params);
+    }.bind(this)).catch(function (e) {
+      throw e;
+    });
 
   },
 
@@ -192,6 +193,7 @@ window.NGS = {
           calback.apply(this, arguments);
         });
       };
+
       let _actionErrorCallbackFunction = function () {
         for (let i = 0; i < onErrorCallback.length; i++) {
           let result = onErrorCallback[i].apply(this, arguments);
@@ -295,6 +297,7 @@ window.NGS = {
         let ngsItemModuleAndName = this.getNGSItemPackageAndName(itemName);
         ngsItemObject.setPackage(ngsItemModuleAndName['package']);
         ngsItemObject.setName(ngsItemModuleAndName['action']);
+        ngsItemObject.setNgsModule(ngsItemModuleAndName['module']);
         ngsItemObject.setAction(action);
         resolve(ngsItemObject);
       }.bind(this)).catch(function (e) {
@@ -312,6 +315,11 @@ window.NGS = {
    */
   getNGSItemPackageAndName: function (actionName) {
     var matches = actionName.match(/[a-zA-Z0-9\_\-]+/g);
+    let module = matches[0];
+    if(matches[0] === 'ngs' && matches[1] === 'cms'){
+      matches = matches.slice(1);
+      module = 'ngs-cms';
+    }
     var action = matches[matches.length - 1];
     var myRegExp = new RegExp('([A-Z])', 'g');
     action = action.replace(myRegExp, "_$1").toLowerCase().replace(new RegExp('^_'), "");
@@ -325,6 +333,7 @@ window.NGS = {
       }
     }
     return {
+      "module": module,
       "package": _package,
       "action": action
     };
@@ -365,6 +374,15 @@ window.NGS = {
   setModule: function (module) {
     this.module = module;
   },
+
+  defaultHeaders: {},
+  setHttpDefaultHeaders: function (key, value) {
+    NGS.defaultHeaders[key] = value;
+  },
+  getHttpDefaultHeaders: function () {
+    return NGS.defaultHeaders;
+  },
+
   /**
    * module getter function
    *
@@ -513,155 +531,203 @@ window.NGS = {
     }
 
     //utilities
-    window.$$ = function (htmlStr) {
-      return NGS.toNode(htmlStr);
-    };
+    if(typeof window !== 'undefined'){
+      window.$$ = function (htmlStr) {
+        return NGS.toNode(htmlStr);
+      };
+
 //hide element
-    Node.prototype.hide = function () {
-      this.style.display = 'none';
-    };
-    NodeList.prototype.hide = function () {
-      if(this.length < 0){
-        return false;
-      }
-      this.forEach((elem) => {
-        elem.hide();
-      });
-      return true;
-    };
+      Node.prototype.hide = function () {
+        this.style.display = 'none';
+      };
+      NodeList.prototype.hide = function () {
+        if(this.length < 0){
+          return false;
+        }
+        this.forEach((elem) => {
+          elem.hide();
+        });
+        return true;
+      };
 //hide element
-    Node.prototype.show = function (type = 'block') {
-      this.style.display = type;
-    };
-    NodeList.prototype.show = function (type = 'block') {
-      if(this.length < 0){
-        return false;
-      }
-      this.forEach((elem) => {
-        elem.show(type);
-      });
-      return true;
-    };
+      Node.prototype.show = function (type = 'block') {
+        this.style.display = type;
+      };
+      NodeList.prototype.show = function (type = 'block') {
+        if(this.length < 0){
+          return false;
+        }
+        this.forEach((elem) => {
+          elem.show(type);
+        });
+        return true;
+      };
 //removeClass
-    Node.prototype.removeClass = function (className) {
-      this.classList.remove(className);
-    };
-    NodeList.prototype.removeClass = function (className) {
-      if(this.length < 0){
-        return false;
-      }
-      this.forEach((elem) => {
-        elem.removeClass(className);
-      });
-      return true;
-    };
+      Node.prototype.removeClass = function (className) {
+        className.split(" ").forEach((value) => {
+          this.classList.remove(value);
+        });
+      };
+      NodeList.prototype.removeClass = function (className) {
+        if(this.length < 0){
+          return false;
+        }
+        this.forEach((elem) => {
+          elem.removeClass(className);
+        });
+        return true;
+      };
 //addClass
-    Node.prototype.addClass = function (className) {
-      this.classList.add(className);
-    };
-    NodeList.prototype.addClass = function (className) {
-      if(this.length < 0){
-        return false;
-      }
-      this.forEach((elem) => {
-        elem.addClass(className);
-      });
-      return true;
-    };
+      Node.prototype.addClass = function (className) {
+        className.split(" ").forEach((value) => {
+          this.classList.add(value);
+        });
+      };
+      NodeList.prototype.addClass = function (className) {
+        if(this.length < 0){
+          return false;
+        }
+        this.forEach((elem) => {
+          elem.addClass(className);
+        });
+        return true;
+      };
+      Node.prototype.hasClass = function (className) {
+        return this.classList.contains(className);
+      };
 //add event listener
-    NodeList.prototype.on = function (type, listner, options) {
-      if(this.length < 0){
-        return false;
-      }
-      this.forEach((elem) => {
-        elem.addEventListener(type, listner, options);
-      });
-      return true;
-    };
+      NodeList.prototype.on = function (type, listner, options) {
+        if(this.length < 0){
+          return false;
+        }
+        this.forEach((elem) => {
+          elem.addEventListener(type, listner, options);
+        });
+        return true;
+      };
 //remove event listener
-    NodeList.prototype.off = function (type, listner, options) {
-      if(this.length < 0){
+      NodeList.prototype.off = function (type, listner, options) {
+        if(this.length < 0){
+          return false;
+        }
+        this.forEach((elem) => {
+          elem.removeEventListener(type, listner, options);
+        });
+        return true;
+      };
+      let setElemAttribute = function (elem, name, value) {
+        if(elem instanceof Node){
+          return elem.setAttribute(name, value);
+        }
         return false;
-      }
-      this.forEach((elem) => {
-        elem.removeEventListener(type, listner, options);
-      });
-      return true;
-    };
-    let setElemAttribute = function (elem, name, value) {
-      if(elem instanceof Node){
-        return elem.setAttribute(name, value);
-      }
-      return false;
-    };
-    let getElemAttribute = function (elem, name) {
-      if(elem instanceof Node){
-        return elem.getAttribute(name);
-      }
-      return false;
-    };
-    //add Attribute
-    Node.prototype.attr = function (name, value) {
-      if(value){
-        return setElemAttribute(this, name, value);
-      }
-      return getElemAttribute(this, name);
-    };
-    NodeList.prototype.attr = function (atribute, value) {
-      if(this.length < 0){
+      };
+      let getElemAttribute = function (elem, name) {
+        if(elem instanceof Node){
+          return elem.getAttribute(name);
+        }
         return false;
-      }
-      let statusArr = [];
-      this.forEach((elem) => {
-        statusArr.push(elem.attr(atribute, value));
-      });
-      return statusArr;
-    };
+      };
+      //add Attribute
+      Node.prototype.attr = function (name, value) {
+        if(value){
+          return setElemAttribute(this, name, value);
+        }
+        return getElemAttribute(this, name);
+      };
+      NodeList.prototype.attr = function (atribute, value) {
+        if(this.length < 0){
+          return false;
+        }
+        let statusArr = [];
+        this.forEach((elem) => {
+          statusArr.push(elem.attr(atribute, value));
+        });
+        return statusArr;
+      };
 
-    NodeList.prototype.clickListeners = [];
-    //click event listener
-    NodeList.prototype.click = function (listner, options) {
-      if(this.length < 0){
-        return false;
-      }
-      let statusArr = [];
-      this.forEach((elem) => {
-        statusArr.push(elem.addEventListener('click', listner, options));
+      NodeList.prototype.clickListeners = [];
+      //click event listener
+      NodeList.prototype.click = function (listner, options) {
+        if(this.length < 0){
+          return false;
+        }
+        let statusArr = [];
+        this.forEach((elem) => {
+          statusArr.push(elem.addEventListener('click', listner, options));
           NodeList.prototype.clickListeners.push({element: elem, listener: listner});
-      });
-      return statusArr;
-    };
+        });
+        return statusArr;
+      };
 
-    NodeList.prototype.change = function (listner, options) {
-      if(this.length < 0){
-        return false;
-      }
-      let statusArr = [];
-      this.forEach((elem) => {
-        statusArr.push(elem.addEventListener('change', listner, options));
-      });
-      return statusArr;
-    };
+      NodeList.prototype.change = function (listener, options) {
+        if(this.length < 0){
+          return false;
+        }
+        let statusArr = [];
+        this.forEach((elem) => {
+          statusArr.push(elem.addEventListener('change', listener, options));
+        });
+        return statusArr;
+      };
+
+      NodeList.prototype.keyup = function (listener, options) {
+        if(this.length < 0){
+          return false;
+        }
+        let statusArr = [];
+        this.forEach((elem) => {
+          statusArr.push(elem.addEventListener('keyup', listener, options));
+        });
+        return statusArr;
+      };
+
+      NodeList.prototype.input = function (listener, options) {
+        if(this.length < 0){
+          return false;
+        }
+        let statusArr = [];
+        this.forEach((elem) => {
+          statusArr.push(elem.addEventListener('input', listener, options));
+        });
+        return statusArr;
+      };
+
+      Node.prototype.closest = function (className) {
+        var node = this;
+
+        while (!this.hasClass(className)){
+          node = this.parentNode;
+          if(!node){
+            return null
+          }
+        }
+
+        return node;
+      };
 
       NodeList.prototype.unbindClick = function () {
-          if(this.length < 0){
-              return false;
+        if(this.length < 0){
+          return false;
+        }
+        let leftHandlers = [];
+        this.forEach((elem) => {
+          for (let i = 0; i < NodeList.prototype.clickListeners.length; i++) {
+            if(NodeList.prototype.clickListeners[i].element !== elem){
+              leftHandlers.push(NodeList.prototype.clickListeners[i]);
+            } else{
+              elem.removeEventListener('click', NodeList.prototype.clickListeners[i].listener);
+            }
           }
-          let leftHandlers = [];
-          this.forEach((elem) => {
-              for(let i=0; i<NodeList.prototype.clickListeners.length; i++) {
-                  if(NodeList.prototype.clickListeners[i].element !== elem) {
-                      leftHandlers.push(NodeList.prototype.clickListeners[i]);
-                  }
-                  else {
-                      elem.removeEventListener('click', NodeList.prototype.clickListeners[i].listener);
-                  }
-              }
-          });
-          NodeList.prototype.clickListeners = leftHandlers;
-          return this;
+        });
+        NodeList.prototype.clickListeners = leftHandlers;
+        return this;
       };
+    }
     this._isInitedUtilities = true;
   }
 };
+if(typeof window !== 'undefined'){
+  window.NGS = NGS;
+}
 NGS._initUtilities();
+export default NGS;

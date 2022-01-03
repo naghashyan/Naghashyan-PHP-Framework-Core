@@ -11,26 +11,28 @@
  * @copyright Naghashyan Solutions LLC
  */
 
-namespace ngs\dal\mappers {
+namespace ngs\dal\mappers;
 
 
-  use ngs\dal\connectors\SolrDBMS;
-  use ngs\dal\dto\AbstractDto;
-  use ngs\exceptions\DebugException;
-  use \Solarium\QueryType\Update\Query\Document;
+use ngs\dal\connectors\SolrDBMS;
+use ngs\dal\dto\AbstractDto;
+use ngs\exceptions\DebugException;
+use \Solarium\QueryType\Update\Query\Document;
 
-  abstract class AbstractSolrMapper extends AbstractMapper {
+abstract class AbstractSolrMapper extends AbstractMapper
+{
 
     public SolrDBMS $dbms;
 
     /**
      * Initializes DBMS pointer.
      */
-    function __construct() {
-      $host = NGS()->getConfig()->DB->solr->host;
-      $user = NGS()->getConfig()->DB->solr->port;
-      $path = NGS()->getConfig()->DB->solr->path;
-      $this->dbms = new SolrDBMS($host, $user, $path, $this->getTableName());
+    function __construct()
+    {
+        $host = NGS()->getConfig()->DB->solr->host;
+        $user = NGS()->getConfig()->DB->solr->port;
+        $path = NGS()->getConfig()->DB->solr->path;
+        $this->dbms = new SolrDBMS($host, $user, $path, $this->getTableName());
     }
 
     /**
@@ -38,8 +40,9 @@ namespace ngs\dal\mappers {
      *
      * @return \Solarium\QueryType\Select\Query\Query
      */
-    protected function getSelectQuery(): \Solarium\QueryType\Select\Query\Query {
-      return $this->dbms->createSelect();
+    protected function getSelectQuery(): \Solarium\QueryType\Select\Query\Query
+    {
+        return $this->dbms->createSelect();
     }
 
     /**
@@ -47,8 +50,9 @@ namespace ngs\dal\mappers {
      *
      * @return \Solarium\QueryType\Update\Query\Query
      */
-    protected function getUpdateQuery(): \Solarium\QueryType\Update\Query\Query {
-      return $this->dbms->createUpdate();
+    protected function getUpdateQuery(): \Solarium\QueryType\Update\Query\Query
+    {
+        return $this->dbms->createUpdate();
     }
 
     /**
@@ -58,19 +62,28 @@ namespace ngs\dal\mappers {
      *
      * @return Document
      */
-    private function fillSolariumDocumentFromDto($dto): Document {
-      $doc = new Document();
-      $dto_fields = array_values($dto->getSchemeArray());
-      $db_fields = array_keys($dto->getSchemeArray());
-      for ($i = 0; $i < count($dto_fields); $i++){
-        $functionName = 'get' . ucfirst($dto_fields[$i]);
-        $val = $dto->$functionName();
-        if (isset($val)){
-          $doc->setField($db_fields[$i], $val);
+    private function fillSolariumDocumentFromDto($dto): Document
+    {
+        $doc = new Document();
+        $dto_fields = array_values($dto->getSchemeArray());
+        $db_fields = array_keys($dto->getSchemeArray());
+        for ($i = 0, $iMax = count($dto_fields); $i < $iMax; $i++) {
+            $functionName = 'get' . ucfirst($dto_fields[$i]);
+            $val = $dto->$functionName();
+            if (!isset($val)) {
+                continue;
+            }
+            if (!is_array($val)) {
+                $doc->setField($db_fields[$i], $val);
+                continue;
+            }
+
+            foreach ($val as $item) {
+                $doc->setField($db_fields[$i], $item);
+            }
 
         }
-      }
-      return $doc;
+        return $doc;
     }
 
     /**
@@ -80,12 +93,13 @@ namespace ngs\dal\mappers {
      *
      * @return boolean
      */
-    public function insertDto($dto): bool {
-      //validating input params
-      if ($dto === null){
-        throw new DebugException('The input param can not be NULL.');
-      }
-      return $this->insertDtos([$dto]);
+    public function insertDto($dto): bool
+    {
+        //validating input params
+        if ($dto === null) {
+            throw new DebugException('The input param can not be NULL.');
+        }
+        return $this->insertDtos([$dto]);
     }
 
     /**
@@ -95,46 +109,45 @@ namespace ngs\dal\mappers {
      *
      * @return bool
      */
-    public function insertDtos($dtos): bool {
-      //validating input params
-      if ($dtos == null){
-        throw new DebugException('The input param can not be NULL.');
-      }
+    public function insertDtos($dtos): bool
+    {
+        //validating input params
+        if ($dtos === null) {
+            throw new DebugException('The input param can not be NULL.');
+        }
 
-      $addDocsArr = [];
-      $commitStatus = true;
-      foreach ($dtos as $key => $dto){
-        $doc = $this->fillSolariumDocumentFromDto($dto);
-        $addDocsArr[] = $doc;
-        if ($key % NGS()->get('BULK_UPDATE_LIMIT')){
-          if (!$this->addCommit($addDocsArr)){
-            $commitStatus = false;
-          }
+        $addDocsArr = [];
+        $commitStatus = true;
+        foreach ($dtos as $key => $dto) {
+            $doc = $this->fillSolariumDocumentFromDto($dto);
+            $addDocsArr[] = $doc;
+            if ($key % NGS()->get('BULK_UPDATE_LIMIT')) {
+                if (!$this->addCommit($addDocsArr)) {
+                    $commitStatus = false;
+                }
+            }
         }
-      }
-      if (count($addDocsArr) > 0){
-        if (!$this->addCommit($addDocsArr)){
-          $commitStatus = false;
+        if (count($addDocsArr) > 0) {
+            if (!$this->addCommit($addDocsArr)) {
+                $commitStatus = false;
+            }
         }
-      }
-      return $commitStatus;
+        return $commitStatus;
     }
 
     /**
+     *
      * Inserts dtos into table.
      *
-     * @param Document[]
-     *
-     * @return autogenerated id or -1 if something goes wrong
+     * @param array $docs
+     * @return bool
      */
-    private function addCommit(array $docs): bool {
-      $query = $this->getUpdateQuery();
-      $query->addDocuments($docs);
-      $query->addCommit(true, true, false);
-      if ($this->dbms->update($query)->getStatus() === 0){
-        return true;
-      }
-      return false;
+    private function addCommit(array $docs): bool
+    {
+        $query = $this->getUpdateQuery();
+        $query->addDocuments($docs);
+        $query->addCommit(true, true, false);
+        return $this->dbms->update($query)->getStatus() === 0;
     }
 
     /**
@@ -143,48 +156,50 @@ namespace ngs\dal\mappers {
      *
      * @param int $id
      * @return boolean
+     * @throws DebugException
      */
-    public function updateByPK($dto) {
+    public function updateByPK($dto)
+    {
 
-      //validating input params
-      if ($dto == null){
-        throw new DebugException('The input param can not be NULL.');
-      }
-      $getPKFunc = $this->getCorrespondingFunctionName($dto->getMapArray(), $this->getPKFieldName(), 'get');
-      $pk = $dto->$getPKFunc();
-      if (!isset($pk)){
-        throw new DebugException('The primary key is not set.');
-      }
-
-      $dto_fields = array_values($dto->getMapArray());
-      $db_fields = array_keys($dto->getMapArray());
-
-      $query = $this->getUpdateQuery();
-      $doc = $query->createDocument();
-
-      for ($i = 0; $i < count($dto_fields); $i++){
-        if ($dto_fields[$i] == $this->getPKFieldName()){
-          continue;
+        //validating input params
+        if ($dto === null) {
+            throw new DebugException('The input param can not be NULL.');
         }
-        $functionName = 'get' . ucfirst($dto_fields[$i]);
-        $val = $dto->$functionName();
-        if (isset($val)){
-          $doc->setFieldModifier($db_fields[$i], 'set');
-          $doc->setField($db_fields[$i], $val);
-
+        $getPKFunc = $this->getCorrespondingFunctionName($dto->getMapArray(), $this->getPKFieldName(), 'get');
+        $pk = $dto->$getPKFunc();
+        if (!isset($pk)) {
+            throw new DebugException('The primary key is not set.');
         }
-      }
-      $doc->setKey($this->getPKFieldName(), $pk);
 
-      //add document and commit
-      $query->addDocument($doc)->addCommit(true, true, false);
+        $dto_fields = array_values($dto->getMapArray());
+        $db_fields = array_keys($dto->getMapArray());
 
-      // this executes the query and returns the result
-      $result = $this->dbms->update($query);
-      if ($result->getStatus() === 0){
-        return true;
-      }
-      return false;
+        $query = $this->getUpdateQuery();
+        $doc = $query->createDocument();
+
+        for ($i = 0, $iMax = count($dto_fields); $i < $iMax; $i++) {
+            if ($dto_fields[$i] === $this->getPKFieldName()) {
+                continue;
+            }
+            $functionName = 'get' . ucfirst($dto_fields[$i]);
+            $val = $dto->$functionName();
+            if (isset($val)) {
+                $doc->setFieldModifier($db_fields[$i], 'set');
+                $doc->setField($db_fields[$i], $val);
+
+            }
+        }
+        $doc->setKey($this->getPKFieldName(), $pk);
+
+        //add document and commit
+        $query->addDocument($doc)->addCommit(true, true, false);
+
+        // this executes the query and returns the result
+        $result = $this->dbms->update($query);
+        if ($result->getStatus() === 0) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -193,7 +208,8 @@ namespace ngs\dal\mappers {
      * @param object $id
      * @return
      */
-    public function selectByPK($id) {
+    public function selectByPK($id)
+    {
 
     }
 
@@ -203,11 +219,12 @@ namespace ngs\dal\mappers {
      * @param int $id - the unique identifier of table
      * @return bool
      */
-    public function deleteByPK($id): ?bool {
-      if (is_numeric($id)){
-        return $this->deleteByPKeys(array($id));
-      }
-      return null;
+    public function deleteByPK($id): ?bool
+    {
+        if (is_numeric($id)) {
+            return $this->deleteByPKeys(array($id));
+        }
+        return null;
     }
 
     /**
@@ -216,15 +233,16 @@ namespace ngs\dal\mappers {
      * @param array $id - the unique identifier of table
      * @return bool
      */
-    public function deleteByPKeys($ids): bool {
-      if ($ids == null || !is_array($ids)){
-        throw new DebugException('The input param can not be NULL.');
-      }
-      $query = $this->getUpdateQuery();
-      $query->addDeleteByIds($ids);
-      $query->addCommit(true, true, false);
+    public function deleteByPKeys($ids): bool
+    {
+        if ($ids == null || !is_array($ids)) {
+            throw new DebugException('The input param can not be NULL.');
+        }
+        $query = $this->getUpdateQuery();
+        $query->addDeleteByIds($ids);
+        $query->addCommit(true, true, false);
 
-      return $this->dbms->update($query)->getStatus() === 0;
+        return $this->dbms->update($query)->getStatus() === 0;
     }
 
     /**
@@ -233,10 +251,11 @@ namespace ngs\dal\mappers {
      * @param array $params
      * @return
      */
-    public function fetchRows($query) {
-      $response = $this->dbms->select($query);
-      $resultArr = $this->createDtoFromResultArray($response);
-      return ['count' => $response->count(), 'dtos' => $resultArr];
+    public function fetchRows($query)
+    {
+        $response = $this->dbms->select($query);
+        $resultArr = $this->createDtoFromResultArray($response);
+        return ['count' => $response->count(), 'dtos' => $resultArr];
     }
 
     /**
@@ -245,21 +264,20 @@ namespace ngs\dal\mappers {
      * @param array $results
      * @return array array
      */
-    protected function createDtoFromResultArray($results): array {
-      $resultArr = array();
-      foreach ($results as $result){
-        $tmpArr = [];
-        foreach ($result as $key => $value){
-          $tmpArr[$key] = $value;
+    protected function createDtoFromResultArray($results): array
+    {
+        $resultArr = array();
+        foreach ($results as $result) {
+            $tmpArr = [];
+            foreach ($result as $key => $value) {
+                $tmpArr[$key] = $value;
+            }
+            $dto = $this->createDto();
+
+            $dto->fillDtoFromArray($tmpArr);
+            $resultArr[] = $dto;
         }
-        $dto = $this->createDto();
-
-        $dto->fillDtoFromArray($tmpArr);
-        $resultArr[] = $dto;
-      }
-      return $resultArr;
+        return $resultArr;
     }
-
-  }
 
 }

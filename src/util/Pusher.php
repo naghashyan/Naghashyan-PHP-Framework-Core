@@ -184,6 +184,6 @@ class Pusher {
   protected function __clone() {
   }
 
-  protected function __wakeup() {
+  public function __wakeup() {
   }
 }

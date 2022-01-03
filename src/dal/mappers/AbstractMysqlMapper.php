@@ -96,7 +96,18 @@ namespace ngs\dal\mappers {
          * @return bool
          * @throws DebugException
          */
-        public function insertDtos(array $dtos): bool
+        public function insertDtos(array $allDtos): bool
+        {
+            $allDtos = array_chunk($allDtos, 200);
+            foreach ($allDtos as $dtoChunk) {
+                $this->insertDtosToDb($dtoChunk);
+            }
+
+            return true;
+        }
+
+
+        private function insertDtosToDb($dtos)
         {
             if (count($dtos) === 0) {
                 return false;
@@ -226,9 +237,11 @@ namespace ngs\dal\mappers {
 
             foreach ($mapArray as $dtoField => $dbField) {
                 $getterFunction = 'get' . ucfirst($dtoField);
-                if (!$dto->ngsCheckIfPropertyInitialized($dtoField)) {
+
+                if ($v1 === false && !$dto->ngsCheckIfPropertyInitialized($dtoField)) {
                     continue;
                 }
+
                 $val = $dto->$getterFunction();
                 if ($v1 && !isset($val)) {
                     continue;
@@ -360,6 +373,25 @@ namespace ngs\dal\mappers {
 
 
         /**
+         * delete items by ids
+         * 
+         * @param array $ids
+         * @return int|null
+         * @throws DebugException
+         */
+        public function deleteByPKs(array $ids): ?int
+        {
+            if(!$ids) {
+                return true;
+            }
+
+            $inQuery = implode(",", $ids);
+            $sqlQuery = sprintf('DELETE FROM `%s` WHERE `%s` IN (%s)', $this->getTableName(), $this->getPKFieldName(), $inQuery);
+            return $this->executeQuery($sqlQuery, []);
+        }
+
+
+        /**
          *
          * Executes the query and returns an array of corresponding DTOs or raw data in case if $rawData argument is true
          *
@@ -372,8 +404,18 @@ namespace ngs\dal\mappers {
          *
          * @throws DebugException
          */
-        protected function fetchRows(string $sqlQuery, array $params = [], array $cache = ['cache' => false, 'ttl' => 3600, 'force' => false], bool $rawData = false): ?array
+        protected function fetchRows(string $sqlQuery, array $params = [], ?array $cache = null, bool $rawData = false): ?array
         {
+
+            if ($cache === null) {
+                $cache = ['cache' => false, 'ttl' => 3600, 'force' => false];
+            }
+            if (!isset($cache['ttl'])) {
+                $cache['ttl'] = 3600;
+            }
+            if (!isset($cache['force'])) {
+                $cache['force'] = false;
+            }
             $cacheKey = '';
             if ($cache['cache'] === true && $cache['force'] === false) {
                 try {
@@ -394,9 +436,11 @@ namespace ngs\dal\mappers {
                 return null;
             }
             if ($cache['cache'] === true) {
+                $cacheKey = md5($sqlQuery . json_encode($params, JSON_THROW_ON_ERROR, 512));
                 $res->setFetchMode(PDO::FETCH_ASSOC);
                 $resultArr = $res->fetchAll();
                 $this->setDataToRedisCache($cacheKey, $resultArr, $cache['ttl']);
+                return $this->getDataFromRedisCache($cacheKey);
             }
             if ($rawData) {
                 $res->setFetchMode(PDO::FETCH_ASSOC);
@@ -419,7 +463,7 @@ namespace ngs\dal\mappers {
          * @return mixed|AbstractDto|null
          * @throws DebugException
          */
-        protected function fetchRow(string $sqlQuery, array $params = [], array $cache = ['cache' => false, 'ttl' => 3600]): ?object
+        protected function fetchRow(string $sqlQuery, array $params = [], ?array $cache = null): ?object
         {
             $result = $this->fetchRows($sqlQuery, $params, $cache);
             if (isset($result) && is_array($result) && count($result) > 0) {

@@ -4,8 +4,8 @@
  *
  * @author Zaven Naghashyan <zaven@naghashyan.com>, Levon Naghashyan <levon@naghashyan.com>
  * @site https://naghashyan.com
- * @year 2009-2019
- * @version 4.0.0
+ * @year 2009-2022
+ * @version 4.2.0
  * @package ngs.framework
  *
  * This file is part of the NGS package.
@@ -17,21 +17,24 @@
  *
  */
 
-namespace ngs\request {
+namespace ngs\request;
 
-  use ngs\exceptions\NoAccessException;
-  use ngs\util\NgsArgs;
-  use ngs\util\Pusher;
+use ngs\exceptions\NoAccessException;
+use ngs\util\NgsArgs;
+use ngs\util\Pusher;
 
-  abstract class AbstractRequest {
+abstract class AbstractRequest
+{
 
     protected $requestGroup;
-    protected $params = array();
-    protected $ngsStatusCode = 200;
-    private $ngsPushParams = ['link' => [], 'script' => [], 'img' => []];
+    protected array $params = [];
+    protected int $ngsStatusCode = 200;
+    private array $ngsPushParams = ['link' => [], 'script' => [], 'img' => []];
     private ?NgsArgs $ngsArgs = null;
+    private ?string $ngsRequestUIID = null;
 
-    public function initialize() {
+    public function initialize()
+    {
     }
 
     /**
@@ -41,8 +44,9 @@ namespace ngs\request {
      *
      * @return integer 200
      */
-    public function setStatusCode($statusCode) {
-      return $this->ngsStatusCode = $statusCode;
+    public function setStatusCode(int $statusCode): void
+    {
+        $this->ngsStatusCode = $statusCode;
     }
 
     /**
@@ -52,8 +56,9 @@ namespace ngs\request {
      *
      * @return integer 200
      */
-    public function getStatusCode() {
-      return $this->ngsStatusCode;
+    public function getStatusCode(): int
+    {
+        return $this->ngsStatusCode;
     }
 
     /**
@@ -63,26 +68,34 @@ namespace ngs\request {
      *
      * @return integer 403
      */
-    public function getErrorStatusCode() {
-      return 403;
+    public function getErrorStatusCode(): int
+    {
+        return 403;
     }
 
-    public function setRequestGroup($requestGroup) {
-      $this->requestGroup = $requestGroup;
+    public function setRequestGroup($requestGroup)
+    {
+        $this->requestGroup = $requestGroup;
     }
 
 
-    public function getRequestGroup() {
-      return $this->requestGroup;
+    public function getRequestGroup()
+    {
+        return $this->requestGroup;
     }
 
-    public function redirectToLoad($load, $args, $statusCode = 200) {
-      $this->setStatusCode($statusCode);
-      if (isset($args)){
-        NgsArgs::getInstance()->setArgs($args);
-      }
-      $actionArr = NGS()->getRoutesEngine()->getLoadORActionByAction($load);
-      NGS()->getDispatcher()->loadPage($actionArr["action"]);
+    /**
+     * @throws NoAccessException
+     * @throws \ngs\exceptions\DebugException
+     */
+    public function redirectToLoad(string $load, array $args, int $statusCode = 200): void
+    {
+        $this->setStatusCode($statusCode);
+        if (isset($args)) {
+            NgsArgs::getInstance()->setArgs($args);
+        }
+        $actionArr = NGS()->getRoutesEngine()->getLoadORActionByAction($load);
+        NGS()->getDispatcher()->loadPage($actionArr['action']);
     }
 
     /**
@@ -93,11 +106,12 @@ namespace ngs\request {
      *
      * @return void
      */
-    public final function addParams($paramsArr) {
-      if (!is_array($paramsArr)){
-        $paramsArr = [$paramsArr];
-      }
-      $this->params = array_merge($this->params, $paramsArr);
+    public final function addParams($paramsArr)
+    {
+        if (!is_array($paramsArr)) {
+            $paramsArr = [$paramsArr];
+        }
+        $this->params = array_merge($this->params, $paramsArr);
     }
 
     /**
@@ -110,8 +124,9 @@ namespace ngs\request {
      *
      * @return void
      */
-    protected final function addParam($name, $value) {
-      $this->params[$name] = $value;
+    protected final function addParam(string $name, mixed $value)
+    {
+        $this->params[$name] = $value;
     }
 
     /**
@@ -123,8 +138,9 @@ namespace ngs\request {
      * @return array
      *
      */
-    public function getParams(): array {
-      return $this->params;
+    public function getParams(): array
+    {
+        return $this->params;
     }
 
     /**
@@ -134,11 +150,19 @@ namespace ngs\request {
      *
      * @throw NoAccessException
      */
-    protected function cancel() {
+    protected function cancel(): void
+    {
     }
 
 
     protected abstract function onNoAccess(): void;
+
+    // public abstract function getValidator(): void;
+
+    protected function getValidator(): void
+    {
+        // TODO: Implement getValidator() method.
+    }
 
     /**
      * public method helper method for do http redirect
@@ -148,9 +172,11 @@ namespace ngs\request {
      * @param string $url
      *
      * @return void
+     * @throws \ngs\exceptions\DebugException
      */
-    protected function redirect(string $url): void {
-      NGS()->getHttpUtils()->redirect($url);
+    protected function redirect(string $url): void
+    {
+        NGS()->getHttpUtils()->redirect($url);
     }
 
     /**
@@ -162,12 +188,13 @@ namespace ngs\request {
      * @param string $value
      * @return bool
      */
-    protected function setHttpPushParam(string $type, string $value): bool {
-      if (isset($this->ngsPushParams[$type])){
-        $this->ngsPushParams[$type] = $value;
-        return true;
-      }
-      return false;
+    protected function setHttpPushParam(string $type, string $value): bool
+    {
+        if (isset($this->ngsPushParams[$type])) {
+            $this->ngsPushParams[$type] = $value;
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -175,29 +202,35 @@ namespace ngs\request {
      * it will add in response header
      * suppored types img, script and link
      *
-     * @param string $type
-     * @param string $value
-     * @return bool
+     * @return void
      */
-    protected function insertHttpPushParams(): void {
-      foreach ($this->ngsPushParams['script'] as $script){
-        Pusher::getInstance()->src($script);
-      }
-      foreach ($this->ngsPushParams['link'] as $link){
-        Pusher::getInstance()->link($link);
-      }
-      foreach ($this->ngsPushParams['img'] as $img){
-        Pusher::getInstance()->img($img);
-      }
+    protected function insertHttpPushParams(): void
+    {
+        foreach ($this->ngsPushParams['script'] as $script) {
+            Pusher::getInstance()->src($script);
+        }
+        foreach ($this->ngsPushParams['link'] as $link) {
+            Pusher::getInstance()->link($link);
+        }
+        foreach ($this->ngsPushParams['img'] as $img) {
+            Pusher::getInstance()->img($img);
+        }
     }
 
+    protected function getNgsRequestUUID(): string
+    {
+        if (!$this->ngsRequestUIID) {
+            $this->ngsRequestUIID = uniqid('ngs_', true);
+        }
+        return $this->ngsRequestUIID;
+    }
 
-    public final function args(): NgsArgs {
-      return NgsArgs::getInstance(get_class($this));
+    final public function args(): NgsArgs
+    {
+        return NgsArgs::getInstance($this->getNgsRequestUUID());
     }
 
     protected abstract function afterRequest();
 
-  }
 
 }

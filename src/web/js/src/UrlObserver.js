@@ -42,20 +42,23 @@ let UrlObserver = {
     }
 
     let permalink = "";
-    if(this.load.getPermalink() != null){
+    if(this.load.getPermalink() != null && this.load.getPermalink() !== ''){
       permalink = this.load.getPermalink();
       if(permalink.indexOf("/") !== 0){
         permalink = "/" + permalink;
       }
     }
+
+
+
     if(permalink === ""){
       return;
     }
+    let uniq = 'id' + (new Date()).getTime();
     if(permalink === window.location.pathname){
       history.replaceState(params, uniq, permalink);
       return;
     }
-    var uniq = 'id' + (new Date()).getTime();
     history.pushState(params, uniq, permalink);
   }
 };

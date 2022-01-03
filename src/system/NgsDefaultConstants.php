@@ -21,7 +21,7 @@
 
 /*
  |--------------------------------------------------------------------------
- | DEFINNING VARIABLES IF SCRIPT RUNNING FROM COMMAND LINE
+ | DEFINING VARIABLES IF SCRIPT RUNNING FROM COMMAND LINE
  |--------------------------------------------------------------------------
  */
 if (php_sapi_name() == 'cli' && NGS()->get('CMD_SCRIPT')){
@@ -59,7 +59,7 @@ if (php_sapi_name() == 'cli' && NGS()->get('CMD_SCRIPT')){
 
 /*
 |--------------------------------------------------------------------------
-| DEFINNING DEFAULT VARIABLES
+| DEFINING DEFAULT VARIABLES
 |--------------------------------------------------------------------------
 */
 
@@ -70,7 +70,7 @@ NGS()->define('DEFAULT_NS', 'ngs');
 NGS()->define('NGS_CMS_NS', 'ngs-cms');
 /*
 |--------------------------------------------------------------------------
-| DEFINNING ENVIRONMENT VARIABLES
+| DEFINING ENVIRONMENT VARIABLES
 |--------------------------------------------------------------------------
 */
 $environment = 'production';
@@ -89,7 +89,7 @@ NGS()->define('SEND_HTTP_PUSH', true);
 
 /*
 |--------------------------------------------------------------------------
-| DEFINNING DEFAULT DIRS
+| DEFINING DEFAULT DIRS
 |--------------------------------------------------------------------------
 */
 //---defining document root
@@ -107,7 +107,7 @@ NGS()->define('NGS_ROOT', $ngsRoot);
 
 /*
 |--------------------------------------------------------------------------
-| DEFINNING DEFAULTS PACKAGES DIRS
+| DEFINING DEFAULTS PACKAGES DIRS
 |--------------------------------------------------------------------------
 */
 
@@ -181,7 +181,7 @@ NGS()->define('NGS_MYSQL_PDO_DRIVER', '\ngs\dal\connectors\MysqlPDO');
 
 /*
 |--------------------------------------------------------------------------
-| DEFINNING NGS DEFAULT EXCEPTIONS HANDLERS (loads/actions)
+| DEFINING NGS DEFAULT EXCEPTIONS HANDLERS (loads/actions)
 |--------------------------------------------------------------------------
 */
 //---defining debug exception
@@ -196,7 +196,7 @@ NGS()->define('NGS_EXCEPTION_NO_ACCESS', 'ngs\exceptions\NoAccessException');
 NGS()->define('NGS_EXCEPTION_NOT_FOUND', 'ngs\exceptions\NotFoundException');
 /*
 |--------------------------------------------------------------------------
-| DEFINNING NGS MODULES
+| DEFINING NGS MODULES
 |--------------------------------------------------------------------------
 */
 //---defining if modules enabled
@@ -208,14 +208,16 @@ NGS()->define('NGS_MODULS_ROUTS', 'modules.json');
 
 /*
 |--------------------------------------------------------------------------
-| DEFINNING NGS DEFAULT ENGINES
+/*
+|--------------------------------------------------------------------------
+| DEFINING NGS DEFAULT ENGINES
 |--------------------------------------------------------------------------
 */
 NGS()->define('LESS_ENGINE', 'lib/less.php/Less.php');
 
 /*
 |--------------------------------------------------------------------------
-| DEFINNING SMARTY DIRS
+| DEFINING SMARTY DIRS
 |--------------------------------------------------------------------------
 */
 NGS()->define('USE_SMARTY', TRUE);
@@ -225,7 +227,7 @@ NGS()->define('SMARTY_COMPILE_DIR', 'compile');
 
 /*
 |--------------------------------------------------------------------------
-| DEFINNING SOLR DEFAULT PARAMS
+| DEFINING SOLR DEFAULT PARAMS
 |--------------------------------------------------------------------------
 */
 
