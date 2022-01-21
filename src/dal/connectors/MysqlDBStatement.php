@@ -6,8 +6,8 @@
  * @site https://naghashyan.com
  * @mail levon@naghashyan.com
  * @package ngs.framework.dal.connectors
- * @version 4.0.0
- * @year 2020
+ * @version 4.2.1
+ * @year 2022
  *
  * This file is part of the NGS package.
  *
@@ -18,18 +18,19 @@
  *
  */
 
-namespace ngs\dal\connectors {
+namespace ngs\dal\connectors;
 
-  use ngs\exceptions\DebugException;
+use ngs\exceptions\DebugException;
 
-  class MysqlDBStatement extends \PDOStatement {
-    public function execute($boundInputParams = NULL) {
-      try{
-        return parent::execute($boundInputParams);
-      } catch (\PDOException $ex){
-        throw new DebugException($ex->getMessage(), $ex->getCode());
-      }
+class MysqlDBStatement extends \PDOStatement
+{
+    public function execute(array|null $boundInputParams = NULL): bool
+    {
+        try {
+            return parent::execute($boundInputParams);
+        } catch (\PDOException $ex) {
+            throw new DebugException($ex->getMessage(), $ex->getCode());
+        }
     }
-  }
 
 }

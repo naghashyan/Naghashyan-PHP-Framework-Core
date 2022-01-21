@@ -6,8 +6,8 @@
  * @site https://naghashyan.com
  * @mail levon@naghashyan.com
  * @package ngs.framework.dal.connectors
- * @version 4.0.0
- * @year 2009-2020
+ * @version 4.2.1
+ * @year 2009-2022
  *
  * This file is part of the NGS package.
  *
@@ -18,14 +18,15 @@
  *
  */
 
-namespace ngs\dal\connectors {
+namespace ngs\dal\connectors;
 
-  use ngs\exceptions\DebugException;
-  use PDO;
-  use PDOException;
-  use PDOStatement;
+use ngs\exceptions\DebugException;
+use PDO;
+use PDOException;
+use PDOStatement;
 
-  class MysqlPDO extends PDO {
+class MysqlPDO extends PDO
+{
 
     /**
      * Singleton instance of class
@@ -40,11 +41,12 @@ namespace ngs\dal\connectors {
      * @param string $database
      * @param string $chars
      */
-    public function __construct(string $host, string $user, string $password, string $database, string $chars = 'utf8') {
-      parent::__construct('mysql:dbname=' . $database . ';host=' . $host . ';charset=' . $chars, $user, $password);
-      $this->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
-      $this->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-      $this->setAttribute(PDO::ATTR_STATEMENT_CLASS, [MysqlDBStatement::class]);
+    public function __construct(string $host, string $user, string $password, string $database, string $chars = 'utf8')
+    {
+        parent::__construct('mysql:dbname=' . $database . ';host=' . $host . ';charset=' . $chars, $user, $password);
+        $this->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
+        $this->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $this->setAttribute(PDO::ATTR_STATEMENT_CLASS, [MysqlDBStatement::class]);
 
     }
 
@@ -58,27 +60,28 @@ namespace ngs\dal\connectors {
      * @param string $chars
      * @return MysqlPDO
      */
-    public static function getInstance(string $host, string $user, string $password, string $database, string $chars = 'utf8'): MysqlPDO {
-      if (self::$instance === null){
-        self::$instance = new MysqlPDO($host, $user, $password, $database, $chars);
-      }
-      return self::$instance;
+    public static function getInstance(string $host, string $user, string $password, string $database, string $chars = 'utf8'): MysqlPDO
+    {
+        if (self::$instance === null) {
+            self::$instance = new MysqlPDO($host, $user, $password, $database, $chars);
+        }
+        return self::$instance;
     }
 
     /**
      * @param string $statement
-     * @param array $driverOptions
+     * @param array $options
      * @return bool|PDOStatement
      * @throws DebugException
      */
-    public function prepare($statement, $driverOptions = []) {
-      try{
-        return parent::prepare($statement, $driverOptions);
-      } catch (PDOException $ex){
-        throw new DebugException($ex->getMessage(), $ex->getCode());
-      }
+    public function prepare(string $query, array $options = []): PDOStatement|false
+    {
+        try {
+            return parent::prepare($query, $options);
+        } catch (PDOException $ex) {
+            throw new DebugException($ex->getMessage(), $ex->getCode());
+        }
     }
 
-  }
 
 }

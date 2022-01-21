@@ -14,10 +14,10 @@
     }
   ],
   "require": {
-    "php": ">=7.4.0",
-    "smarty/smarty": "~3",
+    "php": ">=8.0",
+    "smarty/smarty": "~4",
     "wikimedia/less.php": "~3",
-    "scssphp/scssphp": "^1.0",
+    "scssphp/scssphp": "^1",
     "melbahja/http2-pusher": "^1.0"
   },
   "autoload": {
