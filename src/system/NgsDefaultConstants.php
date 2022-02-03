@@ -67,7 +67,7 @@ NGS()->define('VERSION', '1.0.0');
 NGS()->define('NGSVERSION', '4.0.0');
 NGS()->define('FRAMEWORK_NS', 'ngs');
 NGS()->define('DEFAULT_NS', 'ngs');
-NGS()->define('NGS_CMS_NS', 'ngs-cms');
+NGS()->define('NGS_CMS_NS', 'ngs-AdminTools');
 /*
 |--------------------------------------------------------------------------
 | DEFINING ENVIRONMENT VARIABLES

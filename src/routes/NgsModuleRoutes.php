@@ -182,9 +182,8 @@ class NgsModuleRoutes
      *
      * @return array|false
      */
-    protected function getModule()
-    {
-        if ($this->moduleArr != null) {
+    protected function getModule() {
+        if ($this->moduleArr != null){
             //FIXME
             //return $this->moduleArr;
         }
@@ -194,19 +193,23 @@ class NgsModuleRoutes
         $mainDomain = NGS()->getHttpUtils()->getMainDomain();
         $modulePart = $this->getModulePartByDomain($mainDomain);
         $host = explode('.', $parsedUrl['path']);
-        if (count($host) >= 3) {
-            if ($this->moduleArr = $this->getModuleBySubDomain($modulePart, $host[0])) {
+
+        $uri = NGS()->getHttpUtils()->getRequestUri(true);
+        if ($this->moduleArr = $this->getModuleByURI($modulePart, $uri)){
+            $this->setModuleName($this->moduleArr['uri']);
+            return $this->moduleArr;
+        }
+        if (count($host) >= 3){
+
+            if ($this->moduleArr = $this->getModuleBySubDomain($modulePart, $host[0])){
                 $this->setModuleName($this->moduleArr['uri']);
                 return $this->moduleArr;
             }
         }
-        $uri = NGS()->getHttpUtils()->getRequestUri(true);
-        if ($this->moduleArr = $this->getModuleByURI($modulePart, $uri)) {
-            $this->setModuleName($this->moduleArr['uri']);
-            return $this->moduleArr;
-        }
         $this->setModuleName('default');
         $this->moduleArr = $this->getMatchedModule($modulePart['default'], $uri, 'default');
+
+
         return $this->moduleArr;
     }
 

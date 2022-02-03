@@ -44,41 +44,45 @@ namespace ngs\util {
             $this->build($file, false);
         }
 
-    public function build($file, $mode = false) {
-      $files = $this->getBuilderArr($this->getBuilderJsonArr(), $file);
-      if (count($files) == 0){
-        throw new DebugException("Please add sass files in builder");
-      }
-      $this->sassParser = new Compiler();
-      $this->sassParser->addImportPath(function ($path) {
-        if (strpos($path, '@ngs-cms') >= 0){
-          return NGS()->getSassDir('ngs-cms') . '/' . str_replace('@ngs-cms/', '', $path) . '.scss';
-        }
-        return NGS()->getSassDir() . '/' . $path. '.scss';
-      });
+      public function build($file, $mode = false) {
+          $files = $this->getBuilderArr($this->getBuilderJsonArr(), $file);
+          if (count($files) == 0){
+              throw new DebugException("Please add sass files in builder");
+          }
+          $this->sassParser = new Compiler();
+          $this->sassParser->addImportPath(function ($path) {
+              if (strpos($path, '@ngs-cms') !== false){
+                  return NGS()->getSassDir('ngs-cms') . '/' . str_replace('@ngs-cms/', '', $path) . '.scss';
+              }
 
-      if ($mode){
-        $this->sassParser->setFormatter(Crunched::class);
-      }
-      $this->sassParser->setVariables(array(
-        'NGS_PATH' => NGS()->getHttpUtils()->getHttpHost(true),
-        'NGS_MODULE_PATH' => NGS()->getPublicHostByNS()
-      ));
-      if ($mode){
-        $outFileName = $files["output_file"];
-        if ($this->getOutputFileName() != null){
-          $outFileName = $this->getOutputFileName();
-        }
-        $outFile = $this->getOutputDir() . "/" . $outFileName;
-        touch($outFile, fileatime($this->getBuilderFile()));
-        file_put_contents($outFile, $this->getCss($files));
-        return true;
-      }
-      header('Content-type: ' . $this->getContentType());
-      echo $this->getCss($files);
-      exit;
+              if (strpos($path, '@'.NGS()->get('NGS_CMS_NS')) !== false){
+                  return NGS()->getSassDir(NGS()->get('NGS_CMS_NS')) . '/' . str_replace('@'.NGS()->get('NGS_CMS_NS').'/', '', $path) . '.scss';
+              }
+              return NGS()->getSassDir() . '/' . $path. '.scss';
+          });
 
-    }
+          if ($mode){
+              $this->sassParser->setFormatter(Crunched::class);
+          }
+          $this->sassParser->setVariables(array(
+              'NGS_PATH' => NGS()->getHttpUtils()->getHttpHost(true),
+              'NGS_MODULE_PATH' => NGS()->getPublicHostByNS()
+          ));
+          if ($mode){
+              $outFileName = $files["output_file"];
+              if ($this->getOutputFileName() != null){
+                  $outFileName = $this->getOutputFileName();
+              }
+              $outFile = $this->getOutputDir() . "/" . $outFileName;
+              touch($outFile, fileatime($this->getBuilderFile()));
+              file_put_contents($outFile, $this->getCss($files));
+              return true;
+          }
+          header('Content-type: ' . $this->getContentType());
+          echo $this->getCss($files);
+          exit;
+
+      }
 
     private function getCss($files) {
       $importDirs = array();

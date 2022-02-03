@@ -432,6 +432,7 @@ namespace ngs\dal\mappers {
             // Execute query.
             $res = $this->dbms->prepare($sqlQuery);
             $results = $res->execute($params);
+
             if ($results === false) {
                 return null;
             }

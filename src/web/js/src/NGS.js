@@ -320,6 +320,10 @@ var NGS = {
       matches = matches.slice(1);
       module = 'ngs-cms';
     }
+    if(matches[0] === 'ngs' && matches[1] === 'AdminTools'){
+      matches = matches.slice(1);
+      module = 'ngs-AdminTools';
+    }
     var action = matches[matches.length - 1];
     var myRegExp = new RegExp('([A-Z])', 'g');
     action = action.replace(myRegExp, "_$1").toLowerCase().replace(new RegExp('^_'), "");

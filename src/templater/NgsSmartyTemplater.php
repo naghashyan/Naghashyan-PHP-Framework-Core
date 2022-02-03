@@ -40,7 +40,7 @@ namespace ngs\templater {
          */
         public function __construct(bool $isHtml = true) {
             parent::__construct();
-            $this->assign('NGS_CMS_DIR', NGS()->getTemplateDir('ngs-cms'));
+            $this->assign('NGS_CMS_DIR', NGS()->getTemplateDir(NGS()->get('NGS_CMS_NS')));
             $this->assign('ADMIN_DIR', NGS()->getTemplateDir('admin'));
             $this->isHtml = $isHtml;
             //register NGS plugins

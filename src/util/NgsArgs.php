@@ -170,10 +170,10 @@ class NgsArgs
                     $this->setArgs($parsedRequestBody);
                 }
             }
-        } catch (Exception) {
+
+        } catch (Exception $exp) {
             return;
         }
-
 
     }
 
@@ -191,7 +191,7 @@ class NgsArgs
                 $this->inputArgs->setArgs(json_decode($this->inputData(), true, 512, JSON_THROW_ON_ERROR));
             }
             return $this->inputArgs;
-        } catch (Exception) {
+        } catch (Exception $exp) {
             return new NgsArgs();
         }
 

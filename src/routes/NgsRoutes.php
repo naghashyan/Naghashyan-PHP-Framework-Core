@@ -235,12 +235,15 @@ class NgsRoutes
         if (strpos($ns, '_') !== false) {
             $ns = str_replace('_', '.', $ns);
         }
+
         $module = NGS()->getModulesRoutesEngine()->getModuleNS();
+
         $actionPackage = NGS()->getLoadsPackage();
         if (strrpos($command, 'do_') !== false) {
             $actionPackage = NGS()->getActionPackage();
         }
         $action = $module . '.' . $actionPackage . '.';
+
         if ($ns) {
             $action .= $ns . '.';
         }
@@ -266,6 +269,7 @@ class NgsRoutes
     private function getDynRoutesLoad(string $url, string $package, array $urlPartsArr, bool $is404 = false, bool $staticFile = false)
     {
         $routes = $this->getRouteConfig();
+
         if (!isset($routes[$package])) {
             return ['matched' => false];
         }
@@ -277,12 +281,13 @@ class NgsRoutes
         } else if ($package === 'default') {
             $matchedRoutesArr[][$package] = $routes[$package];
         } else {
-            $matchedRoutesArr = $routes[$package];
+            $matchedRoutesArr = isset($routes[$package][0]) ? $routes[$package] : [$routes[$package]];
         }
         $dynRoute = false;
         $args = false;
         $foundRoute = [];
         foreach ($matchedRoutesArr as $route) {
+
             $foundRoute = [];
             if (isset($route['default'])) {
                 if ($route['default'] === 'dyn') {
@@ -301,22 +306,24 @@ class NgsRoutes
                 continue;
             }
 
+
             $foundRoute = $route;
+
             $args = $this->getMatchedRoute($urlPartsArr, $foundRoute);
             if (!isset($foundRoute['args'])) {
                 $foundRoute['args'] = array();
             }
 
-            if ($args !== false && is_array($args)) {
+            if ($args !== null && is_array($args)) {
                 $foundRoute['args'] = array_merge($foundRoute['args'], $args);
                 break;
             }
+
             if (isset($foundRoute['action'])) {
                 unset($foundRoute['action']);
             }
         }
-
-        if ($args === false && !isset($foundRoute['action'])) {
+        if ($args === null && !isset($foundRoute['action'])) {
             if ($dynRoute === true) {
                 return $this->getStandartRoutes($package, $urlPartsArr);
             }
@@ -408,7 +415,7 @@ class NgsRoutes
             }
         }
         $routeUrlExp = str_replace('/', '\/', $routeUrlExp);
-        preg_match('/^\/' . $routeUrlExp . '$/', $originalUrl, $matches);
+        preg_match('/' . $routeUrlExp . '$/', $originalUrl, $matches);
         if (!$matches) {
             return null;
         }
