@@ -216,6 +216,13 @@ namespace ngs\templater {
                     }
                     return NGS()->getPublicOutputHost($ns, $protocol) . '/js';
                     break;
+                case 'get_libs_out_dir' :
+                    $protocol = false;
+                    if (isset($params['protocol']) && $params['protocol'] == true){
+                        $protocol = true;
+                    }
+                    return NGS()->getPublicHost($ns, $protocol) . '/libs';
+                    break;
                 case 'get_css_out_dir' :
                     $protocol = false;
                     if (isset($params['protocol']) && $params['protocol'] == true){

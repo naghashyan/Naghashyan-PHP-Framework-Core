@@ -27,7 +27,7 @@ use ngs\exceptions\NotFoundException;
 class NgsRoutes
 {
 
-    private ?array $routes = null;
+    protected ?array $routes = null;
     private ?string $package = null;
     private $nestedRoutes = null;
     private $contentLoad = null;

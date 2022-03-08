@@ -495,6 +495,11 @@ class NGS
         return $this->getHttpUtils()->getNgsStaticPath($ns, $withProtocol) . '/' . $this->get('PUBLIC_OUTPUT_DIR');
     }
 
+    public function getPublicHost($ns = '', $withProtocol = false)
+    {
+        return $this->getHttpUtils()->getNgsStaticPath($ns, $withProtocol);
+    }
+
     public function getPublicJsOutputHost($ns = '', $withProtocol = false)
     {
         return $this->getHttpUtils()->getNgsStaticPath($ns, $withProtocol) . '/' . $this->getPublicJsOutputDir();

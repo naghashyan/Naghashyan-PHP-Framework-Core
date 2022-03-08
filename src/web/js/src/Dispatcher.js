@@ -94,6 +94,10 @@ let Dispatcher = {
       onNoAccess: function (responseText) {
         let res = JSON.parse(responseText);
         requestObject.onNoAccess(res);
+      }.bind(this),
+      onRedirect: function (responseText) {
+        let res = JSON.parse(responseText);
+        requestObject.onNoAccess(res);
       }.bind(this)
     };
     AjaxLoader.request(_url, options);

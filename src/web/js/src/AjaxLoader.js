@@ -66,6 +66,7 @@ let AjaxLoader = {
       onProgress: NGS.emptyFunction,
       onInvalidUser: NGS.emptyFunction,
       onNoAccess: NGS.emptyFunction,
+      onRedirect: NGS.emptyFunction,
       onXHRError: NGS.emptyFunction
     };
     options = NGS.extend(defaultOptions, options);
@@ -86,6 +87,9 @@ let AjaxLoader = {
           options.onInvalidUser(xmlhttp.responseText);
         } else if(xmlhttp.status === 403){
           options.onNoAccess(xmlhttp.responseText);
+        } else if(xmlhttp.status === 301){
+          options.onRedirect(xmlhttp.responseText);
+          return;
         }
         if(!options.withoutLoader){
           NGS.hideAjaxLoader();
