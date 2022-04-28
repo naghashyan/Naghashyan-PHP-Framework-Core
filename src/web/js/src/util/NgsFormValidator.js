@@ -40,7 +40,7 @@ let NgsFormValidator = function (formElement, options) {
           if(emailReFieald && status){
             status = imValidator.validateEmail(item.value, emailReFieald.val());
           }
-          emailReFieald = $(item);
+          emailReFieald = item;
           break;
         case "username":
           status = imValidator.validateString(item.value, validateLength, true);
@@ -53,13 +53,13 @@ let NgsFormValidator = function (formElement, options) {
           if(passwordFieald && status === true){
             status = imValidator.validatePasswords(item.value, passwordFieald.val());
           }
-          passwordFieald = $(item);
+          passwordFieald = item;
           break;
         case "not-required-password":
           if(notRequiredPasswordFieald){
             status = imValidator.validatePasswords(item.value, notRequiredPasswordFieald.val());
           }
-          notRequiredPasswordFieald = $(item);
+          notRequiredPasswordFieald = item;
           break;
         case "mobile-number":
           status = imValidator.validateMobileNumber(item.value);
@@ -198,7 +198,7 @@ let imValidator = {
     return true;
   },
   validatePolicy: function (elem) {
-    if(!$(elem).is(':checked')){
+    if(!elem.is(':checked')){
       return "In order to use our services, you must agree to our Terms of Use and Privacy Policy.";
     }
     return true;

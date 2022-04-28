@@ -27,7 +27,7 @@ use ngs\exceptions\NotFoundException;
 class NgsRoutes
 {
 
-    protected ?array $routes = null;
+    private ?array $routes = null;
     private ?string $package = null;
     private $nestedRoutes = null;
     private $contentLoad = null;
@@ -125,6 +125,7 @@ class NgsRoutes
         } else {
             $package = '404';
         }
+
         $urlPartsArr = $matches;
         if ($package === $this->getDynContainer()) {
             $package = array_shift($urlPartsArr);
@@ -235,15 +236,12 @@ class NgsRoutes
         if (strpos($ns, '_') !== false) {
             $ns = str_replace('_', '.', $ns);
         }
-
         $module = NGS()->getModulesRoutesEngine()->getModuleNS();
-
         $actionPackage = NGS()->getLoadsPackage();
         if (strrpos($command, 'do_') !== false) {
             $actionPackage = NGS()->getActionPackage();
         }
         $action = $module . '.' . $actionPackage . '.';
-
         if ($ns) {
             $action .= $ns . '.';
         }
@@ -269,32 +267,35 @@ class NgsRoutes
     private function getDynRoutesLoad(string $url, string $package, array $urlPartsArr, bool $is404 = false, bool $staticFile = false)
     {
         $routes = $this->getRouteConfig();
-
         if (!isset($routes[$package])) {
-            return ['matched' => false];
+            if (isset($routes['default']['action'], $routes['default']['404']) && $is404 === true) {
+                $package = '404';
+            } else {
+                return ['matched' => false];
+            }
         }
 
         $matchedRoutesArr = [];
 
         if ($package === '404') {
-            $matchedRoutesArr[] = $routes[$package];
+            $matchedRoutesArr[] = $routes['default'][$package];
         } else if ($package === 'default') {
             $matchedRoutesArr[][$package] = $routes[$package];
         } else {
-            $matchedRoutesArr = isset($routes[$package][0]) ? $routes[$package] : [$routes[$package]];
+            $matchedRoutesArr = $routes[$package];
         }
         $dynRoute = false;
         $args = false;
         $foundRoute = [];
-        foreach ($matchedRoutesArr as $route) {
 
+        foreach ($matchedRoutesArr as $route) {
             $foundRoute = [];
             if (isset($route['default'])) {
                 if ($route['default'] === 'dyn') {
                     $dynRoute = true;
                     continue;
                 }
-                if (isset($route['default']['action']) && $is404 == true && isset($route['default']['404'])) {
+                if (isset($route['default']['action'], $route['default']['404']) && $is404 === true) {
                     $foundRoute = $route['default']['404'];
                 } else {
                     $foundRoute = $route['default'];
@@ -302,27 +303,24 @@ class NgsRoutes
                 }
             }
 
-            if (isset($route['method']) && strtolower($route['method']) != strtolower($this->getRequestHttpMethod())) {
+            if (isset($route['method']) && strtolower($route['method']) !== strtolower($this->getRequestHttpMethod())) {
                 continue;
             }
 
-
             $foundRoute = $route;
-
             $args = $this->getMatchedRoute($urlPartsArr, $foundRoute);
             if (!isset($foundRoute['args'])) {
                 $foundRoute['args'] = array();
             }
-
-            if ($args !== null && is_array($args)) {
+            if (is_array($args)) {
                 $foundRoute['args'] = array_merge($foundRoute['args'], $args);
                 break;
             }
-
             if (isset($foundRoute['action'])) {
                 unset($foundRoute['action']);
             }
         }
+
         if ($args === null && !isset($foundRoute['action'])) {
             if ($dynRoute === true) {
                 return $this->getStandartRoutes($package, $urlPartsArr);
@@ -330,6 +328,7 @@ class NgsRoutes
             if ($staticFile) {
                 return array('matched' => false);
             }
+
             if (NGS()->getEnvironment() === 'development') {
                 $this->onNoMatchedRoutes();
             }
@@ -415,7 +414,7 @@ class NgsRoutes
             }
         }
         $routeUrlExp = str_replace('/', '\/', $routeUrlExp);
-        preg_match('/' . $routeUrlExp . '$/', $originalUrl, $matches);
+        preg_match('/^\/' . $routeUrlExp . '$/', $originalUrl, $matches);
         if (!$matches) {
             return null;
         }
