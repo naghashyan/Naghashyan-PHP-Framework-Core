@@ -10,15 +10,17 @@ let NgsFormValidator = function (formElement, options) {
   let formValidateStatus = true;
   formElement.querySelectorAll('input, select').forEach(function (item) {
     let status = true;
-    if(item.getAttribute('data-ngs-validate')){
+    if (item.getAttribute('data-ngs-validate')) {
       let validateType = item.getAttribute("data-ngs-validate");
       let validateLength = item.getAttribute("data-ngs-length");
-      if(!validateLength){
+      let translationError = item.getAttribute("data-ngs-translation-error");
+
+      if (!validateLength) {
         validateLength = 4;
       }
 
 
-      if(item.tagName !== 'SELECT') {
+      if (item.tagName !== 'SELECT') {
         item.value = item.value.trim();
       }
 
@@ -37,7 +39,7 @@ let NgsFormValidator = function (formElement, options) {
           break;
         case "email":
           status = imValidator.validateEmail(item.value);
-          if(emailReFieald && status){
+          if (emailReFieald && status) {
             status = imValidator.validateEmail(item.value, emailReFieald.val());
           }
           emailReFieald = item;
@@ -50,13 +52,13 @@ let NgsFormValidator = function (formElement, options) {
           break;
         case "password":
           status = imValidator.validateString(item.value, validateLength, false);
-          if(passwordFieald && status === true){
+          if (passwordFieald && status === true) {
             status = imValidator.validatePasswords(item.value, passwordFieald.val());
           }
           passwordFieald = item;
           break;
         case "not-required-password":
-          if(notRequiredPasswordFieald){
+          if (notRequiredPasswordFieald) {
             status = imValidator.validatePasswords(item.value, notRequiredPasswordFieald.val());
           }
           notRequiredPasswordFieald = item;
@@ -74,10 +76,15 @@ let NgsFormValidator = function (formElement, options) {
           status = imValidator.validateCCV(item.value);
           break;
       }
-      if(status !== true){
+      if (status !== true) {
         formValidateStatus = false;
+
+        if (translationError) {
+          status = translationError;
+        }
+
         options.showError(item, status);
-      } else{
+      } else {
         options.hideError(item);
       }
     }
@@ -88,12 +95,12 @@ let imValidator = {
 
   validateEmail: function (str, str1) {
     let filter = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
-    if(!filter.test(str)){
+    if (!filter.test(str)) {
       return "Please enter valid email";
     }
-    if(str1){
+    if (str1) {
       str1 = str1.trim();
-      if(str !== str1){
+      if (str !== str1) {
         return "These emails don't match. Try again?";
       }
     }
@@ -101,10 +108,10 @@ let imValidator = {
   },
   validateNumber: function (str) {
     let filter = /^[0-9]*$/;
-    if(!filter.test(str)){
+    if (!filter.test(str)) {
       return "Please use only numbers.";
     }
-    if(!str){
+    if (!str) {
       return "You can't leave this empty.";
     }
     return true;
@@ -112,77 +119,77 @@ let imValidator = {
   validateFloatNumber: function (str) {
     str = str.trim();
     const filter = /^-?\d*(\.\d+)?$/;
-    if(!filter.test(str)){
+    if (!filter.test(str)) {
       return "Please use only numbers.";
     }
-    if(!str){
+    if (!str) {
       return "You can't leave this empty.";
     }
     return true;
   },
   validateMobileNumber: function (str) {
     const filter = /^[0-9\+\.\-]*$/;
-    if(!filter.test(str)){
+    if (!filter.test(str)) {
       return "Please use only numbers.";
     }
-    if(!str){
+    if (!str) {
       return "You can't leave this empty.";
     }
     let str1 = str.replace(/\-/g, "");
     let str2 = str1.replace(/\./g, "");
-    if(str2.length !== 10 && str2.length !== 11){
+    if (str2.length !== 10 && str2.length !== 11) {
       return "invalid phone number";
     }
     return true;
   },
   validateString: function (str, len, allowChars, email) {
-    if(!str){
+    if (!str) {
       return "You can't leave this empty.";
     }
-    if(len){
-      if(str.length < len || str.length > 60){
+    if (len) {
+      if (str.length < len || str.length > 60) {
         return "Please use between " + len + " and 60 characters.";
       }
     }
-    if(allowChars){
+    if (allowChars) {
       let filter = /^[A-Za-z0-9\_\-\.\s]*$/;
-      if(email){
+      if (email) {
         filter = /^[A-Za-z0-9\_\-\.\@]*$/;
       }
-      if(!filter.test(str)){
+      if (!filter.test(str)) {
         return "Please use only letters (a-z), numbers, and periods.";
       }
     }
     return true;
   },
   validateText: function (str) {
-    if(!str){
+    if (!str) {
       return "You can't leave this empty.";
     }
     const filter = /^[/A-Za-z0-9\_\-\.\@\s\,\+\%\$\&]*$/;
-    if(!filter.test(str)){
+    if (!filter.test(str)) {
       return "Please use only letters (a-z), numbers slashes, and periods.";
     }
 
     return true;
   },
   validateCCExpirationDate: function (str) {
-    if(!str){
+    if (!str) {
       return "You can't leave this empty.";
     }
     const filter = /^\d{2}\/{0,1}\d{2}$/;
-    if(!filter.test(str)){
+    if (!filter.test(str)) {
       return "Please use mm/yy format for date";
     }
 
     return true;
   },
   validateCCV: function (str) {
-    if(!str){
+    if (!str) {
       return "Please enter your card's CCV";
     }
     const filter = /^\d{3,4}$/;
-    if(!filter.test(str)){
+    if (!filter.test(str)) {
       return "Please enter correct CCV";
     }
 
@@ -192,13 +199,13 @@ let imValidator = {
     str = str.trim();
     str1 = str1.trim();
     const filter = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
-    if(str !== str1){
+    if (str !== str1) {
       return "Your passwords don't match";
     }
     return true;
   },
   validatePolicy: function (elem) {
-    if(!elem.is(':checked')){
+    if (!elem.is(':checked')) {
       return "In order to use our services, you must agree to our Terms of Use and Privacy Policy.";
     }
     return true;
@@ -218,14 +225,14 @@ let imValidator = {
   },
   hideError: function (elem) {
     let errorElement = elem.parentNode.getElementsByClassName('ngs_validate');
-    if(errorElement.length === 0){
+    if (errorElement.length === 0) {
       return;
 
     }
     errorElement[0].remove();
     let elemStyle = JSON.parse(elem.getAttribute('data-im-style'));
     for (let key in elemStyle) {
-      if(elemStyle.hasOwnProperty(key)){
+      if (elemStyle.hasOwnProperty(key)) {
         elem.style[key] = elemStyle[key];
       }
     }
