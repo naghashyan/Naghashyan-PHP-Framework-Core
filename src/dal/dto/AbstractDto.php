@@ -92,7 +92,7 @@ namespace ngs\dal\dto {
 
         public function setNull(string $fieldName): bool
         {
-            if (!$this->isExsistField($fieldName)) {
+            if (!$this->isExistField($fieldName)) {
                 return false;
             }
             $this->ngs_nullableFields[] = $fieldName;
@@ -113,7 +113,7 @@ namespace ngs\dal\dto {
             return null;
         }
 
-        public function isExsistField(string $key): bool
+        public function isExistField(string $key): bool
         {
             $mapArr = $this->getMapArray();
             if (isset($mapArr[$key])) {
@@ -127,13 +127,20 @@ namespace ngs\dal\dto {
          * fill dto from data array
          *
          * @param array $dataArr
+         * @param bool $onlyNotSetFields
          */
-        public function fillDtoFromArray(array $dataArr = []): void
+        public function fillDtoFromArray(array $dataArr = [], bool $onlyNotSetFields = false): void
         {
             foreach ($dataArr as $key => $data) {
                 $setterFunction = 'set' . preg_replace_callback('/_(\w)/', function ($m) {
                         return strtoupper($m[1]);
                     }, ucfirst($key));
+                $getterFunction = 'get' . preg_replace_callback('/_(\w)/', function ($m) {
+                        return strtoupper($m[1]);
+                    }, ucfirst($key));
+                if($onlyNotSetFields && method_exists($this, $setterFunction) && $this->$getterFunction() !== null) {
+                    continue;
+                }
                 if(method_exists($this, $setterFunction)) {
                     if($data === null) {
                         $this->setNull($key);

@@ -205,7 +205,7 @@ let imValidator = {
   },
   showError: function (elem, msg) {
     this.hideError(elem);
-    elem.parentNode.insertAdjacentHTML('beforeend', "<div class='ilyov_validate'>" + msg + "</div>");
+    elem.parentNode.insertAdjacentHTML('beforeend', "<div class='ngs_validate'>" + msg + "</div>");
     let elemStyle = {
       borderColor: elem.style.borderColor,
       borderWidth: elem.style.borderWidth,
@@ -217,7 +217,7 @@ let imValidator = {
     elem.style.borderStyle = 'solid';
   },
   hideError: function (elem) {
-    let errorElement = elem.parentNode.getElementsByClassName('ilyov_validate');
+    let errorElement = elem.parentNode.getElementsByClassName('ngs_validate');
     if(errorElement.length === 0){
       return;
 

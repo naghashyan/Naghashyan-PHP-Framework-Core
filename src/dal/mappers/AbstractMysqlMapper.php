@@ -199,6 +199,10 @@ namespace ngs\dal\mappers {
             }
 
             $sqlQuery .= sprintf(' WHERE `%s` = ? ', $this->getPKFieldName());
+            $additionalCondition = $this->getUpdateAdditionalCondition($dto);
+            if($additionalCondition) {
+                $sqlQuery .= 'AND ' . $additionalCondition . ' ';
+            }
             $params[] = $dto->$pkGetterFunction();
             $res = $this->dbms->prepare($sqlQuery);
             if ($res) {
@@ -208,6 +212,12 @@ namespace ngs\dal\mappers {
                 }
             }
             return false;
+        }
+
+
+        protected function getUpdateAdditionalCondition(AbstractDto $dto) :string
+        {
+            return "";
         }
 
         /**

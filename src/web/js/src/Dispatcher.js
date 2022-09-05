@@ -51,6 +51,9 @@ let Dispatcher = {
           loadObject.setPermalink(res.pl);
           loadObject._updateContent(res.html, res.params);
           loadObject.onComplate(res.params);
+
+          //trigger event about page load
+          NgsEvents.fireEvent('onNGSPageLoad', loadObject);
         }
 
       } catch (e) {

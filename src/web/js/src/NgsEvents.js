@@ -6,24 +6,46 @@ let NgsEvents = {
     onPageUpdate: "ngs-onPageUpdate",
     onUrlChange: "ngs-onUrlChange",
     onUrlUpdate: "ngs-onUrlUpdate",
-    onNGSLoad: "onNGSLoad"
-  },
-  createEvent: function (eventName) {
+    onNGSLoad: "onNGSLoad",
+    onNGSPageLoad: "onNGSPageLoad"
+  }, createEvent: function (eventName) {
     return new CustomEvent(eventName, {
-      view: NGS,
-      cancelable: false,
-      detail: {}
+      view: NGS, cancelable: false, detail: {}
     });
+  }, /**
+   *
+   * @param {string} eventName
+   * @param {Function} handler
+   * @param {Object}  options
+   */
+  subscribe(eventName, handler, options) {
+    if(!this.events[eventName]){
+      return false;
+    }
+    document.addEventListener(eventName, handler, options);
+    return true;
   },
+
   /**
+   *
+   * @param {string} eventName
+   * @param {Function} handler
+   */
+  unSubscribe(eventName, handler) {
+    if(!this.events[eventName]){
+      return false;
+    }
+    document.removeEventListener(eventName, handler);
+    return true;
+  }, /**
    * private function fire event
    *
-   * @param string event name
    *
    * @return call event callback function
+   * @param {string} eventName
+   * @param {Object} params
    */
   fireEvent: function (eventName, params) {
-
     if(typeof params == "undefined"){
       params = {};
     }

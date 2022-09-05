@@ -27,7 +27,7 @@ use ngs\exceptions\NotFoundException;
 class NgsRoutes
 {
 
-    private ?array $routes = null;
+    protected ?array $routes = null;
     private ?string $package = null;
     private $nestedRoutes = null;
     private $contentLoad = null;
@@ -55,15 +55,16 @@ class NgsRoutes
      */
     protected function getRouteConfig(): ?array
     {
-        if ($this->routes == null) {
-            $routFile = NGS()->getConfigDir() . '/' . NGS()->getDefinedValue('NGS_ROUTS');
-            if (file_exists($routFile)) {
-                $this->routes = json_decode(file_get_contents($routFile), true);
-                if (NGS()->getDefinedValue('NGS_MODULE_ROUTS')) {
-                    $routFile = NGS()->getConfigDir() . '/' . NGS()->getDefinedValue('NGS_MODULE_ROUTS');
-                    $moduleRoutFile = json_decode(file_get_contents($routFile), true);
-                    $this->routes = array_merge($this->routes, $moduleRoutFile);
-                }
+        if ($this->routes !== null) {
+            return $this->routes;
+        }
+        $routFile = NGS()->getConfigDir() . '/' . NGS()->get('NGS_ROUTS');
+        if (file_exists($routFile)) {
+            $this->routes = json_decode(file_get_contents($routFile), true);
+            if (NGS()->get('NGS_MODULE_ROUTS')) {
+                $routFile = NGS()->getConfigDir() . '/' . NGS()->get('NGS_MODULE_ROUTS');
+                $moduleRoutFile = json_decode(file_get_contents($routFile), true);
+                $this->routes = array_merge($this->routes, $moduleRoutFile);
             }
         }
         return $this->routes;
@@ -312,7 +313,9 @@ class NgsRoutes
             if (!isset($foundRoute['args'])) {
                 $foundRoute['args'] = array();
             }
-            if (is_array($args)) {
+
+
+            if ($args !== null && is_array($args)) {
                 $foundRoute['args'] = array_merge($foundRoute['args'], $args);
                 break;
             }
@@ -414,6 +417,7 @@ class NgsRoutes
             }
         }
         $routeUrlExp = str_replace('/', '\/', $routeUrlExp);
+
         preg_match('/^\/' . $routeUrlExp . '$/', $originalUrl, $matches);
         if (!$matches) {
             return null;

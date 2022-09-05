@@ -663,6 +663,19 @@ var NGS = {
         return statusArr;
       };
 
+      NodeList.prototype.dblclick = function (listner, options) {
+        if(this.length < 0){
+          return false;
+        }
+        let statusArr = [];
+        this.forEach((elem) => {
+          statusArr.push(elem.addEventListener('dblclick', listner, options));
+          NodeList.prototype.clickListeners.push({element: elem, listener: listner});
+        });
+        return statusArr;
+      };
+
+
       NodeList.prototype.change = function (listener, options) {
         if(this.length < 0){
           return false;
@@ -681,6 +694,17 @@ var NGS = {
         let statusArr = [];
         this.forEach((elem) => {
           statusArr.push(elem.addEventListener('keyup', listener, options));
+        });
+        return statusArr;
+      };
+
+      NodeList.prototype.keydown = function (listener, options) {
+        if(this.length < 0){
+          return false;
+        }
+        let statusArr = [];
+        this.forEach((elem) => {
+          statusArr.push(elem.addEventListener('keydown', listener, options));
         });
         return statusArr;
       };

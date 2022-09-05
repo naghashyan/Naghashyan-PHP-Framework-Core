@@ -18,6 +18,9 @@
 
 namespace ngs;
 
+use ngs\event\EventManager;
+use ngs\event\structure\AbstractEventStructure;
+use ngs\event\subscriber\AbstractEventSubscriber;
 use ngs\exceptions\InvalidUserException;
 use ngs\exceptions\DebugException;
 use ngs\exceptions\NgsErrorException;
@@ -43,6 +46,7 @@ class Dispatcher
      */
     public function dispatch(?array $routesArr = null): void
     {
+        $this->getSubscribersAndSubscribeToEvents();
         try {
             if ($routesArr === null) {
                 $routesArr = NGS()->getRoutesEngine()->getDynamicLoad(NGS()->getHttpUtils()->getRequestUri());
@@ -190,7 +194,7 @@ class Dispatcher
             if (!$this->validateRequest($loadObj)) {
                 $loadObj->onNoAccess();
             }
-            $loadObj->setLoadName(NGS()->getRoutesEngine()->getContentLoad());
+            //$loadObj->setLoadName(NGS()->getRoutesEngine()->getContentLoad());
             $loadObj->service();
             NGS()->getTemplateEngine()->setType($loadObj->getNgsLoadType());
             NGS()->getTemplateEngine()->setTemplate($loadObj->getTemplate());
@@ -385,6 +389,145 @@ class Dispatcher
             return true;
         }
         return false;
+    }
+
+
+    /**
+     * subscribe to all events
+     *
+     */
+    public function getSubscribersAndSubscribeToEvents(bool $loadAll = false) {
+        $adminToolsSubscribers = NGS()->getConfigDir(NGS()->get('NGS_CMS_NS')) . '/event_subscribers.json';
+        $subscribers = [];
+        if(file_exists($adminToolsSubscribers)) {
+            $subscribers = json_decode(file_get_contents($adminToolsSubscribers), true);
+        }
+
+        if($loadAll) {
+            $moduleRouteDile = realpath(NGS()->get('NGS_ROOT') . '/' . NGS()->get('CONF_DIR') . '/' . NGS()->get('NGS_MODULS_ROUTS'));
+            if($moduleRouteDile) {
+                $modulesData = json_decode(file_get_contents($moduleRouteDile), true);
+                $modules = $this->getModules($modulesData);
+                foreach($modules as $module) {
+                    $modulSubscribers = NGS()->getConfigDir($module) . '/event_subscribers.json';
+                    if(file_exists($modulSubscribers)) {
+                        $moduleSubscribers = json_decode(file_get_contents($modulSubscribers), true);
+                        $subscribers = $this->mergeSubscribers($subscribers, $moduleSubscribers);
+                    }
+                }
+            }
+        }
+        else {
+            $modulSubscribers = NGS()->getConfigDir() . '/event_subscribers.json';
+            if(file_exists($modulSubscribers)) {
+                $moduleSubscribers = json_decode(file_get_contents($modulSubscribers), true);
+                $subscribers = $this->mergeSubscribers($subscribers, $moduleSubscribers);
+            }
+        }
+
+        $this->subscribeToSubscribersEvents($subscribers);
+    }
+
+
+    /**
+     * returns modules dirs
+     *
+     * @param array $modulesData
+     * @return array
+     */
+    private function getModules(array $modulesData) {
+        if(!isset($modulesData['default'])) {
+            return [];
+        }
+        $result = [];
+
+        foreach($modulesData['default'] as $type => $modules) {
+            if($type === 'default') {
+                if(!in_array($modules['dir'], $result)) {
+                    $result[] = $modules['dir'];
+                }
+            }
+            else {
+                foreach($modules as $info) {
+                    if(!in_array($info['dir'], $result)) {
+                        $result[] = $info['dir'];
+                    }
+                }
+            }
+        }
+
+        return $result;
+    }
+
+
+    /**
+     * merge 2 subscribers array without duplication
+     *
+     * @param array $oldSubscribers
+     * @param array $newSubscribers
+     * @return array
+     */
+    private function mergeSubscribers(array $oldSubscribers, array $newSubscribers) {
+        foreach($newSubscribers as $newSubscriber) {
+            if(!$this->subscriptionExsits($oldSubscribers, $newSubscriber)) {
+                $oldSubscribers[] = $newSubscriber;
+            }
+        }
+
+        return $oldSubscribers;
+    }
+
+
+    /**
+     * indicates if subscriber already exists in list
+     *
+     * @param array $subscriptions
+     * @param array $newSubscriptionData
+     * @return bool
+     */
+    private function subscriptionExsits(array $subscriptions, array $newSubscriptionData) {
+        foreach($subscriptions as $subscription) {
+            if($subscription['class'] === $newSubscriptionData['class']) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+
+    private $allVisibleEvents = [];
+
+    public function getVisibleEvents() {
+        return $this->allVisibleEvents;
+    }
+
+    /**
+     * subscribe to each subscriber events
+     *
+     * @param $subscribers
+     * @throws \Exception
+     */
+    private function subscribeToSubscribersEvents(array $subscribers) {
+        $eventManager = EventManager::getInstance();
+        foreach($subscribers as $subscriber) {
+            /** @var AbstractEventSubscriber $subscriberObject */
+            $subscriberObject = new $subscriber['class'];
+            if(!$subscriberObject instanceof AbstractEventSubscriber) {
+                throw new \Exception('wrong subscriber ' . $subscriber['class']);
+            }
+
+            $subscriptions = $subscriberObject->getSubscriptions();
+            foreach($subscriptions as $eventStructClass => $handlerName) {
+                /** @var AbstractEventStructure $eventStructExample */
+                $eventStructExample = $eventStructClass::getEmptyInstance();
+                $availableParams = $eventStructExample->getAvailableVariables();
+                if($eventStructExample->isVisible() && !isset($this->allVisibleEvents[$eventStructExample->getEventId()])) {
+                    $this->allVisibleEvents[$eventStructExample->getEventId()] = ['name' => $eventStructExample->getEventName(), 'params' => $availableParams];
+                }
+                $eventManager->subscribeToEvent($eventStructClass, $subscriberObject, $handlerName);
+            }
+        }
     }
 
     /**

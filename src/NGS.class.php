@@ -73,7 +73,7 @@ class NGS
     public static function getInstance(): NGS
     {
         if (self::$instance === null) {
-            self::$instance = new NGS();
+            self::$instance = new self();
         }
         return self::$instance;
     }
@@ -145,7 +145,15 @@ class NGS
             return $this->getNgsConfig();
         }
         if ($prefix == null) {
-            $_prefix = NGS()->getModulesRoutesEngine()->getModuleNS();
+            $moduleRoutesEngine = NGS()->getModulesRoutesEngine();
+            $parentModule = $moduleRoutesEngine->getParentModule();
+            if($parentModule && isset($parentModule['ns'])) {
+                $_prefix = $parentModule['ns'];
+            }
+            else {
+                $_prefix = $moduleRoutesEngine->getModuleNS();
+            }
+
         } else {
             $_prefix = $prefix;
         }

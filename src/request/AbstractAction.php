@@ -16,15 +16,18 @@
  * file that was distributed with this source code.
  *
  */
-namespace ngs\request {
-  abstract class AbstractAction extends \ngs\request\AbstractRequest {
 
-    public function initialize() {
-      parent::initialize();
+namespace ngs\request;
+abstract class AbstractAction extends \ngs\request\AbstractRequest
+{
+
+    public function initialize(): void
+    {
     }
 
-    public function afterRequest() {
-      $this->afterAction();
+    public function afterRequest()
+    {
+        $this->afterAction();
     }
 
     /**
@@ -34,13 +37,14 @@ namespace ngs\request {
      * @access
      * @return void
      */
-    public function onNoAccess(): void {
+    public function onNoAccess(): void
+    {
     }
 
-    public function afterAction() {
-      return null;
+    public function afterAction()
+    {
+        return null;
     }
 
-  }
 
 }

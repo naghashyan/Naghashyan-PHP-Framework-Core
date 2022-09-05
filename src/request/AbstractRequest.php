@@ -33,9 +33,7 @@ abstract class AbstractRequest
     private ?NgsArgs $ngsArgs = null;
     private ?string $ngsRequestUIID = null;
 
-    public function initialize()
-    {
-    }
+    abstract public function initialize(): void;
 
     /**
      * default http status code

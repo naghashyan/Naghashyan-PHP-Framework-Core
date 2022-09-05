@@ -161,7 +161,7 @@ NGS()->define('MODULES_ROUTES_ENGINE', 'ngs\routes\NgsModuleRoutes');
 //---defining routing file
 NGS()->define('ROUTES_ENGINE', 'ngs\routes\NgsRoutes');
 //---defining js builder file
-NGS()->define('JS_BUILDER', 'ngs\util\JsBuilder');
+NGS()->define('JS_BUILDER', 'ngs\util\JsBuilderV2');
 //---defining js build env
 NGS()->define('JS_BUILD_MODE', $environment);
 //---defining css builder file
