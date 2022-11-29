@@ -27,7 +27,8 @@ class HttpRequest
     private $params = null;
     private $reqParams = null;
     private $toFile = false;
-    private $optArr = array();
+    private $optArr = [];
+    private array $headers = [];
     private $responseStatus;
     private $responseBody;
     private $responseHeaders;
@@ -68,8 +69,7 @@ class HttpRequest
 
     public function addHeader(string $key, string $value): void
     {
-        $this->setOpt(CURLOPT_HTTPHEADER, $key . ':' . $value);
-        $this->setOpt(CURLOPT_HEADER, TRUE);
+        $this->headers[$key] = $value;
     }
 
     /**
@@ -78,12 +78,7 @@ class HttpRequest
      */
     public function setHeaders(array $headers): void
     {
-        $reqHeaders = array();
-        foreach ($headers as $key => $value) {
-            $reqHeaders[] = $key . ':' . $value;
-        }
-        $this->setOpt(CURLOPT_HTTPHEADER, $reqHeaders);
-        $this->setOpt(CURLOPT_HEADER, TRUE);
+        $this->headers = array_merge($this->headers, $headers);
     }
 
     /**
@@ -237,7 +232,12 @@ class HttpRequest
             fclose($fp);
             return $response;
         }
-        $this->setOpt(CURLOPT_HEADER, true);
+        $reqHeaders = [];
+        foreach ($this->headers as $key => $value) {
+            $reqHeaders[] = $key . ':' . $value;
+        }
+        $this->setOpt(CURLOPT_HTTPHEADER, $reqHeaders);
+        $this->setOpt(CURLOPT_HEADER, TRUE);
         // Write result to variable
         $this->setOpt(CURLOPT_RETURNTRANSFER, TRUE);
         curl_setopt_array($curl, $this->getOpt());// write content in $doc
