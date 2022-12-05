@@ -286,9 +286,8 @@ class NgsRoutes
             $matchedRoutesArr = $routes[$package];
         }
         $dynRoute = false;
-        $args = false;
+        $args = null;
         $foundRoute = [];
-
         foreach ($matchedRoutesArr as $route) {
             $foundRoute = [];
             if (isset($route['default'])) {
@@ -303,7 +302,6 @@ class NgsRoutes
                     break;
                 }
             }
-
             if (isset($route['method']) && strtolower($route['method']) !== strtolower($this->getRequestHttpMethod())) {
                 continue;
             }
@@ -311,7 +309,7 @@ class NgsRoutes
             $foundRoute = $route;
             $args = $this->getMatchedRoute($urlPartsArr, $foundRoute);
             if (!isset($foundRoute['args'])) {
-                $foundRoute['args'] = array();
+                $foundRoute['args'] = [];
             }
 
 
@@ -329,7 +327,7 @@ class NgsRoutes
                 return $this->getStandartRoutes($package, $urlPartsArr);
             }
             if ($staticFile) {
-                return array('matched' => false);
+                return ['matched' => false];
             }
 
             if (NGS()->getEnvironment() === 'development') {
@@ -339,6 +337,7 @@ class NgsRoutes
         }
 
         $actionType = substr($foundRoute['action'], 0, strpos($foundRoute['action'], '.'));
+
         if (NGS()->getModulesRoutesEngine()->checkModulByNS($actionType)) {
             $actionNS = $actionType;
             $foundRoute['action'] = substr($foundRoute['action'], strpos($foundRoute['action'], '.') + 1);
