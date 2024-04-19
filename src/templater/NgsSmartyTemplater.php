@@ -21,6 +21,7 @@ namespace ngs\templater;
 
 use ngs\exceptions\DebugException;
 use ngs\util\NgsArgs;
+use ngs\util\StringUtil;
 use Smarty;
 
 class NgsSmartyTemplater extends Smarty
@@ -32,7 +33,7 @@ class NgsSmartyTemplater extends Smarty
      * constructor
      * reading Smarty config and setting up smarty environment accordingly
      */
-    private $params = array();
+    private $params = [];
 
     /**
      * NgsSmartyTemplater constructor.
@@ -50,6 +51,10 @@ class NgsSmartyTemplater extends Smarty
         $this->registerPlugin('function', 'nest', [$this, 'nest']);
         $this->registerPlugin('function', 'nestLoad', [$this, 'nestLoad']);
         $this->registerPlugin('function', 'ngs', [$this, 'NGS']);
+        $this->registerPlugin('modifier', 'json_encode', [$this, "jsonEncode"]);
+        $this->registerPlugin('modifier', 'json_encode_html', [$this, "jsonEncodeHtml"]);
+        $this->registerPlugin('modifier', 'generate_table_view', [$this, "generateTableView"]);
+        $this->registerPlugin('modifier', 'print_r', [$this, "printR"]);
         $moduleList = NGS()->getModulesRoutesEngine()->getAllModules();
         $tmpTplArr = [];
         foreach ($moduleList as $value) {
@@ -59,11 +64,80 @@ class NgsSmartyTemplater extends Smarty
         $this->setCompileDir($this->getSmartyCompileDir());
         $this->setConfigDir($this->getSmartyConfigDir());
         $this->setCacheDir($this->getSmartyCacheDir());
-        $this->compile_check = true;
+        $this->compile_check = 1;
         if ($isHtml) {
             // register the outputfilter
             $this->registerFilter('output', array($this, 'addScripts'));
         }
+    }
+
+
+    /**
+     * json_encode modifier added to smarty
+     *
+     * @param mixed $value
+     * @return string
+     */
+    public function jsonEncode(mixed $value) :string
+    {
+        if(!$value) {
+            return "";
+        }
+
+        $formattedValue = json_encode($value);
+        return $formattedValue ? $formattedValue : "";
+    }
+
+    /**
+     * html_entity_decode modifier added to smarty
+     *
+     * @param array $value
+     * @return string
+     */
+    public function generateTableView(array $value) :string
+    {
+        if(!$value) {
+            return "";
+        }
+        
+        $htmlTableAsString = StringUtil::generateHtmlTableStringFromArray($value);
+
+        return html_entity_decode($htmlTableAsString);
+    }
+
+
+    /**
+     * json_encode_html modifier added to smatry, so encoded by this function array can be used in attribute of html tag
+     *
+     * @param mixed $value
+     *
+     * @return string
+     */
+    public function jsonEncodeHtml(mixed $value) :string
+    {
+        if(!$value) {
+            return "";
+        }
+
+        $formattedValue = htmlspecialchars(json_encode($value), ENT_QUOTES, 'UTF-8');
+        return $formattedValue ? $formattedValue : "";
+    }
+
+
+    /**
+     * json_encode modifier added to smarty
+     *
+     * @param mixed $value
+     * @return string
+     */
+    public function printR(mixed $value) :string
+    {
+        if(!$value) {
+            return "";
+        }
+
+        $formattedValue = print_r($value);
+        return $formattedValue ? (string) $formattedValue : "";
     }
 
     /**
@@ -77,7 +151,7 @@ class NgsSmartyTemplater extends Smarty
      * @param object $template template object
      * @return string html
      */
-    public function nestLoad($params, $template)
+    public function nestLoad(array $params, \Smarty_Internal_Template $template)
     {
         if (!isset($params['action'])) {
             trigger_error('nest: missing action parameter');
@@ -125,8 +199,8 @@ class NgsSmartyTemplater extends Smarty
      * Purpose:  handle math computations in template
      * <br>
      * @param array $params parameters
-     * @param object $template template object
-     * @return string html
+     * @param Smarty $template template object
+     * @return string|void html
      * @throws DebugException
      */
     public function nest($params, $template)
@@ -150,6 +224,7 @@ class NgsSmartyTemplater extends Smarty
             throw new DebugException('nest: missing file' . $include_file);
         }
         $_tpl = $template->createTemplate($include_file, null, null, $nsValue['inc'][$params['ns']]['params']);
+
         foreach ($template->tpl_vars as $key => $tplVars) {
             $_tpl->assign($key, $tplVars);
         }
@@ -162,14 +237,23 @@ class NgsSmartyTemplater extends Smarty
         if (NGS()->isJsFrameworkEnable() && !NGS()->getHttpUtils()->isAjaxRequest()) {
             $jsonParams = $nsValue['inc'][$params['ns']]['jsonParam'];
             $parentLoad = $nsValue['inc'][$params['ns']]['parent'];
+            $ngsHost = NGS()->getHttpUtils()->getHttpHostByNs('', true, false, true);
             $jsString = '<script type="text/javascript">';
-            $jsString .= '_setNgsDefaults(function(){';
+            $jsString .= '(async ()=>{';
             if ($parentLoad) {
-                $jsString .= 'NGS.setNestedLoad("' . $parentLoad . '", "' . $namespace . '", ' . json_encode($jsonParams, JSON_THROW_ON_ERROR, 512) . ')';
+                $jsString .= 'window.ngsloader.setNestedLoad("' . $parentLoad . '","' . $namespace . '", ' . json_encode(
+                        $jsonParams,
+                        JSON_THROW_ON_ERROR,
+                        512
+                    ) . ')';
             } elseif (isset($nsValue["inc"][$params["ns"]]["action"])) {
-                $jsString .= 'NGS.nestLoad("' . $nsValue["inc"][$params["ns"]]["action"] . '", ' . json_encode($jsonParams, JSON_THROW_ON_ERROR, 512) . ', "")';
+                $jsString .= 'NGS.nestLoad("' . $nsValue["inc"][$params["ns"]]["action"] . '", ' . json_encode(
+                        $jsonParams,
+                        JSON_THROW_ON_ERROR,
+                        512
+                    ) . ', "")';
             }
-            $jsString .= '});';
+            $jsString .= '})();';
             $jsString .= '</script>';
             $_output = $jsString . $_output;
         }
@@ -203,7 +287,7 @@ class NgsSmartyTemplater extends Smarty
             trigger_error("NGS: missing 'cmd' parameter");
             return;
         }
-        $ns = "";
+        $ns = '';
         if (isset($params['ns'])) {
             $ns = $params['ns'];
         }
@@ -302,36 +386,68 @@ class NgsSmartyTemplater extends Smarty
             $tpl_output = str_replace('</head>', $jsString, $tpl_output) . "\n";
             return $tpl_output;
         }
+        $namespace = NGS()->getModulesRoutesEngine()->getModuleNS();
+        $ngsHost = NGS()->getHttpUtils()->getHttpHostByNs('', true, false, true);
+        $importFile = $ngsHost . '/' . NGS()->getPublicJsOutputDir() . '/index.js?' . NGS()->getVersion();
         $jsString .= '<script type="text/javascript">';
-        $jsString .= 'var _ngs_defaults = [];';
-        $jsString .= 'function _setNgsDefaults(calback){_ngs_defaults.push(calback)};';
-        $jsString .= 'function _initNgsDefaults(){for(var i=0; i<_ngs_defaults.length;i++){_ngs_defaults[i]();}};';
-        $jsString .= '_setNgsDefaults(function(){';
-        $jsString .= "NGS.setInitialLoad('" . NGS()->getRoutesEngine()->getContentLoad() . "', '" . json_encode($this->params) . "');";
-        $jsModule = '';
-        if (!NGS()->getModulesRoutesEngine()->isDefaultModule()) {
-            $jsModule = NGS()->getModulesRoutesEngine()->getModuleNS() . '/';
+        $ngsModuleHost = NGS()->getHttpUtils()->getHttpHostByNs('', true, false, true);
+        $jsString .= '
+            window.ngsloader = {
+               nestedLoads:{},
+               setNestedLoad: function (parent, loadName, params) {
+                if (typeof (this.nestedLoads[parent]) === "undefined") {
+                  this.nestedLoads[parent] = [];
+                }
+                this.nestedLoads[parent].push({
+                  "parent": parent,
+                  "load": loadName,
+                  "params": params
+                });
+              }
+            };              
+            (async ()=>{
+            let ngsItemPath = "' . $importFile . '";
+            const initialloadModule = await import(ngsItemPath);
+            const initialload = new initialloadModule.default();
+            NGS.setInitialLoad("' . NGS()->getRoutesEngine()->getContentLoad() . '", ' . json_encode(
+                $this->params
+            ) . ');';
+        if (NGS()->get('IS_NGS_COMPONENT_MOD')) {
+            $jsString .= 'NGS.setComponentTampltePath("' . $ngsModuleHost . '/")
+                NGS.setEnvironment("' . NGS()->getEnvironment() . '");';
         }
+        $jsString .= '
+            NGS.setJsPublicDir("' . NGS()->getPublicJsOutputDir() . '");
+            NGS.setModule("' . NGS()->getModulesRoutesEngine()->getModuleNS() . '");
+            NGS.setTmst("' . time() . '");
+            NGS.setModuleHttpHost("' . $ngsModuleHost . '");';
 
-        $jsString .= 'NGS.setJsPublicDir("' . $jsModule . NGS()->getPublicJsOutputDir() . '");';
-        $jsString .= 'NGS.setModule("' . NGS()->getModulesRoutesEngine()->getModuleNS() . '");';
-        $jsString .= 'NGS.setTmst("' . time() . '");';
-        $jsString .= 'NGS.setHttpHost("' . NGS()->getHttpUtils()->getHttpHostByNs("", true, false, true) . '");';
         if (!NGS()->getModulesRoutesEngine()->isDefaultModule()) {
-            $jsString .= 'NGS.setModuleHttpHost("' . NGS()->getHttpUtils()->getHttpHostByNs(NGS()->getModulesRoutesEngine()->getModuleNS(), true, false, true) . '");';
+            $jsString .= 'NGS.setModuleHttpHost("' . $ngsModuleHost . '");';
         }
         $staticPath = NGS()->getHttpUtils()->getHttpHost(true);
         if (isset(NGS()->getConfig()->static_path)) {
-            $staticPath = NGS()->getHttpUtils()->getHttpHostByNs("", true, false, true);
+            $staticPath = NGS()->getHttpUtils()->getHttpHostByNs('', true, false, true);
         }
-        $jsString .= 'NGS.setStaticPath("' . NGS()->getHttpUtils()->getHttpHostByNs("", true, false, true) . '");';
+        $jsString .= 'NGS.setStaticPath("' . $ngsHost . '");';
         foreach ($this->getCustomJsParams() as $key => $value) {
             $jsString .= $key . " = '" . $value . "';";
         }
         $jsString .= $this->getCustomHeader();
-        $jsString .= '});';
-        $jsString .= '</script>';
-        $jsString .= '</head>';
+        $jsString .= 'const ngsInit = ()=>{
+                initialload.initialize();
+            };
+            document.onreadystatechange = () => {
+              if (document.readyState === "complete") {
+                ngsInit();
+              }
+            };
+            if (document.readyState === "complete") {
+              ngsInit();
+            }
+             ';
+        $jsString .= '
+        })();</script></head>';
         $tpl_output = str_replace('</head>', $jsString, $tpl_output);
         if (NGS()->getEnvironment() == "production") {
             $tpl_output = preg_replace('![\t ]*[\r]+[\t ]*!', '', $tpl_output);

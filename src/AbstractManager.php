@@ -4,10 +4,10 @@
  *
  * @author Levon Naghashyan <levon@naghashyan.com>
  * @site http://naghashyan.com
- * @year 2009-2016
+ * @year 2009-2023
  * @package ngs.framework
- * @version 3.1.0
- * 
+ * @version 4.5.0
+ *
  * This file is part of the NGS package.
  *
  * @copyright Naghashyan Solutions LLC
@@ -16,42 +16,54 @@
  * file that was distributed with this source code.
  *
  */
-namespace ngs {
-	abstract class AbstractManager {
 
-		public function __construct() {
-		}
+namespace ngs;
 
-		protected $orderFields = array();
+use Exception;
 
-		public function validateMustBeParameters($dataObject, $paramsArray) {
-			foreach ($paramsArray as $param) {
-				$functionName = "get".ucfirst($param);
-				$paramValue = $dataObject->$functionName();
-				if ($paramValue == null || $paramValue == "") {
-					throw new Exception("The parameter ".$param." is missing.");
-				}
-			}
-			return true;
-		}
+abstract class AbstractManager
+{
 
-		public function validateOrderFileld($key) {
-			if ($this->orderFields[$key]) {
-				return true;
-			}
-			return false;
-		}
-		
-		/**
-		 * Simple hashcode generator
-		 *
-		 * @return
-		 */
-		public function generateHashcode() {
-			$str = time();
-			return md5($str."_".rand(0, 50000));
-		}
+    public function __construct()
+    {
+    }
 
-	}
+    protected $orderFields = array();
+
+    /**
+     * @param $dataObject
+     * @param $paramsArray
+     * @return bool
+     */
+    public function validateMustBeParameters($dataObject, $paramsArray)
+    {
+        foreach ($paramsArray as $param) {
+            $functionName = "get" . ucfirst($param);
+            $paramValue = $dataObject->$functionName();
+            if ($paramValue == null || $paramValue == "") {
+                throw new Exception("The parameter " . $param . " is missing.");
+            }
+        }
+        return true;
+    }
+
+    public function validateOrderFileld($key)
+    {
+        if ($this->orderFields[$key]) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Simple hashcode generator
+     *
+     * @return string
+     */
+    public function generateHashcode()
+    {
+        $str = time();
+        return md5($str . "_" . rand(0, 50000));
+    }
 
 }

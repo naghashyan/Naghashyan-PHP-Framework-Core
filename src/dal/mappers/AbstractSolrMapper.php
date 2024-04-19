@@ -17,7 +17,7 @@ namespace ngs\dal\mappers;
 use ngs\dal\connectors\SolrDBMS;
 use ngs\dal\dto\AbstractDto;
 use ngs\exceptions\DebugException;
-use \Solarium\QueryType\Update\Query\Document;
+use Solarium\QueryType\Update\Query\Document;
 
 abstract class AbstractSolrMapper extends AbstractMapper
 {
@@ -58,54 +58,58 @@ abstract class AbstractSolrMapper extends AbstractMapper
     /**
      * fill Solarium Document From NGS Dto
      *
-     * @param AbstractDto
+     * @param AbstractDto $dto
      *
      * @return Document
      */
     private function fillSolariumDocumentFromDto($dto): Document
     {
         $doc = new Document();
-        $dto_fields = array_values($dto->getSchemeArray());
-        $db_fields = array_keys($dto->getSchemeArray());
-        for ($i = 0, $iMax = count($dto_fields); $i < $iMax; $i++) {
-            $functionName = 'get' . ucfirst($dto_fields[$i]);
-            $val = $dto->$functionName();
-            if (!isset($val)) {
-                continue;
-            }
-            if (!is_array($val)) {
-                $doc->setField($db_fields[$i], $val);
-                continue;
-            }
 
-            foreach ($val as $item) {
-                $doc->setField($db_fields[$i], $item);
-            }
+        if (method_exists($dto, 'getSchemeArray')) {
+            $dto_fields = array_values($dto->getSchemeArray());
+            $db_fields = array_keys($dto->getSchemeArray());
+            for ($i = 0, $iMax = count($dto_fields); $i < $iMax; $i++) {
+                $functionName = 'get' . ucfirst($dto_fields[$i]);
+                $val = $dto->$functionName();
+                if (!isset($val)) {
+                    continue;
+                }
+                if (!is_array($val)) {
+                    $doc->setField($db_fields[$i], $val);
+                    continue;
+                }
 
+                foreach ($val as $item) {
+                    $doc->setField($db_fields[$i], $item);
+                }
+
+            }
         }
+
         return $doc;
     }
 
     /**
      * Inserts dto into table.
      *
-     * @param AbstractDto
+     * @param AbstractDto $dto
      *
-     * @return boolean
+     * @return int|null
      */
-    public function insertDto($dto): bool
+    public function insertDto($dto): ?int
     {
         //validating input params
         if ($dto === null) {
             throw new DebugException('The input param can not be NULL.');
         }
-        return $this->insertDtos([$dto]);
+        return (int) $this->insertDtos([$dto]);
     }
 
     /**
      * Inserts dtos into table.
      *
-     * @param AbstractDto[]
+     * @param AbstractDto[] $dtos
      *
      * @return bool
      */
@@ -154,8 +158,8 @@ abstract class AbstractSolrMapper extends AbstractMapper
      * Updates table fields by primary key.
      * DTO must contain primary key value.
      *
-     * @param int $id
-     * @return boolean
+     * @param AbstractDto $dto
+     * @return int|null
      * @throws DebugException
      */
     public function updateByPK($dto)
@@ -183,41 +187,47 @@ abstract class AbstractSolrMapper extends AbstractMapper
             }
             $functionName = 'get' . ucfirst($dto_fields[$i]);
             $val = $dto->$functionName();
-            if (isset($val)) {
-                $doc->setFieldModifier($db_fields[$i], 'set');
-                $doc->setField($db_fields[$i], $val);
 
+            if (isset($val)) {
+                if (method_exists($doc, 'setFieldModifier')) {
+                    $doc->setFieldModifier($db_fields[$i], 'set');
+                }
+
+                if (method_exists($doc, 'setField')) {
+                    $doc->setField($db_fields[$i], $val);
+                }
             }
         }
-        $doc->setKey($this->getPKFieldName(), $pk);
+
+        if (method_exists($doc, 'setKey')) {
+            $doc->setKey($this->getPKFieldName(), $pk);
+        }
 
         //add document and commit
         $query->addDocument($doc)->addCommit(true, true, false);
 
         // this executes the query and returns the result
         $result = $this->dbms->update($query);
-        if ($result->getStatus() === 0) {
-            return true;
-        }
-        return false;
+
+        return (int) !$result->getStatus();
     }
 
     /**
      * Selects from table by primary key and returns corresponding DTO
      *
      * @param object $id
-     * @return
+     * @return AbstractDto
      */
     public function selectByPK($id)
     {
-
+        //TODO
     }
 
     /**
      * Delete the row by primary key
      *
      * @param int $id - the unique identifier of table
-     * @return bool
+     * @return bool|null
      */
     public function deleteByPK($id): ?bool
     {
@@ -230,7 +240,7 @@ abstract class AbstractSolrMapper extends AbstractMapper
     /**
      * Delete the rows by primary keys
      *
-     * @param array $id - the unique identifier of table
+     * @param array $ids - the unique identifier of table
      * @return bool
      */
     public function deleteByPKeys($ids): bool
@@ -248,8 +258,8 @@ abstract class AbstractSolrMapper extends AbstractMapper
     /**
      * Executes the query and returns an array of corresponding DTOs
      *
-     * @param array $params
-     * @return
+     * @param $query
+     * @return array
      */
     public function fetchRows($query)
     {

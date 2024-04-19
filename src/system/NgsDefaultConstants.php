@@ -68,11 +68,15 @@ NGS()->define('NGSVERSION', '4.0.0');
 NGS()->define('FRAMEWORK_NS', 'ngs');
 NGS()->define('DEFAULT_NS', 'ngs');
 NGS()->define('NGS_CMS_NS', 'ngs-AdminTools');
+NGS()->define('NGS_PROJECT_OWNER', 'www-data');
+NGS()->define('IM_TOKEN_COOKIE_KEY', '_im_token');
+
 /*
 |--------------------------------------------------------------------------
 | DEFINING ENVIRONMENT VARIABLES
 |--------------------------------------------------------------------------
 */
+
 $environment = 'production';
 if (isset($_SERVER['ENVIRONMENT'])){
   if ($_SERVER['ENVIRONMENT'] == 'development' || $_SERVER['ENVIRONMENT'] == 'dev'){
@@ -103,7 +107,6 @@ if (strpos(getcwd(), '/htdocs') !== false){
   $ngsRoot = substr(getcwd(), 0, strrpos(getcwd(), '\htdocs'));
 }
 NGS()->define('NGS_ROOT', $ngsRoot);
-
 
 /*
 |--------------------------------------------------------------------------
@@ -141,6 +144,7 @@ NGS()->define('TEMPLATES_DIR', 'templates');
 NGS()->define('LOADS_DIR', 'loads');
 NGS()->define('ACTIONS_DIR', 'actions');
 //defining routs file path
+NGS()->define('NGS_ROUT_DIR', 'conf');
 NGS()->define('NGS_ROUTS', 'routes.json');
 NGS()->define('NGS_ROUTS_ARRAY', 'routes.json');
 
@@ -174,6 +178,10 @@ NGS()->define('LESS_BUILD_MODE', $environment);
 NGS()->define('SASS_BUILDER', 'ngs\util\SassBuilder');
 //---defining sass build env
 NGS()->define('SASS_BUILD_MODE', $environment);
+
+//---defining component streamer class file
+NGS()->define('NGS_COMPONENT_STREAMER', 'ngs\util\NgsComponentStreamer');
+
 //---defining ngs utils file
 NGS()->define('NGS_UTILS', 'ngs\util\NgsUtils');
 //---defining ngs MySql Pdo file
@@ -225,6 +233,14 @@ NGS()->define('USE_SMARTY', TRUE);
 NGS()->define('SMARTY_CACHE_DIR', 'cache');
 NGS()->define('SMARTY_COMPILE_DIR', 'compile');
 
+
+/*
+|--------------------------------------------------------------------------
+| DEFINING COMPONENTS
+|--------------------------------------------------------------------------
+*/
+NGS()->define('IS_NGS_COMPONENT_MOD', false);
+NGS()->define('IS_COMPONENT_TEMPLATE', false);
 /*
 |--------------------------------------------------------------------------
 | DEFINING SOLR DEFAULT PARAMS
@@ -232,3 +248,5 @@ NGS()->define('SMARTY_COMPILE_DIR', 'compile');
 */
 
 NGS()->define('BULK_UPDATE_LIMIT', 50);
+
+NGS()->define('ELASTIC_BULK_LIMIT', 7500);

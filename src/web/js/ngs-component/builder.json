@@ -1,0 +1,24 @@
+{
+  "builders": [
+    {
+      "source_dir": "src",
+      "out_dir": "ngs",
+      "module": "ngs-component",
+      "files": [
+        "NGS.js",
+        "Dispatcher.js",
+        "AbstractRequest.js",
+        "AbstractLoad.js",
+        "AbstractAction.js",
+        "AjaxLoader.js",
+        "CustomEvent.js",
+        "NgsEvents.js",
+        "UrlObserver.js",
+        "Models.js",
+        "util/NgsFormValidator.js",
+        "libs/vue.esm-browser.prod.min.js",
+        "libs/object-model.min.js"
+      ]
+    }
+  ]
+}

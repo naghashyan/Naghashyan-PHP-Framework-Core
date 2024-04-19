@@ -19,9 +19,6 @@
 
 namespace ngs\templater;
 
-use ngs\templater\AbstractTemplater;
-use ngs\templater\NgsSmartyTemplater;
-
 class NgsTemplater extends AbstractTemplater
 {
 
@@ -29,10 +26,11 @@ class NgsTemplater extends AbstractTemplater
      * constructor
      * reading Smarty config and setting up smarty environment accordingly
      */
-    private $smarty = null;
-    private $template = null;
+    private ?NgsSmartyTemplater $smarty = null;
+    private ?string $template = null;
+    private array $components = [];
     private array $params = [];
-    private $permalink = null;
+    private ?string $permalink = null;
     private array $smartyParams = [];
     private int $httpStatusCode = 200;
     private string $type = 'json';
@@ -42,25 +40,29 @@ class NgsTemplater extends AbstractTemplater
     {
     }
 
-    public function setType($type)
+    public function setType(string $type): void
     {
         $this->type = $type;
     }
 
-    public function getType()
+    public function getType(): string
     {
         return $this->type;
     }
 
-    public function getSmartyTemplater()
+    public function getSmartyTemplater(): NgsSmartyTemplater
     {
-        return new NgsSmartyTemplater();
+        if ($this->smarty) {
+            return $this->smarty;
+        }
+        $this->smarty = new NgsSmartyTemplater();
+        return $this->smarty;
     }
 
     /**
      * @return bool
      */
-    public function isNgsFromException()
+    public function isNgsFromException(): bool
     {
         return $this->ngsFromException;
     }
@@ -84,7 +86,7 @@ class NgsTemplater extends AbstractTemplater
      *
      * @return void
      */
-    public function assign($key, $value): void
+    public function assign(string $key, mixed $value): void
     {
         $this->smartyParams[$key] = $value;
     }
@@ -99,7 +101,7 @@ class NgsTemplater extends AbstractTemplater
      *
      * @return void
      */
-    public function assignJson($key, $value): void
+    public function assignJson(string $key, mixed $value): void
     {
         $this->params[$key] = $value;
     }
@@ -112,7 +114,7 @@ class NgsTemplater extends AbstractTemplater
      *
      * @return void
      */
-    public function assignJsonParams($paramsArr)
+    public function assignJsonParams(array $paramsArr): void
     {
         if (!is_array($paramsArr)) {
             $paramsArr = [$paramsArr];
@@ -121,12 +123,32 @@ class NgsTemplater extends AbstractTemplater
     }
 
     /**
+     * assign single web components
+     *
+     * @access public
+     *
+     * @param String $name
+     * @param mixed $value
+     *
+     * @return void
+     */
+    public function assignComponent(string $name, mixed $value): void
+    {
+        $this->components[$name] = $value;
+    }
+
+    public function getJsonParamByKey(string $key): mixed
+    {
+        return $this->params[$key] ?? null;
+    }
+
+    /**
      * set template
      *
      * @param String $template
      *
      */
-    public function setTemplate($template)
+    public function setTemplate(string $template): void
     {
         $this->template = $template;
     }
@@ -136,7 +158,7 @@ class NgsTemplater extends AbstractTemplater
      *
      * @return String $template
      */
-    public function getTemplate()
+    public function getTemplate(): null|string
     {
         return $this->template;
     }
@@ -147,7 +169,7 @@ class NgsTemplater extends AbstractTemplater
      * @param String $template
      *
      */
-    public function setPermalink($permalink)
+    public function setPermalink(string $permalink): void
     {
         $this->permalink = $permalink;
     }
@@ -157,7 +179,7 @@ class NgsTemplater extends AbstractTemplater
      *
      * @return String $template|null
      */
-    public function getPermalink()
+    public function getPermalink(): null|string
     {
         return $this->permalink;
     }
@@ -168,7 +190,7 @@ class NgsTemplater extends AbstractTemplater
      * @param integer $httpStatusCode
      *
      */
-    public function setHttpStatusCode($httpStatusCode)
+    public function setHttpStatusCode(int $httpStatusCode): void
     {
         $this->httpStatusCode = $httpStatusCode;
     }
@@ -179,9 +201,21 @@ class NgsTemplater extends AbstractTemplater
      * @param integer $httpStatusCode
      *
      */
-    public function getHttpStatusCode()
+    public function getHttpStatusCode(): int
     {
         return $this->httpStatusCode;
+    }
+
+    public function fetch(): string
+    {
+        $this->beforeDisplay();
+        $smarty = $this->getSmartyTemplater();
+
+        foreach ($this->smartyParams as $key => $value) {
+            $smarty->assign($key, $value);
+        }
+        $smarty->assignJsonParams($this->params);
+        return $smarty->fetch($this->getTemplate());
     }
 
     /**
@@ -199,10 +233,11 @@ class NgsTemplater extends AbstractTemplater
             $this->displayJson($this->params);
             return;
         }
-        $this->smarty = $this->getSmartyTemplater();
+        $smarty = $this->getSmartyTemplater();
         foreach ($this->smartyParams as $key => $value) {
-            $this->smarty->assign($key, $value);
+            $smarty->assign($key, $value);
         }
+        $smarty->assignJsonParams($this->params);
         if ($this->getType() === 'json') {
             $this->displayJson();
             return;
@@ -213,48 +248,49 @@ class NgsTemplater extends AbstractTemplater
         }
         $ext = pathinfo($this->getTemplate(), PATHINFO_EXTENSION);
         if ($ext !== 'json' && (NGS()->isJsFrameworkEnable() && !NGS()->getHttpUtils()->isAjaxRequest())) {
-            $this->smarty->setCustomHeader($this->getCustomHeader());
+            $smarty->setCustomHeader($this->getCustomHeader());
             $this->displaySmarty($this->getTemplate());
             return;
         }
         if (NGS()->isJsFrameworkEnable() && NGS()->getHttpUtils()->isAjaxRequest()) {
             $params = [];
-            $params['html'] = $this->smarty->fetch($this->getTemplate());
+            $params['html'] = $smarty->fetch($this->getTemplate());
             $params['nl'] = NGS()->getLoadMapper()->getNestedLoads();
             $params['pl'] = $this->getPermalink();
             $params['params'] = $this->params;
+            $params['components'] = $this->components;
             $this->displayJson($params);
             return;
         }
         $this->displayJson();
     }
 
-
-    private function displayJson($params = null): void
+    private function displayJson(?array $params = null): void
     {
         header('Content-Type: application/json; charset=utf-8');
+        $smarty = $this->getSmartyTemplater();
         if ($params !== null) {
             echo json_encode($params, JSON_THROW_ON_ERROR, 512);
             return;
         }
         foreach ($this->params as $key => $value) {
-            $this->smarty->assign($key, $value);
+            $smarty->assign($key, $value);
         }
         if ($this->getTemplate()) {
-            echo($this->smarty->fetch($this->getTemplate()));
+            echo($smarty->fetch($this->getTemplate()));
         }
         return;
     }
 
-    private function displaySmarty()
+    private function displaySmarty(): void
     {
         echo $this->fetchSmartyTemplate($this->getTemplate());
     }
 
 
-    public function fetchSmartyTemplate($templatePath)
+    public function fetchSmartyTemplate(string $templatePath): string
     {
-        return $this->smarty->fetch($templatePath);
+        return $this->getSmartyTemplater()->fetch($templatePath);
     }
 
 

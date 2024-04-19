@@ -5,9 +5,9 @@
  *
  * @author Levon Naghashyan <levon@naghashyan.com>
  * @site http://naghashyan.com
- * @year 2009-2016
+ * @year 2009-2022
  * @package framework
- * @version 3.1.0
+ * @version 4.5.0
  *
  * This file is part of the NGS package.
  *
@@ -17,41 +17,34 @@
  * file that was distributed with this source code.
  *
  */
-namespace ngs\exceptions {
-  class DebugException extends \Exception {
 
-    /**
-     * Return a thingie based on $paramie
-     * @abstract
-     * @access
-     * @param boolean $paramie
-     * @return integer|babyclass
-     */
+namespace ngs\exceptions;
+class DebugException extends \Exception
+{
 
-    private $params = [];
-    protected $code = 1;
+    private array $params = [];
 
-    public function __construct($msg = "", $code = 1, $params = []) {
-      $this->message = $msg;
-      $this->params = $params;
-      $this->code = $code;
+    public function __construct(string $msg = '', $code = 1, array $params = [])
+    {
+        $this->message = $msg;
+        $this->params = $params;
+        $this->code = $code;
     }
 
-    public function display() {
-      $trace = $this->getTrace();
-      header('Content-Type: application/json; charset=utf-8');
-      header("HTTP/1.0 403 Forbidden");
-      $debugArr = [
-        "NGSDEBUGMSG" => $this->getMessage(),
-        "code" => $this->code,
-        "params" => $this->params,
-        "file" => $trace[0]["file"],
-        "line" => $trace[0]["line"],
-        "_tmst_" => time()
-      ];
-      echo json_encode($debugArr);
-    }
+    public function display()
+    {
+        $trace = $this->getTrace();
+        header('Content-Type: application/json; charset=utf-8');
+        header('HTTP/1.0 403 Forbidden');
+        $debugArr = [
+            'NGSDEBUGMSG' => $this->getMessage(),
+            'code' => $this->code,
+            'params' => $this->params,
+            '_tmst_' => time(),
+            'trace' => $trace
 
-  }
+        ];
+        echo json_encode($debugArr);
+    }
 
 }

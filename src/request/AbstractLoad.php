@@ -50,6 +50,7 @@ abstract class AbstractLoad extends AbstractRequest
      */
     public function initialize(): void
     {
+
     }
 
     /**
@@ -62,6 +63,10 @@ abstract class AbstractLoad extends AbstractRequest
      */
     final public function service(): void
     {
+        NGS()->define('IS_COMPONENT_TEMPLATE', true);
+        if (NGS()->get('IS_NGS_COMPONENT_MOD') && $this->isInitialLoad()) {
+            NGS()->define('IS_COMPONENT_TEMPLATE', false);
+        }
         $this->load();
         $this->loadClassName = get_class($this);
         $ns = $this->loadClassName;
@@ -84,11 +89,9 @@ abstract class AbstractLoad extends AbstractRequest
         $nestedLoads = NGS()->getRoutesEngine()->getNestedRoutes($nameSpace . '.' . $className);
         $loadDefaultLoads = $this->getDefaultLoads();
         $defaultLoads = [];
-        if (isset($loadDefaultLoads) && is_array($loadDefaultLoads)) {
-            $defaultLoads = array_merge($loadDefaultLoads, $nestedLoads);
-        } else if (is_array($nestedLoads)) {
-            $defaultLoads = $nestedLoads;
-        }
+
+        $defaultLoads = array_merge($loadDefaultLoads, $nestedLoads);
+
         //set nested loads for each load
         foreach ($defaultLoads as $key => $value) {
             $this->nest($key, $value);
@@ -132,12 +135,12 @@ abstract class AbstractLoad extends AbstractRequest
      * @throws \JsonException
      *
      */
-    final public function nest(string $namespace, array $loadArr): void
+    public function nest(string $namespace, array $loadArr): ?AbstractLoad
     {
-
-        $actionArr = NGS()->getRoutesEngine()->getLoadORActionByAction($loadArr['action']);
-
-        $loadObj = new $actionArr['action'];
+        $loadObj = $this->getLoadObject($loadArr['action']);
+        if (is_null($loadObj)) {
+            return null;
+        }
         //set that this load is nested
         $loadObj->setIsNestedLoad(true);
         $loadObj->setNgsParenLoadName($this->loadClassName);
@@ -162,7 +165,13 @@ abstract class AbstractLoad extends AbstractRequest
         }
         $this->setNestedLoadParams($namespace, $loadArr['action'], $loadObj);
         $this->params = array_merge($this->getParams(), $loadObj->getParentParams());
+        return $loadObj;
+    }
 
+    protected function getLoadObject(string $loadClass): ?AbstractLoad
+    {
+        $actionArr = NGS()->getRoutesEngine()->getLoadORActionByAction($loadClass);
+        return new $actionArr['action'];;
     }
 
     /**
@@ -273,6 +282,11 @@ abstract class AbstractLoad extends AbstractRequest
         return null;
     }
 
+    protected function isInitialLoad(): bool
+    {
+        return false;
+    }
+
     /**
      * check if load can be nested
      * @abstract
@@ -302,7 +316,7 @@ abstract class AbstractLoad extends AbstractRequest
     /**
      * get true if load is nested
      *
-     * @return boolean|$isNestedLoad
+     * @return boolean
      */
     public final function isNestedLoad(): bool
     {
@@ -327,7 +341,7 @@ abstract class AbstractLoad extends AbstractRequest
         }
         //todo add additional header ngs framework checker
         if ($_SERVER['HTTP_ACCEPT'] === 'application/json' || $this->getTemplate() === null
-            || strpos($this->getTemplate(), '.json')) {
+          || strpos($this->getTemplate(), '.json')) {
             $this->ngsLoadType = 'json';
         } else {
             $this->ngsLoadType = 'smarty';
@@ -344,18 +358,18 @@ abstract class AbstractLoad extends AbstractRequest
      */
     public function setLoadName(string $name): void
     {
-        $this->load_name = $name;
+        $this->loadName = $name;
     }
 
     /**
      * get load name
      *
      *
-     * @return string load_name
+     * @return string loadName
      */
     public function getLoadName(): string
     {
-        return $this->load_name;
+        return $this->loadName;
     }
 
     /**
@@ -435,14 +449,20 @@ abstract class AbstractLoad extends AbstractRequest
      */
     public abstract function load();
 
-    public function afterRequest()
+    public function afterRequest(): void
     {
         $this->afterLoad();
     }
 
-    public function afterLoad()
+    public function addAfterLoadQueue(mixed $callback): void
     {
-        return null;
+        $this->ngsAfterLoadQueue[] = $callback;
+    }
+
+
+    public function afterLoad(): void
+    {
+        return;
     }
 
 

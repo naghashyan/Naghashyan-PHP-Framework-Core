@@ -6,8 +6,8 @@
  * @author Levon Naghashyan <levon@naghashyan.com>
  * @site https://naghashyan.com
  * @package ngs.framework.dal.mappers
- * @version 4.0.0
- * @year 2009-2020
+ * @version 4.5.0
+ * @year 2009-2023
  *
  * This file is part of the NGS package.
  *
@@ -18,24 +18,25 @@
  *
  */
 
-namespace ngs\dal\mappers {
+namespace ngs\dal\mappers;
 
-  use ngs\dal\dto\AbstractDto;
-  use ngs\exceptions\DebugException;
+use ngs\dal\dto\AbstractDto;
+use ngs\exceptions\DebugException;
 
-  abstract class AbstractMapper {
+abstract class AbstractMapper
+{
 
     /**
      * The child class must implemet this method to return table name.
      *
-     * @return
+     * @return string
      */
     abstract public function getTableName(): string;
 
     /**
      * The child class must implement this method to return primary key field name.
      *
-     * @return
+     * @return string
      */
     abstract public function getPKFieldName(): string;
 
@@ -54,24 +55,26 @@ namespace ngs\dal\mappers {
      * @param string $prefix
      * @return mixed|null
      */
-    protected function getCorrespondingFunctionName(array $mapArray, string $itemName, string $prefix = 'set') {
-      // Get keys.
-      $mapKeys = array_keys($mapArray);
-      // Read map items and create correseponding functions.
-      foreach ($mapKeys as $itemnameFromMap){
-        if ($itemnameFromMap === $itemName){
-          // Get value for this item.
-          $valueOfMap = $mapArray[$itemnameFromMap];
-          // Make first letter uppercase, and add "set".
-          return $prefix . ucfirst($valueOfMap);
+    protected function getCorrespondingFunctionName(array $mapArray, string $itemName, string $prefix = 'set')
+    {
+        // Get keys.
+        $mapKeys = array_keys($mapArray);
+        // Read map items and create correseponding functions.
+        foreach ($mapKeys as $itemnameFromMap) {
+            if ($itemnameFromMap === $itemName) {
+                // Get value for this item.
+                $valueOfMap = $mapArray[$itemnameFromMap];
+                // Make first letter uppercase, and add "set".
+                return $prefix . ucfirst($valueOfMap);
+            }
         }
-      }
-      return null;
+        return null;
     }
 
-    public function getFieldValue($dto, $fieldName) {
-      $func = $this->getCorrespondingFunctionName($dto->getMapArray(), $fieldName, "get");
-      return $dto->$func();
+    public function getFieldValue(AbstractDto $dto, string $fieldName): mixed
+    {
+        $func = $this->getCorrespondingFunctionName($dto->getMapArray(), $fieldName, "get");
+        return $dto->$func();
     }
 
     /**
@@ -80,14 +83,15 @@ namespace ngs\dal\mappers {
      * @param array $results
      * @return AbstractDto[]|null
      */
-    protected function createDtoFromResultArray(array $results): ?array {
-      $resultArr = [];
-      foreach ($results as $result){
-        $dto = $this->createDto();
-        $dto->fillDtoFromArray($result);
-        $resultArr[] = $dto;
-      }
-      return $resultArr;
+    protected function createDtoFromResultArray(array $results): ?array
+    {
+        $resultArr = [];
+        foreach ($results as $result) {
+            $dto = $this->createDto();
+            $dto->fillDtoFromArray($result);
+            $resultArr[] = $dto;
+        }
+        return $resultArr;
     }
 
     /**
@@ -97,8 +101,9 @@ namespace ngs\dal\mappers {
      *
      * @return false|string
      */
-    public function dtoToJson($dto) {
-      return json_encode($this->dtoToArray($dto), JSON_THROW_ON_ERROR, 512);
+    public function dtoToJson(AbstractDto $dto): string
+    {
+        return json_encode($this->dtoToArray($dto), JSON_THROW_ON_ERROR, 512);
     }
 
     /**
@@ -108,22 +113,25 @@ namespace ngs\dal\mappers {
      *
      * @return json object
      */
-    public function dtoToArray($dto) {
-      $dto_fields = array_values($dto->getMapArray());
-      $db_fields = array_keys($dto->getMapArray());
-      $fieldsCount = count($dto_fields);
-      for ($i = 0; $i < $fieldsCount; $i++){
-        $functionName = "get" . ucfirst($dto_fields[$i]);
-        $val = $dto->$functionName();
-        if ($val !== null){
-          if (NGS()->isJson($val)){
-            $params[$db_fields[$i]] = json_decode($val, true, 512, JSON_THROW_ON_ERROR);
-            continue;
-          }
-          $params[$db_fields[$i]] = $val;
+    public function dtoToArray(AbstractDto $dto)
+    {
+        $dto_fields = array_values($dto->getMapArray());
+        $db_fields = array_keys($dto->getMapArray());
+        $fieldsCount = count($dto_fields);
+        $params = [];
+
+        for ($i = 0; $i < $fieldsCount; $i++) {
+            $functionName = "get" . ucfirst($dto_fields[$i]);
+            $val = $dto->$functionName();
+            if ($val !== null) {
+                if (method_exists(NGS(), 'isJson') && NGS()->isJson($val)) {
+                    $params[$db_fields[$i]] = json_decode($val, true, 512, JSON_THROW_ON_ERROR);
+                    continue;
+                }
+                $params[$db_fields[$i]] = $val;
+            }
         }
-      }
-      return ($params);
+        return ($params);
     }
 
     /**
@@ -133,18 +141,19 @@ namespace ngs\dal\mappers {
      *
      * @return json object
      */
-    public function jsonToDto($json, $dto = null) {
-      if ($dto === null){
-        $dto = $this->createDto();
-      }
-      $db_fields = $dto->getMapArray();
-      foreach ($json as $key => $value){
-        if (isset($db_fields[$key])){
-          $functionName = "set" . ucfirst($db_fields[$key]);
-          $dto->$functionName($value);
+    public function jsonToDto($json, $dto = null)
+    {
+        if ($dto === null) {
+            $dto = $this->createDto();
         }
-      }
-      return $dto;
+        $db_fields = $dto->getMapArray();
+        foreach ($json as $key => $value) {
+            if (isset($db_fields[$key])) {
+                $functionName = "set" . ucfirst($db_fields[$key]);
+                $dto->$functionName($value);
+            }
+        }
+        return $dto;
     }
 
     /**
@@ -153,7 +162,7 @@ namespace ngs\dal\mappers {
      * @param AbstractDto $dto
      * @return autogenerated id or -1 if something goes wrong
      */
-    public abstract function insertDto(AbstractDto $dto);
+    public abstract function insertDto(AbstractDto $dto): mixed;
 
     /**
      * Updates table fields by primary key.
@@ -170,7 +179,7 @@ namespace ngs\dal\mappers {
      * @param mixed $id
      * @return
      */
-    public abstract function selectByPK($id);
+    public abstract function selectByPK(mixed $id);
 
     /**
      * Deletes the row by primary key
@@ -178,8 +187,7 @@ namespace ngs\dal\mappers {
      * @param mixed $id - the unique identifier of table
      * @return affacted rows count or -1 if something goes wrong
      */
-    public abstract function deleteByPK($id);
+    public abstract function deleteByPK(mixed $id);
 
-  }
 
 }

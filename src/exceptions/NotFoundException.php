@@ -15,33 +15,78 @@
  * file that was distributed with this source code.
  *
  */
-namespace ngs\exceptions {
-  class NotFoundException extends \Exception {
 
-    private $url = "";
-    private $action = "";
+namespace ngs\exceptions;
+
+class NotFoundException extends \Exception
+{
+
+    private string $url = '';
+    private string $action = '';
+    private int $httpCode = 404;
+    private array $params = [];
+
+    public function __construct($msg = '', $code = -1, $params = [])
+    {
+        parent::__construct($msg, $code);
+        $this->setParams($params);
+    }
+
+    /**
+     * @return int
+     */
+    public function getHttpCode(): int
+    {
+        return $this->httpCode;
+    }
+
+    /**
+     * @param int $httpCode
+     */
+    public function setHttpCode(int $httpCode): void
+    {
+        $this->httpCode = $httpCode;
+    }
+
+    /**
+     * @return array
+     */
+    public function getParams(): array
+    {
+        return $this->params;
+    }
+
+    /**
+     * @param array $params
+     */
+    public function setParams(array $params): void
+    {
+        $this->params = $params;
+    }
 
     /**
      * @param mixed $url
      */
-    public function setRedirectUrl($url) {
-      $this->url = $url;
+    public function setRedirectUrl($url)
+    {
+        $this->url = $url;
     }
 
-    public function getRedirectUrl(){
-      return $this->url;
+    public function getRedirectUrl()
+    {
+        return $this->url;
     }
 
     /**
      * @param mixed $action
      */
-    public function setRedirectAction($action) {
-      $this->action = $action;
+    public function setRedirectAction($action)
+    {
+        $this->action = $action;
     }
 
-    public function getRedirectAction(){
-      return $this->action;
+    public function getRedirectAction()
+    {
+        return $this->action;
     }
-  }
-
 }

@@ -15,28 +15,31 @@
  * file that was distributed with this source code.
  *
  */
-namespace ngs\exceptions {
-	class RedirectException extends \Exception {
 
-		private $redirectTo;
+namespace ngs\exceptions;
 
-		/**
-		 * Return a thingie based on $paramie
-		 * @abstract
-		 * @access
-		 * @param boolean $paramie
-		 * @return integer|babyclass
-		 */
+class RedirectException extends \Exception
+{
 
-		public function __construct($redirectTo, $message) {
-			$this->redirectTo = $redirectTo;
-			parent::__construct($message, 1);
-		}
+    private $redirectTo;
 
-		public function getRedirectTo() {
-			return $this->redirectTo;
-		}
+    /**
+     * Return a thingie based on $paramie
+     * @abstract
+     * @access
+     * @param $redirectTo
+     * @param $message
+     * @return void integer|babyclass
+     */
+    public function __construct($redirectTo, $message)
+    {
+        $this->redirectTo = $redirectTo;
+        parent::__construct($message, 1);
+    }
 
-	}
+    public function getRedirectTo()
+    {
+        return $this->redirectTo;
+    }
 
 }

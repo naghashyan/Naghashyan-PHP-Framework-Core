@@ -19,23 +19,33 @@
  * file that was distributed with this source code.
  *
  */
-namespace ngs\request {
 
-  use ngs\exceptions\NoAccessException;
+namespace ngs\request;
 
-  abstract class AbstractJsonLoad extends AbstractLoad {
+use ngs\exceptions\NoAccessException;
 
-		protected $params = array();
+abstract class AbstractJsonLoad extends AbstractLoad
+{
 
-		
-		protected function setNestedLoadParams($namespace, $fileNs, $loadObj) {
-			$this->params["inc"][$namespace] = $loadObj->getParams();
-		}
+    protected array $params = [];
 
-		public function getNgsLoadType(){
-			return "json";
-		}
-		
-	}
+    /**
+     * @param $namespace
+     * @param $fileNs
+     * @param $loadObj
+     * @return void
+     */
+    protected function setNestedLoadParams($namespace, $fileNs, $loadObj): void
+    {
+        $this->params["inc"][$namespace] = $loadObj->getParams();
+    }
+
+    /**
+     * @return string
+     */
+    public function getNgsLoadType(): string
+    {
+        return "json";
+    }
 
 }

@@ -8,7 +8,7 @@
  * @year 2015
  * @package ngs.framework.util
  * @version 3.1.0
- * 
+ *
  * This file is part of the NGS package.
  *
  * @copyright Naghashyan Solutions LLC
@@ -17,40 +17,43 @@
  * file that was distributed with this source code.
  *
  */
-namespace ngs\util {
-	class NgsDynamic extends \stdClass {
-		public function __get($var) {
-		}
 
-		/*
-		 Overloads getter and setter methods
-		 */
-		public function __call($m, $a) {
-			if(!isset($m)){
-				 throw new \Exception("Fatal error: Call to undefined method stdObject::{$m}()");
-			}
-			if (\is_callable($this->{$m})) {
+namespace ngs\util;
+
+class NgsDynamic extends \stdClass
+{
+    public function __get($var)
+    {
+    }
+
+    /*
+     Overloads getter and setter methods
+     */
+    public function __call($m, $a)
+    {
+        if (!isset($m)) {
+            throw new \Exception("Fatal error: Call to undefined method stdObject::{$m}()");
+        }
+        if (\is_callable($this->{$m})) {
             return \call_user_func_array($this->{$m}, $a);
-			}	
-			// retrieving the method type (setter or getter)
-			$type = substr($m, 0, 3);
-			// retrieving the field name
-			$fieldName = NGS()->getNgsUtils()->lowerFirstLetter(substr($m, 3));
+        }
+        // retrieving the method type (setter or getter)
+        $type = substr($m, 0, 3);
+        // retrieving the field name
+        $fieldName = NGS()->getNgsUtils()->lowerFirstLetter(substr($m, 3));
 
-			if ($type == 'set') {
-				if(count($a) == 1){
-					$this->$fieldName = $a[0];
-				}else{
-					$this->$fieldName = $a;
-				}
-			} else if ($type == 'get') {
-				if (isset($this->$fieldName)) {
-					return $this->$fieldName;
-				}
-				return null;
-			}
-		}
-
-	}
+        if ($type == 'set') {
+            if (count($a) == 1) {
+                $this->$fieldName = $a[0];
+            } else {
+                $this->$fieldName = $a;
+            }
+        } else if ($type == 'get') {
+            if (isset($this->$fieldName)) {
+                return $this->$fieldName;
+            }
+            return null;
+        }
+    }
 
 }

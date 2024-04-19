@@ -40,7 +40,7 @@ abstract class AbstractRequest
      * for OK response
      *
      *
-     * @return integer 200
+     * @return void
      */
     public function setStatusCode(int $statusCode): void
     {
@@ -89,9 +89,7 @@ abstract class AbstractRequest
     public function redirectToLoad(string $load, array $args, int $statusCode = 200): void
     {
         $this->setStatusCode($statusCode);
-        if (isset($args)) {
-            NgsArgs::getInstance()->setArgs($args);
-        }
+        NgsArgs::getInstance()->setArgs($args);
         $actionArr = NGS()->getRoutesEngine()->getLoadORActionByAction($load);
         NGS()->getDispatcher()->loadPage($actionArr['action']);
     }
@@ -228,7 +226,7 @@ abstract class AbstractRequest
         return NgsArgs::getInstance($this->getNgsRequestUUID());
     }
 
-    protected abstract function afterRequest();
+    protected abstract function afterRequest(): void;
 
 
 }

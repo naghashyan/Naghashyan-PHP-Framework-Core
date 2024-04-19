@@ -20,12 +20,14 @@
  *
  */
 
-namespace ngs\session {
+namespace ngs\session;
 
-  use ngs\dal\dto\AbstractDto;
-  use ngs\request\AbstractAction;
+use ngs\dal\dto\AbstractDto;
+use ngs\request\AbstractAction;
+use ngs\request\AbstractRequest;
 
-  abstract class AbstractSessionManager {
+abstract class AbstractSessionManager
+{
 
     /**
      * Abstract method for get user
@@ -42,8 +44,8 @@ namespace ngs\session {
      *
      * @abstract
      * @access
-     * @param mixed user Object| $user
-     * @return
+     * @param string $user
+     * @return mixed
      */
     abstract public function setUser(string $user);
 
@@ -53,8 +55,7 @@ namespace ngs\session {
      * Children of the AbstractSessionManager class should override this method
      *
      * @abstract
-     * @param mixed user Object| $user
-     * @return
+     * @return void
      */
     abstract public function deleteUser();
 
@@ -65,11 +66,9 @@ namespace ngs\session {
      *
      * @abstract
      * @access
-     * @param AbstractDto|AbstractAction Object $request
+     * @param AbstractDto|AbstractAction $request Object
      * @return boolean
      */
-    abstract public function validateRequest($request): bool;
-
-  }
+    abstract public function validateRequest(AbstractRequest $request): bool;
 
 }

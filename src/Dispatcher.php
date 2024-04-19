@@ -3,9 +3,9 @@
  *
  * @author Levon Naghashyan <levon@naghashyan.com>
  * @site https://naghashyan.com
- * @year 2009-2022
+ * @year 2009-2023
  * @package framework
- * @version 4.2.0
+ * @version 4.5.0
  *
  * This file is part of the NGS package.
  *
@@ -21,8 +21,8 @@ namespace ngs;
 use ngs\event\EventManager;
 use ngs\event\structure\AbstractEventStructure;
 use ngs\event\subscriber\AbstractEventSubscriber;
-use ngs\exceptions\InvalidUserException;
 use ngs\exceptions\DebugException;
+use ngs\exceptions\InvalidUserException;
 use ngs\exceptions\NgsErrorException;
 use ngs\exceptions\NoAccessException;
 use ngs\exceptions\NotFoundException;
@@ -162,9 +162,12 @@ class Dispatcher
             }
             $loadObj->afterRequest();
         } catch (NoAccessException $ex) {
-            $loadObj->onNoAccess();
+            if (isset($loadObj) && is_object($loadObj)) {
+                $loadObj->onNoAccess();
+            }
             throw $ex;
         } catch (InvalidUserException $ex) {
+            $loadObj->onNoAccess();
             $this->handleInvalidUserAndNoAccessException($ex);
         }
     }
@@ -196,8 +199,12 @@ class Dispatcher
             }
             //$loadObj->setLoadName(NGS()->getRoutesEngine()->getContentLoad());
             $loadObj->service();
-            NGS()->getTemplateEngine()->setType($loadObj->getNgsLoadType());
-            NGS()->getTemplateEngine()->setTemplate($loadObj->getTemplate());
+            if (method_exists($loadObj, 'getNgsLoadType')) {
+                NGS()->getTemplateEngine()->setType($loadObj->getNgsLoadType());
+            }
+            if (method_exists($loadObj, 'getTemplate')) {
+                NGS()->getTemplateEngine()->setTemplate($loadObj->getTemplate());
+            }
             NGS()->getTemplateEngine()->setPermalink(NGS()->getLoadMapper()->getNgsPermalink());
             if (NGS()->get('SEND_HTTP_PUSH')) {
                 Pusher::getInstance()->push();
@@ -208,13 +215,18 @@ class Dispatcher
                 session_write_close();
                 fastcgi_finish_request();
             }
-            $loadObj->afterRequest();
+            if (is_object($loadObj)) {
+                $loadObj->afterRequest();
+            }
         } catch (NoAccessException $ex) {
-            $loadObj->onNoAccess();
-
+            if (isset($loadObj) && is_object($loadObj)) {
+                $loadObj->onNoAccess();
+            }
             throw $ex;
         } catch (InvalidUserException $ex) {
-            $loadObj->onNoAccess();
+            if (isset($loadObj) && is_object($loadObj)) {
+                $loadObj->onNoAccess();
+            }
             throw $ex;
         }
 
@@ -243,10 +255,14 @@ class Dispatcher
             }
             $loadObj->afterRequest();
         } catch (NoAccessException $ex) {
-            $loadObj->onNoAccess();
+            if (isset($loadObj) && is_object($loadObj)) {
+                $loadObj->onNoAccess();
+            }
             throw $ex;
         } catch (InvalidUserException $ex) {
-            $loadObj->onNoAccess();
+            if (isset($loadObj) && is_object($loadObj)) {
+                $loadObj->onNoAccess();
+            }
             throw $ex;
         }
     }
@@ -286,9 +302,12 @@ class Dispatcher
             }
             $actionObj->afterRequest();
         } catch (NoAccessException $ex) {
-            $actionObj->onNoAccess();
+            if (isset($actionObj) && is_object($actionObj)) {
+                $actionObj->onNoAccess();
+            }
             throw $ex;
         } catch (InvalidUserException $ex) {
+            $actionObj->onNoAccess();
             $this->handleInvalidUserAndNoAccessException($ex);
         }
     }
@@ -329,16 +348,20 @@ class Dispatcher
             }
             $actionObj->afterRequest();
         } catch (NoAccessException $ex) {
-            $actionObj->onNoAccess();
+            if (isset($actionObj) && is_object($actionObj)) {
+                $actionObj->onNoAccess();
+            }
             throw $ex;
         } catch (InvalidUserException $ex) {
-            $actionObj->onNoAccess();
+            if (isset($actionObj) && is_object($actionObj)) {
+                $actionObj->onNoAccess();
+            }
             throw $ex;
         }
 
     }
 
-    private function streamStaticFile($fileArr)
+    private function streamStaticFile(array $fileArr): void
     {
         $filePath = realpath(NGS()->getPublicDir($fileArr['module']) . '/' . $fileArr['file_url']);
         if (file_exists($filePath)) {
@@ -382,10 +405,7 @@ class Dispatcher
      */
     private function validateRequest($request)
     {
-
-        $user = NGS()->getSessionManager()->getUser();
-
-        if (NGS()->getSessionManager()->validateRequest($request, $user)) {
+        if (NGS()->getSessionManager()->validateRequest($request)) {
             return true;
         }
         return false;
@@ -418,7 +438,7 @@ class Dispatcher
             }
         }
         else {
-            $modulSubscribers = NGS()->getConfigDir() . '/event_subscribers.json';
+            $modulSubscribers = NGS()->getConfigDir("ngs") . '/event_subscribers.json';
             if(file_exists($modulSubscribers)) {
                 $moduleSubscribers = json_decode(file_get_contents($modulSubscribers), true);
                 $subscribers = $this->mergeSubscribers($subscribers, $moduleSubscribers);
@@ -520,10 +540,17 @@ class Dispatcher
             $subscriptions = $subscriberObject->getSubscriptions();
             foreach($subscriptions as $eventStructClass => $handlerName) {
                 /** @var AbstractEventStructure $eventStructExample */
+                if (!is_a($eventStructClass, AbstractEventStructure::class, true)) {
+                    throw new \InvalidArgumentException();
+                }
                 $eventStructExample = $eventStructClass::getEmptyInstance();
                 $availableParams = $eventStructExample->getAvailableVariables();
                 if($eventStructExample->isVisible() && !isset($this->allVisibleEvents[$eventStructExample->getEventId()])) {
-                    $this->allVisibleEvents[$eventStructExample->getEventId()] = ['name' => $eventStructExample->getEventName(), 'params' => $availableParams];
+                    $this->allVisibleEvents[$eventStructExample->getEventId()] = [
+                        'name' => $eventStructExample->getEventName(), 
+                        'bulk_is_available' => $eventStructExample->bulkIsAvailable(),
+                        'params' => $availableParams
+                    ];
                 }
                 $eventManager->subscribeToEvent($eventStructClass, $subscriberObject, $handlerName);
             }

@@ -16,31 +16,30 @@
  * file that was distributed with this source code.
  */
 
-namespace ngs\templater {
+namespace ngs\templater;
 
-  abstract class AbstractTemplater {
+abstract class AbstractTemplater
+{
 
-    /**
-     * this method should assign params to templater
-     *
-     * @abstract
-     * @access public
-     * @param String $key
-     * @param mixed $value
-     * @return void
-     */
-    public abstract function assign($key, $value);
+  /**
+   * this method should assign params to templater
+   *
+   * @abstract
+   * @access public
+   * @param String $key
+   * @param mixed $value
+   * @return void
+   */
+  public abstract function assign(string $key, mixed $value): void;
 
-    /**
-     * this method should display (echo) response result
-     *
-     * @abstract
-     * @access public
-     * @return void
-     */
-    public abstract function display();
+  /**
+   * this method should display (echo) response result
+   *
+   * @abstract
+   * @access public
+   * @return void
+   */
+  public abstract function display();
 
-
-  }
 
 }

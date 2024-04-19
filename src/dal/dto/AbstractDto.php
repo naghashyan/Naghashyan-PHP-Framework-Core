@@ -104,7 +104,7 @@ abstract class AbstractDto
 
     public function __set($property, $value)
     {
-        $fieldName = 'set' . preg_replace_callback('/_([a-z])/', function ($property) {
+        $fieldName = 'set' . preg_replace_callback('/_([a-z0-9])/', function ($property) {
                 if (isset($property[1])) {
                     return ucfirst($property[1]);
                 }
@@ -113,12 +113,12 @@ abstract class AbstractDto
         $this->$fieldName($value);
     }
 
-
     public function setNull(string $fieldName): bool
     {
         if (!$this->isExistField($fieldName)) {
             return false;
         }
+
         $this->ngs_nullableFields[] = $fieldName;
         return true;
     }

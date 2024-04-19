@@ -18,14 +18,19 @@
  */
 
 namespace ngs\request;
+
 abstract class AbstractAction extends \ngs\request\AbstractRequest
 {
 
+    /**
+     * @return void
+     */
     public function initialize(): void
     {
+
     }
 
-    public function afterRequest()
+    public function afterRequest(): void
     {
         $this->afterAction();
     }
@@ -41,9 +46,9 @@ abstract class AbstractAction extends \ngs\request\AbstractRequest
     {
     }
 
-    public function afterAction()
+    public function afterAction(): void
     {
-        return null;
+        return;
     }
 
 

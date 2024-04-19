@@ -51,14 +51,20 @@ class NgsRoutes
      * read from file json routes
      * and set in private property for cache
      *
-     * @return Object Array
+     * @return Array|null
      */
-    protected function getRouteConfig(): ?array
+    protected function getRouteConfig(?string $package = null): ?array
     {
-        if ($this->routes !== null) {
+        if (!$package) {
+            $package = NGS()->get('NGS_ROUTS');
+        }
+        if (isset($this->routes[$package]) && $this->routes !== null) {
             return $this->routes;
         }
-        $routFile = NGS()->getConfigDir() . '/' . NGS()->get('NGS_ROUTS');
+        $routFile = realpath(NGS()->getRoutesDir() . '/' . $package . '.json');
+        if (!$routFile || !file_exists($routFile)) {
+            $routFile = NGS()->getRoutesDir() . '/' . NGS()->get('NGS_ROUTS');
+        }
         if (file_exists($routFile)) {
             $this->routes = json_decode(file_get_contents($routFile), true);
             if (NGS()->get('NGS_MODULE_ROUTS')) {
@@ -117,6 +123,8 @@ class NgsRoutes
         $matches = $urlMatches;
         $staticFile = false;
         $package = '';
+        $fileUrl = '';
+
         if (!$is404) {
             $package = array_shift($matches);
             $fileUrl = $url;
@@ -126,7 +134,12 @@ class NgsRoutes
         } else {
             $package = '404';
         }
-
+        if ((strrpos(end($urlMatches), '.')) !== false) {
+            $staticFile = true;
+            if (strpos(end($urlMatches), '.php')) {
+                $staticFile = false;
+            }
+        }
         $urlPartsArr = $matches;
         if ($package === $this->getDynContainer()) {
             $package = array_shift($urlPartsArr);
@@ -139,25 +152,25 @@ class NgsRoutes
                 $package = 'default';
             }
             $loadsArr = $this->getDynRoutesLoad($url, $package, $urlPartsArr, $is404, $staticFile);
+
         }
         if ($loadsArr['matched']) {
             $actionArr = $this->getLoadORActionByAction($loadsArr['action']);
             $loadsArr['type'] = $actionArr['type'];
             $loadsArr['action'] = $actionArr['action'];
         }
-        if ((strrpos(end($matches), '.')) !== false) {
-            $staticFile = true;
-        }
         //if static file
-        if ($loadsArr['matched'] == false && $staticFile == true) {
+        if ($loadsArr['matched'] === false && $staticFile === true) {
             if ($urlMatches[0] == strtolower(NGS()->getModulesRoutesEngine()->getDefaultNS())) {
                 array_shift($urlMatches);
                 $fileUrl = substr($fileUrl, strpos($fileUrl, '/') + 1);
             }
+
             $loadsArr = $this->getStaticFileRoute($matches, $urlMatches, $fileUrl);
             $package = $loadsArr['module'];
         }
         $this->setPackage($package);
+
         return $loadsArr;
     }
 
@@ -179,6 +192,8 @@ class NgsRoutes
         $module = array_splice($pathArr, 0, 1);
         $module = $module[0];
         $actionType = '';
+        $classPrefix = '';
+
         foreach ($pathArr as $i => $v) {
             switch ($v) {
                 case NGS()->getActionPackage() :
@@ -198,8 +213,8 @@ class NgsRoutes
             $action = str_replace('do_', '', $action);
         }
         $action = preg_replace_callback('/_(\w)/', function ($m) {
-                return strtoupper($m[1]);
-            }, ucfirst($action)) . $classPrefix;
+              return strtoupper($m[1]);
+          }, ucfirst($action)) . $classPrefix;
         return ['action' => $module . '\\' . implode('\\', $pathArr) . '\\' . $action, 'type' => $actionType];
     }
 
@@ -213,9 +228,9 @@ class NgsRoutes
     protected function getMatchedRouteData(string $action, array $route): array
     {
         return [
-            'action' => $action,
-            'args' => $route['args'],
-            'matched' => true
+          'action' => $action,
+          'args' => $route['args'],
+          'matched' => true
         ];
     }
 
@@ -248,7 +263,7 @@ class NgsRoutes
         }
         $action .= $command;
         $this->setContentLoad($action);
-        return array('action' => $action, 'args' => $urlPartsArr, 'matched' => true);
+        return ['action' => $action, 'args' => $urlPartsArr, 'matched' => true];
     }
 
     /**
@@ -267,7 +282,8 @@ class NgsRoutes
      */
     private function getDynRoutesLoad(string $url, string $package, array $urlPartsArr, bool $is404 = false, bool $staticFile = false)
     {
-        $routes = $this->getRouteConfig();
+        $routes = $this->getRouteConfig($package);
+
         if (!isset($routes[$package])) {
             if (isset($routes['default']['action'], $routes['default']['404']) && $is404 === true) {
                 $package = '404';
@@ -285,9 +301,11 @@ class NgsRoutes
         } else {
             $matchedRoutesArr = $routes[$package];
         }
+
         $dynRoute = false;
         $args = null;
         $foundRoute = [];
+
         foreach ($matchedRoutesArr as $route) {
             $foundRoute = [];
             if (isset($route['default'])) {
@@ -302,16 +320,17 @@ class NgsRoutes
                     break;
                 }
             }
+
             if (isset($route['method']) && strtolower($route['method']) !== strtolower($this->getRequestHttpMethod())) {
                 continue;
             }
 
             $foundRoute = $route;
             $args = $this->getMatchedRoute($urlPartsArr, $foundRoute);
+
             if (!isset($foundRoute['args'])) {
                 $foundRoute['args'] = [];
             }
-
 
             if ($args !== null && is_array($args)) {
                 $foundRoute['args'] = array_merge($foundRoute['args'], $args);
@@ -337,7 +356,6 @@ class NgsRoutes
         }
 
         $actionType = substr($foundRoute['action'], 0, strpos($foundRoute['action'], '.'));
-
         if (NGS()->getModulesRoutesEngine()->checkModulByNS($actionType)) {
             $actionNS = $actionType;
             $foundRoute['action'] = substr($foundRoute['action'], strpos($foundRoute['action'], '.') + 1);
@@ -354,7 +372,7 @@ class NgsRoutes
         }
         $this->setCurrentRoute($foundRoute);
         if (!isset($foundRoute['args'])) {
-            $foundRoute['args'] = array();
+            $foundRoute['args'] = [];
         }
         return $this->getMatchedRouteData($_action, $foundRoute);
     }
@@ -376,7 +394,7 @@ class NgsRoutes
      * @param array $uriParams
      * @param array $routeArr
      *
-     * @return array|false
+     * @return array|null
      * @throws DebugException
      */
     private function getMatchedRoute(array $uriParams, array $routeArr): ?array
@@ -394,6 +412,7 @@ class NgsRoutes
             $route = str_replace('/', '\/', $route) . '\/';
 
             $newUri = preg_replace('/^' . $route . '$/', '', $fullUri . '/', -1, $count);
+
             if ($count === 0) {
                 return null;
             }
@@ -416,8 +435,8 @@ class NgsRoutes
             }
         }
         $routeUrlExp = str_replace('/', '\/', $routeUrlExp);
+        preg_match('/^\/' . trim($routeUrlExp, '\/') . '$/', $originalUrl, $matches);
 
-        preg_match('/^\/' . $routeUrlExp . '$/', $originalUrl, $matches);
         if (!$matches) {
             return null;
         }
@@ -431,9 +450,9 @@ class NgsRoutes
     }
 
 
-    public function getStaticFileRoute($matches, $urlMatches, $fileUrl)
+    public function getStaticFileRoute(array $matches, array $urlMatches, string $fileUrl): array
     {
-        $loadsArr = array();
+        $loadsArr = [];
         $loadsArr['type'] = 'file';
         $loadsArr['file_type'] = pathinfo(end($matches), PATHINFO_EXTENSION);
         $filePices = $urlMatches;
@@ -444,22 +463,17 @@ class NgsRoutes
         } else {
             $package = array_shift($filePices);
         }
-        //checking if css loaded from less
-        $filePeaceIndex = 0;
-        if (!NGS()->getModulesRoutesEngine()->isDefaultModule() && NGS()->getModulesRoutesEngine()->getModuleType() != 'path') {
-            $filePeaceIndex = 1;
-
+        //checking if css loaded from less/sass
+        if ($loadsArr['file_type'] === 'css') {
+            foreach ($filePices as $urlPath) {
+                if ($urlPath === 'less' || $urlPath === 'sass') {
+                    $loadsArr['file_type'] = $urlPath;
+                    break;
+                }
+            }
         }
-        if (isset($filePices[$filePeaceIndex]) && $filePices[$filePeaceIndex] == 'less') {
-            $loadsArr['file_type'] = 'less';
-        }
-        if (isset($filePices[$filePeaceIndex]) && $filePices[$filePeaceIndex] == 'sass') {
-            $loadsArr['file_type'] = 'sass';
-        }
-        if (!NGS()->getModulesRoutesEngine()->checkModuleByNS($package)) {
-            $package = NGS()->getModulesRoutesEngine()->getDefaultNS();
-        }
-        if (NGS()->getModulesRoutesEngine()->getModuleType() == 'path') {
+        if (!NGS()->getModulesRoutesEngine()->checkModuleByNS($package) ||
+          NGS()->getModulesRoutesEngine()->getModuleType() === 'path') {
             $package = NGS()->getModulesRoutesEngine()->getModuleNS();
         }
         $loadsArr['module'] = $package;

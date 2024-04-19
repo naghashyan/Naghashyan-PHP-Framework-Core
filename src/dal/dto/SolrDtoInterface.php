@@ -18,12 +18,10 @@
  *
  */
 
-namespace ngs\dal\dto {
+namespace ngs\dal\dto;
 
-
-  interface SolrDtoInterface {
+interface SolrDtoInterface
+{
 
     public function getSchemeArray(): array;
-
-  }
 }

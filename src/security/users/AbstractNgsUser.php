@@ -19,8 +19,10 @@
  *
  */
 
-namespace ngs\security\users {
-  abstract class AbstractNgsUser {
+namespace ngs\security\users;
+
+abstract class AbstractNgsUser
+{
 
     /**
      * Abstract method for set user Id
@@ -38,7 +40,7 @@ namespace ngs\security\users {
      *
      * @abstract
      *
-     * @return integer|$userId
+     * @return integer|null
      */
     public abstract function getId();
 
@@ -56,7 +58,7 @@ namespace ngs\security\users {
      * Abstract method for getting user LEVEL (type),
      * Children of the NgsAbstractUser class should override this method
      *
-     * @return integer|$level
+     * @return integer
      */
     public abstract function getLevel();
 
@@ -64,10 +66,8 @@ namespace ngs\security\users {
      * Abstract method for getting userDto,
      * Children of the NgsAbstractUser class should override this method
      *
-     * @return Object|$userDto
+     * @return Object
      */
     public abstract function getUserDto();
-
-  }
 
 }

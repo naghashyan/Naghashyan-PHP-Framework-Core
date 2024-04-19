@@ -1,6 +1,11 @@
 <?php
+
 namespace ngs\lib\minify;
-class ClosureCompiler {
+
+use \Exception as Minify_JS_ClosureCompiler_Exception;
+
+class ClosureCompiler
+{
     /**
      * @var string The option key for the maximum POST byte size
      */
@@ -21,31 +26,37 @@ class ClosureCompiler {
      * @var int The default maximum POST byte size according to https://developers.google.com/closure/compiler/docs/api-ref
      */
     const DEFAULT_MAX_BYTES = 2000000;
+
     /**
      * @var string[] $DEFAULT_OPTIONS The default options to pass to the compiler service
      *
      * @note This would be a constant if PHP allowed it
      */
-    private static $DEFAULT_OPTIONS = array(
+    private static $DEFAULT_OPTIONS = [
         'output_format' => 'text',
         'compilation_level' => 'SIMPLE_OPTIMIZATIONS'
-    );
+    ];
+
     /**
      * @var string $url URL of compiler server. defaults to Google's
      */
     protected $serviceUrl = 'https://closure-compiler.appspot.com/compile';
+
     /**
      * @var int $maxBytes The maximum JS size that can be sent to the compiler server in bytes
      */
     protected $maxBytes = self::DEFAULT_MAX_BYTES;
+
     /**
      * @var string[] $additionalOptions Additional options to pass to the compiler service
      */
-    protected $additionalOptions = array();
+    protected $additionalOptions = [];
+
     /**
-     * @var callable Function to minify JS if service fails. Default is JSMin
+     * @var mixed|string[] callable Function to minify JS if service fails. Default is JSMin
      */
-    protected $fallbackMinifier = array('JSMin', 'minify');
+    protected $fallbackMinifier = ['JSMin', 'minify'];
+
     /**
      * Minify JavaScript code via HTTP request to a Closure Compiler API
      *
@@ -54,11 +65,12 @@ class ClosureCompiler {
      *
      * @return string
      */
-    public static function minify($js, array $options = array())
+    public static function minify($js, array $options = [])
     {
         $obj = new self($options);
         return $obj->min($js);
     }
+
     /**
      * @param array $options Options with keys available below:
      *
@@ -73,7 +85,7 @@ class ClosureCompiler {
      *                     in https://developers.google.com/closure/compiler/docs/api-ref except for js_code and
      *                     output_info
      */
-    public function __construct(array $options = array())
+    public function __construct(array $options = [])
     {
         if (isset($options[self::OPTION_FALLBACK_FUNCTION])) {
             $this->fallbackMinifier = $options[self::OPTION_FALLBACK_FUNCTION];
@@ -85,9 +97,10 @@ class ClosureCompiler {
             $this->additionalOptions = $options[self::OPTION_ADDITIONAL_OPTIONS];
         }
         if (isset($options[self::OPTION_MAX_BYTES])) {
-            $this->maxBytes = (int) $options[self::OPTION_MAX_BYTES];
+            $this->maxBytes = (int)$options[self::OPTION_MAX_BYTES];
         }
     }
+
     /**
      * Call the service to perform the minification
      *
@@ -113,7 +126,7 @@ class ClosureCompiler {
             if (is_callable($this->fallbackMinifier)) {
                 // use fallback
                 $response = "/* Received errors from Closure Compiler API:\n$response"
-                          . "\n(Using fallback minifier)\n*/\n";
+                    . "\n(Using fallback minifier)\n*/\n";
                 $response .= call_user_func($this->fallbackMinifier, $js);
             } else {
                 throw new Minify_JS_ClosureCompiler_Exception($response);
@@ -125,6 +138,7 @@ class ClosureCompiler {
         }
         return $response;
     }
+
     /**
      * Get the response for a given POST body
      *
@@ -136,20 +150,20 @@ class ClosureCompiler {
     {
         $allowUrlFopen = preg_match('/1|yes|on|true/i', ini_get('allow_url_fopen'));
         if ($allowUrlFopen) {
-            $contents = file_get_contents($this->serviceUrl, false, stream_context_create(array(
-                'http' => array(
+            $contents = file_get_contents($this->serviceUrl, false, stream_context_create([
+                'http' => [
                     'method' => 'POST',
                     'header' => "Content-type: application/x-www-form-urlencoded\r\nConnection: close\r\n",
                     'content' => $postBody,
                     'max_redirects' => 0,
                     'timeout' => 500,
-                )
-            )));
+                ]
+            ]));
         } elseif (defined('CURLOPT_POST')) {
             $ch = curl_init($this->serviceUrl);
             curl_setopt($ch, CURLOPT_POST, true);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-type: application/x-www-form-urlencoded'));
+            curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-type: application/x-www-form-urlencoded']);
             curl_setopt($ch, CURLOPT_POSTFIELDS, $postBody);
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
             curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 500);
@@ -157,16 +171,17 @@ class ClosureCompiler {
             curl_close($ch);
         } else {
             throw new Minify_JS_ClosureCompiler_Exception(
-               "Could not make HTTP request: allow_url_open is false and cURL not available"
+                "Could not make HTTP request: allow_url_open is false and cURL not available"
             );
         }
         if (false === $contents) {
             throw new Minify_JS_ClosureCompiler_Exception(
-               "No HTTP response from server"
+                "No HTTP response from server"
             );
         }
         return trim($contents);
     }
+
     /**
      * Build a POST request body
      *
@@ -180,14 +195,13 @@ class ClosureCompiler {
             array_merge(
                 self::$DEFAULT_OPTIONS,
                 $this->additionalOptions,
-                array(
+                [
                     'js_code' => $js,
                     'output_info' => ($returnErrors ? 'errors' : 'compiled_code')
-                )
+                ]
             ),
             null,
             '&'
         );
     }
 }
-class Minify_JS_ClosureCompiler_Exception extends \Exception {}

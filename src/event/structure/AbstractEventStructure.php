@@ -17,35 +17,54 @@ abstract class AbstractEventStructure
 {
     private array $params = [];
     private array $attachemts = [];
+    private array $customGroupsToSend = [];
+    private string $customLoad = "";
+    private string $emailSubject = "";
 
-    public function __construct(array $params, array $attachemts = [])
+    public function __construct(array $params, array $attachemts = [], string $emailSubject = "")
     {
         $this->params = $params;
         $this->attachemts = $attachemts;
+        $this->emailSubject = $emailSubject;
+        $this->customGroupsToSend = [];
+        $this->customLoad = "";
     }
 
 
-    public static abstract function getEmptyInstance() :AbstractEventStructure;
+    public static abstract function getEmptyInstance(): AbstractEventStructure;
 
     /**
      * can be added notification from UI
      *
      * @return bool
      */
-    public function isVisible() :bool {
+    public function isVisible(): bool
+    {
         return false;
     }
 
 
-    public function getParams() {
+    public function getParams()
+    {
         return $this->params;
+    }
+
+    /**
+     * indicates if bulk supported for this event
+     *
+     * @return bool
+     */
+    public function bulkIsAvailable() :bool
+    {
+        return true;
     }
 
     /**
      * returns display name of the event
      * @return string
      */
-    public function getEventName() :string {
+    public function getEventName(): string
+    {
         return get_class($this);
     }
 
@@ -53,7 +72,8 @@ abstract class AbstractEventStructure
      * returns display name of the event
      * @return string
      */
-    public function getEventId() :string {
+    public function getEventId(): string
+    {
         $name = $this->getEventName();
         return md5($name);
     }
@@ -62,7 +82,8 @@ abstract class AbstractEventStructure
      * returns display name of the event
      * @return string
      */
-    public function getEventClass() :string {
+    public function getEventClass(): string
+    {
         $class = get_class($this);
         $classParts = explode("\\", $class);
 
@@ -74,7 +95,8 @@ abstract class AbstractEventStructure
      *
      * @return string
      */
-    public function getEventTitle() :string {
+    public function getEventTitle(): string
+    {
         return "";
     }
 
@@ -83,7 +105,7 @@ abstract class AbstractEventStructure
      *
      * @return array
      */
-    public function getAvailableVariables() :array
+    public function getAvailableVariables(): array
     {
         return [];
     }
@@ -103,4 +125,48 @@ abstract class AbstractEventStructure
     {
         $this->attachemts = $attachemts;
     }
+
+
+    /**
+     * @return string
+     */
+    public function getEmailSubject(): string
+    {
+        return $this->emailSubject;
+    }
+
+    /**
+     * @param string $emailSubject
+     */
+    public function setEmailSubject(string $emailSubject): void
+    {
+        $this->emailSubject = $emailSubject;
+    }
+
+    public function getCustomGroupsToSend(): array
+    {
+        return $this->customGroupsToSend;
+    }
+
+    public function setCustomGroupsToSend(array $customGroupsToSend): void
+    {
+        $this->customGroupsToSend = $customGroupsToSend;
+    }
+
+    /**
+     * @return string
+     */
+    public function getCustomLoad(): string
+    {
+        return $this->customLoad;
+    }
+
+    /**
+     * @param string $customLoad
+     */
+    public function setCustomLoad(string $customLoad): void
+    {
+        $this->customLoad = $customLoad;
+    }
+
 }

@@ -23,7 +23,7 @@ class EventManager
 {
 
     /**
-     * @var FilterManager instance of class
+     * @var EventManager instance of class
      */
     private static $instance = null;
 
@@ -36,7 +36,7 @@ class EventManager
     /**
      * Returns an singleton instance of this class
      *
-     * @return FilterManager
+     * @return EventManager
      */
     public static function getInstance()
     {

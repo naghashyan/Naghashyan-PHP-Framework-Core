@@ -62,6 +62,40 @@ class NgsArgs
         return self::$instance[$className];
     }
 
+    /**
+     * Accessing to args without magic method
+     *
+     * @param string $name
+     * @return mixed|null
+     */
+    public function get(string $name) {
+        $args = $this->getArgs();
+        return $args[$name] ?? null;
+    }
+
+    /**
+     * Setting arg without magic method
+     *
+     * @param $name
+     * @param $value
+     * @return void
+     */
+    public function set($name, $value)
+    {
+        $this->args[$name] = $value;
+    }
+
+    /**
+     * Setting arg without magic method
+     *
+     * @param string $name
+     * @return bool
+     */
+    public function isSet(string $name)
+    {
+        $args = $this->getArgs();
+        return isset($args[$name]);
+    }
 
     /**
      * this dynamic method
@@ -78,12 +112,21 @@ class NgsArgs
         return $args[$name] ?? null;
     }
 
+    /**
+     *
+     * @param $name
+     * @param $value
+     * @return void
+     */
     public function __set($name, $value)
     {
         $this->args[$name] = $value;
     }
 
-    #[Pure]
+    /**
+     * @param $name
+     * @return bool
+     */
     public function __isset($name)
     {
         $args = $this->getArgs();

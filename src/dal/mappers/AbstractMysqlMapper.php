@@ -6,8 +6,8 @@
  * @author Levon Naghashyan <levon@naghashyan.com>
  * @site https://naghashyan.com
  * @package ngs.framework.dal.mappers
- * @version 4.0.0
- * @year 2009-2020
+ * @version 4.5.0
+ * @year 2009-2023
  *
  * This file is part of the NGS package.
  *
@@ -83,7 +83,7 @@ abstract class AbstractMysqlMapper extends AbstractMapper
 
         if ($res) {
             $res->execute($params);
-            return $this->dbms->lastInsertId();
+            return (int)$this->dbms->lastInsertId();
         }
         return null;
     }
@@ -92,7 +92,7 @@ abstract class AbstractMysqlMapper extends AbstractMapper
     /**
      * Inserts dto into table.
      *
-     * @param AbstractDto[]
+     * @param AbstractDto[] $allDtos
      * @return bool
      * @throws DebugException
      */
@@ -193,7 +193,6 @@ abstract class AbstractMysqlMapper extends AbstractMapper
         if (!isset($pk)) {
             throw new DebugException('The primary key is not set.');
         }
-        $comma = ' ';
         foreach ($dto->getNgsNullableFealds() as $feald) {
             if ($queryArr['query'] !== '') {
                 $comma = ' ,';
@@ -212,10 +211,10 @@ abstract class AbstractMysqlMapper extends AbstractMapper
         if ($res) {
             $res->execute($params);
             if ($res->rowCount()) {
-                return true;
+                return $res->rowCount();
             }
         }
-        return false;
+        return null;
     }
 
 
@@ -264,7 +263,7 @@ abstract class AbstractMysqlMapper extends AbstractMapper
                 continue;
             }
             $dbProperty = '?';
-            if ($val === 'CURRENT_TIMESTAMP()' || $val === 'NOW()') {
+            if ($val === 'CURRENT_TIMESTAMP()' || $val === 'NOW()' || $val === 'UUID()') {
                 $dbProperty = $val;
             } else {
                 $params[] = $val;
@@ -396,7 +395,7 @@ abstract class AbstractMysqlMapper extends AbstractMapper
     public function deleteByPKs(array $ids): ?int
     {
         if (!$ids) {
-            return true;
+            return null;
         }
 
         $inQuery = implode(",", $ids);
@@ -414,13 +413,13 @@ abstract class AbstractMysqlMapper extends AbstractMapper
      * @param array $cache
      * @param bool $rawData
      *
-     * @return AbstractDto[]|null
+     * @return AbstractDto[]|array
      *
      * @throws DebugException
      */
-    protected function fetchRows(string $sqlQuery, array $params = [], ?array $cache = null, bool $rawData = false): ?array
+    protected function fetchRows(string $sqlQuery, array $params = [], ?array $cache = null, bool $rawData = false): array
     {
-
+        $cache['cache']  = false;
         if ($cache === null) {
             $cache = ['cache' => false, 'ttl' => 3600, 'force' => false];
         }
@@ -431,11 +430,12 @@ abstract class AbstractMysqlMapper extends AbstractMapper
             $cache['force'] = false;
         }
         $cacheKey = '';
+
         if ($cache['cache'] === true && $cache['force'] === false) {
             try {
                 $cacheKey = md5($sqlQuery . json_encode($params, JSON_THROW_ON_ERROR, 512));
             } catch (JsonException $exception) {
-                return null;
+                return [];
             }
 
             $cachedData = $this->getDataFromRedisCache($cacheKey);
@@ -445,10 +445,10 @@ abstract class AbstractMysqlMapper extends AbstractMapper
         }
         // Execute query.
         $res = $this->dbms->prepare($sqlQuery);
-        $results = $res->execute($params);
 
+        $results = $res->execute($params);
         if ($results === false) {
-            return null;
+            return [];
         }
         if ($cache['cache'] === true) {
             $cacheKey = md5($sqlQuery . json_encode($params, JSON_THROW_ON_ERROR, 512));
@@ -457,13 +457,13 @@ abstract class AbstractMysqlMapper extends AbstractMapper
             $this->setDataToRedisCache($cacheKey, $resultArr, $cache['ttl']);
             return $this->getDataFromRedisCache($cacheKey);
         }
+
         if ($rawData) {
             $res->setFetchMode(PDO::FETCH_ASSOC);
         } else {
             $res->setFetchMode(PDO::FETCH_CLASS, get_class($this->createDto()));
         }
         $resultArr = $res->fetchAll();
-
         return $resultArr;
     }
 
@@ -478,7 +478,7 @@ abstract class AbstractMysqlMapper extends AbstractMapper
      * @return mixed|AbstractDto|null
      * @throws DebugException
      */
-    protected function fetchRow(string $sqlQuery, array $params = [], ?array $cache = null): ?object
+    protected function fetchRow(string $sqlQuery, array $params = [], ?array $cache = null): ?AbstractDto
     {
         $result = $this->fetchRows($sqlQuery, $params, $cache);
         if (isset($result) && is_array($result) && count($result) > 0) {
@@ -546,7 +546,7 @@ abstract class AbstractMysqlMapper extends AbstractMapper
      *
      * @param int $id
      * @param array $cache
-     * @return mixed|AbstractDto|null
+     * @return AbstractDto|null
      * @throws DebugException
      */
     public function selectByPK($id, array $cache = ['cache' => false, 'ttl' => 3600]): ?object
@@ -570,7 +570,7 @@ abstract class AbstractMysqlMapper extends AbstractMapper
      *
      * @param int|null $time
      *
-     * @return false|string
+     * @return string
      */
     public function getMysqlFormattedTime($time = null): string
     {
@@ -586,7 +586,7 @@ abstract class AbstractMysqlMapper extends AbstractMapper
      *
      * @param int|null $date
      *
-     * @return false|string
+     * @return string
      */
     public function getMysqlFormattedDate($date = null): string
     {

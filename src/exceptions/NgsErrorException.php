@@ -18,44 +18,51 @@
  *
  */
 
-namespace ngs\exceptions {
-  class NgsErrorException extends \Exception {
+namespace ngs\exceptions;
 
-    private $httpCode = 400;
-    private $params = [];
+class NgsErrorException extends \Exception
+{
 
-    public function __construct($msg = "", $code = -1, $params = []) {
-      parent::__construct($msg, $code);
-      $this->setParams($params);
+    private int $httpCode = 400;
+    private array $params = [];
+
+    public function __construct(string $msg = '', int $code = -1, array $params = [], int $httpCode = 400)
+    {
+        parent::__construct($msg, $code);
+        $this->setHttpCode($httpCode);
+        $this->setParams($params);
     }
 
     /**
      * @return int
      */
-    public function getHttpCode(): int {
-      return $this->httpCode;
+    public function getHttpCode(): int
+    {
+        return $this->httpCode;
     }
 
     /**
      * @param int $httpCode
      */
-    public function setHttpCode(int $httpCode): void {
-      $this->httpCode = $httpCode;
+    public function setHttpCode(int $httpCode): void
+    {
+        $this->httpCode = $httpCode;
     }
 
     /**
      * @return array
      */
-    public function getParams(): array {
-      return $this->params;
+    public function getParams(): array
+    {
+        return $this->params;
     }
 
     /**
      * @param array $params
      */
-    public function setParams(array $params): void {
-      $this->params = $params;
+    public function setParams(array $params): void
+    {
+        $this->params = $params;
     }
 
-  }
 }

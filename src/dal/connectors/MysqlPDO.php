@@ -31,7 +31,7 @@ class MysqlPDO extends PDO
     /**
      * Singleton instance of class
      */
-    private static ?MysqlPDO $instance = null;
+    private static array $instances = [];
 
     /**
      * Tries to connect to a MySQL Server
@@ -62,16 +62,18 @@ class MysqlPDO extends PDO
      */
     public static function getInstance(string $host, string $user, string $password, string $database, string $chars = 'utf8'): MysqlPDO
     {
-        if (self::$instance === null) {
-            self::$instance = new MysqlPDO($host, $user, $password, $database, $chars);
+        $key = md5($host . '_' . $user . '_' . $password . '_' . $database);
+
+        if (!isset(self::$instances[$key])) {
+            self::$instances[$key] = new MysqlPDO($host, $user, $password, $database, $chars);
         }
-        return self::$instance;
+        return self::$instances[$key];
     }
 
     /**
-     * @param string $statement
+     * @param string $query
      * @param array $options
-     * @return bool|PDOStatement
+     * @return PDOStatement|false
      * @throws DebugException
      */
     public function prepare(string $query, array $options = []): PDOStatement|false

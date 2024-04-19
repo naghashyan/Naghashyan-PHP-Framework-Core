@@ -16,10 +16,12 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace ngs\templater {
+
+namespace ngs\templater;
 
 
-  class NgsJsonTemplater {
+class NgsJsonTemplater
+{
 
     /**
      * constructor
@@ -38,13 +40,14 @@ namespace ngs\templater {
      *
      * @access public
      *
-     * @param String $name
+     * @param String $key
      * @param mixed $value
      *
      * @return void
      */
-    public function assign($key, $value) {
-      $this->params[$key] = $value;
+    public function assign($key, $value)
+    {
+        $this->params[$key] = $value;
     }
 
     /**
@@ -55,11 +58,12 @@ namespace ngs\templater {
      *
      * @return void
      */
-    public function assignParams($paramsArr) {
-      if (!is_array($paramsArr)){
-        $paramsArr = [$paramsArr];
-      }
-      $this->params = array_merge($this->params, $paramsArr);
+    public function assignParams($paramsArr)
+    {
+        if (!is_array($paramsArr)) {
+            $paramsArr = [$paramsArr];
+        }
+        $this->params = array_merge($this->params, $paramsArr);
     }
 
     /**
@@ -68,8 +72,9 @@ namespace ngs\templater {
      * @param String $template
      *
      */
-    public function setTemplate($template) {
-      $this->template = $template;
+    public function setTemplate($template)
+    {
+        $this->template = $template;
     }
 
     /**
@@ -77,30 +82,30 @@ namespace ngs\templater {
      *
      * @return String $template
      */
-    public function getTemplate() {
-      return $this->template;
+    public function getTemplate()
+    {
+        return $this->template;
     }
 
 
-    public function fetch() {
-      $this->renderTemplate();
+    public function fetch()
+    {
+        $this->renderTemplate();
     }
 
-    private function renderTemplate(){
-      $jsonTemplate = json_decode(file_get_contents($this->getTemplate()), true);
-      foreach ($jsonTemplate as $key=>$value){
-        if(strpos($value, '{$') === false){
-          //todo
+    private function renderTemplate()
+    {
+        $jsonTemplate = json_decode(file_get_contents($this->getTemplate()), true);
+        foreach ($jsonTemplate as $key => $value) {
+            if (strpos($value, '{$') === false) {
+                //todo
+            }
+            preg_match_all('/\{\$(.*)(->|\[])(.*)\}/', $value, $matches);
+            if (isset($matches[1][0]) && isset($this->params[$matches[1][0]])) {
+
+            }
         }
-        preg_match_all('/\{\$(.*)(->|\[])(.*)\}/', $value, $matches);
-        if(isset($matches[1][0]) && isset($this->params[$matches[1][0]])){
-
-        }
-      }
-      $results = print_r($jsonTemplate, true);
+        $results = print_r($jsonTemplate, true);
     }
-
-
-  }
 
 }

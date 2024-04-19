@@ -8,10 +8,10 @@
  *
  * @author Levon Naghashyan <levon@naghashyan.com>
  * @site http://naghashyan.com
- * @year 2014-2016
+ * @year 2014-2023
  * @package ngs.framework.util
- * @version 3.1.0
- * 
+ * @version 4.5.0
+ *
  * This file is part of the NGS package.
  *
  * @copyright Naghashyan Solutions LLC
@@ -20,86 +20,96 @@
  * file that was distributed with this source code.
  *
  */
-namespace ngs\util {
 
-  use ngs\exceptions\DebugException;
+namespace ngs\util;
 
-  class CssBuilder extends AbstractBuilder {
+use ngs\exceptions\DebugException;
 
-    protected function doBuild($file) {
+class CssBuilder extends AbstractBuilder
+{
 
-      $files = $this->getBuilderArr(json_decode(file_get_contents($this->getBuilderFile())), $file);
-      if (!$files) {
-        return;
-      }
-      $outDir = $this->getOutputDir();
-      $buf = "";
-      foreach ($files["files"] as $value) {
-        $module = "";
-        if ($value["module"] == null) {
-          $module = "ngs";
+    protected function doBuild($file)
+    {
+        $files = $this->getBuilderArr(json_decode(file_get_contents($this->getBuilderFile())), $file);
+        if (!$files) {
+            return;
         }
-        $inputFile = realpath(NGS()->getCssDir($module)."/".trim($value["file"]));
-        if (!$inputFile) {
-          throw new DebugException($filePath." not found");
-        }
-        $buf .= file_get_contents($inputFile)."\n\r";
-      }
 
-      if ($files["compress"] == true) {
-        $buf = $this->doCompress($buf);
-      }
-      touch($outDir."/".$files["output_file"], fileatime($this->getBuilderFile()));
-      file_put_contents($outDir."/".$files["output_file"], $buf);
+        $outDir = $this->getOutputDir();
+        $buf = '';
+        foreach ($files['files'] as $value) {
+            $module = '';
+            if ($value['module'] == null) {
+                $module = 'ngs';
+            }
+            $filePath = NGS()->getCssDir($module) . '/' . trim($value['file']);
+            $inputFile = realpath($filePath);
+            if (!$inputFile) {
+                throw new DebugException($filePath . ' not found');
+            }
+            $buf .= file_get_contents($inputFile) . '\n\r';
+        }
+
+        if ($files['compress'] === true) {
+            $buf = $this->doCompress($buf);
+        }
+        touch($outDir . '/' . $files['output_file'], fileatime($this->getBuilderFile()));
+        file_put_contents($outDir . '/' . $files['output_file'], $buf);
     }
 
-    protected function customBufferUpdates($buffer) {
-      return str_replace(array("@NGS_PATH", "@NGS_MODULE_PATH"), array(NGS()->getHttpUtils()->getHttpHost(true), NGS()->getPublicHostByNS()), $buffer);
+    protected function customBufferUpdates($buffer)
+    {
+        return str_replace(['@NGS_PATH', '@NGS_MODULE_PATH'], [NGS()->getHttpUtils()->getHttpHost(true), NGS()->getPublicHostByNS()], $buffer);
     }
 
-        public function getOutputDir()
-        {
-            $_outDir = NGS()->getPublicOutputDir() . "/" . NGS()->getDefinedValue("CSS_DIR");
+    public function getOutputDir(): string
+    {
+        $_outDir = NGS()->getPublicOutputDir() . "/" . NGS()->getDefinedValue("CSS_DIR");
+        $outDir = realpath($_outDir);
+        if ($outDir == false) {
+            if (!mkdir($_outDir, 0755, true) && !is_dir($_outDir)) {
+                throw new \RuntimeException(sprintf('Directory "%s" was not created', $_outDir));
+            }
             $outDir = realpath($_outDir);
-            if ($outDir == false) {
-                if (!mkdir($_outDir, 0755, true) && !is_dir($_outDir)) {
-                    throw new \RuntimeException(sprintf('Directory "%s" was not created', $_outDir));
-                }
-                $outDir = realpath($_outDir);
+        }
+        return $outDir;
+    }
+
+    /**
+     * @param $buffer
+     * @return string
+     */
+    protected function doCompress($buffer): string
+    {
+        return \ngs\lib\minify\CssCompressor::process($buffer);
+    }
+
+    protected function doDevOutput($files)
+    {
+        header('Content-type: text/css');
+        foreach ($files['files'] as $value) {
+            $module = '';
+            if ($value['module'] != null) {
+                $module = $value['module'];
             }
-            return $outDir;
+            $inputFile = NGS()->getHttpUtils()->getHttpHostByNs($module) . '/devout/css/' . trim($value['file']);
+            echo '@import url("' . $inputFile . '");';
         }
-
-        protected function doCompress($buf)
-        {
-            return \ngs\lib\minify\CssCompressor::process($buf);
-        }
-
-        protected function doDevOutput($files)
-        {
-            header('Content-type: text/css');
-            foreach ($files["files"] as $value) {
-                $module = "";
-                if ($value["module"] != null) {
-                    $module = $value["module"];
-                }
-                $inputFile = NGS()->getHttpUtils()->getHttpHostByNs($module) . "/devout/css/" . trim($value["file"]);
-                echo '@import url("' . $inputFile . '");';
-            }
-        }
-
-    protected function getItemDir($module) {
-      return NGS()->getCssDir($module);
     }
 
-    protected function getBuilderFile() {
-      return realpath(NGS()->getCssDir()."/builder.json");
+    protected function getItemDir($module)
+    {
+        return NGS()->getCssDir($module);
     }
 
-    protected function getContentType() {
-      return "text/css";
+    protected function getBuilderFile()
+    {
+        return realpath(NGS()->getCssDir() . '/builder.json');
     }
 
-  }
+    protected function getContentType()
+    {
+        return 'text/css';
+    }
 
 }

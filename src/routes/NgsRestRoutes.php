@@ -18,12 +18,14 @@
  * file that was distributed with this source code.
  *
  */
-namespace ngs\routes {
 
-  use ngs\exceptions\DebugException;
-  use ngs\exceptions\NotFoundException;
+namespace ngs\routes;
 
-  class NgsRestRoutes extends NgsRoutes {
+use ngs\exceptions\DebugException;
+use ngs\exceptions\NotFoundException;
+
+class NgsRestRoutes extends NgsRoutes
+{
 
     private $httpMethod = "get";
 
@@ -36,29 +38,29 @@ namespace ngs\routes {
      *
      * @param String $url
      *
-     * @return array|false
+     * @return array|null
      */
-    public function getDynamicLoad($url, $is404=false) {
-      $loadsArr = parent::getDynamicLoad($url);
-      if (isset($this->getCurrentRoute()["method"])){
-        $this->setRequestHttpMethod($this->getCurrentRoute()["method"]);
-      }
-      $loadsArr["method"] = $this->getRequestHttpMethod();
-      if (strtolower($this->getRequestHttpMethod()) != strtolower($_SERVER["REQUEST_METHOD"])){
-        throw new DebugException("HTTP request is " . $_SERVER["REQUEST_METHOD"] . " but in routes set " . $this->getRequestHttpMethod());
-      }
-      return $loadsArr;
+    public function getDynamicLoad($url, $is404 = false): ?array
+    {
+        $loadsArr = parent::getDynamicLoad($url);
+        if (isset($this->getCurrentRoute()["method"])) {
+            $this->setRequestHttpMethod($this->getCurrentRoute()["method"]);
+        }
+        $loadsArr["method"] = $this->getRequestHttpMethod();
+        if (strtolower($this->getRequestHttpMethod()) != strtolower($_SERVER["REQUEST_METHOD"])) {
+            throw new DebugException("HTTP request is " . $_SERVER["REQUEST_METHOD"] . " but in routes set " . $this->getRequestHttpMethod());
+        }
+        return $loadsArr;
     }
 
-    public function getRequestHttpMethod() {
-      return $this->httpMethod;
+    public function getRequestHttpMethod()
+    {
+        return $this->httpMethod;
     }
 
-    protected function setRequestHttpMethod($httpMethod) {
-      $this->httpMethod = $httpMethod;
+    protected function setRequestHttpMethod($httpMethod)
+    {
+        $this->httpMethod = $httpMethod;
     }
-
-
-  }
 
 }

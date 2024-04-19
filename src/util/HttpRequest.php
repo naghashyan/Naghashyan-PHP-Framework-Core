@@ -5,9 +5,9 @@
  *
  * @author Levon Naghashyan <levon@naghashyan.com>
  * @site https://naghashyan.com
- * @year 2010-2021
+ * @year 2010-2023
  * @package ngs.framework.util
- * @version 4.0.0
+ * @version 4.5.0
  *
  * This file is part of the NGS package.
  *
@@ -178,7 +178,7 @@ class HttpRequest
         }
         $this->reqParams .= '?';
 
-        foreach ($this->reqParams as $key => $value) {
+        foreach ($params as $key => $value) {
             $this->reqParams .= urlencode($key) . '=' . urlencode($value) . '&';
         }
     }
@@ -192,13 +192,13 @@ class HttpRequest
      * @param string $url
      * @param array $params
      * @param string $method
-     * @return bool|true
+     * @return string|null
      * @throws \JsonException
      */
     public function jsonRequest(string $url, array $params, string $method = 'post'): ?string
     {
         if (!isset($this->methodList[strtolower($method)])) {
-            return false;
+            return null;
         }
         $data = array_merge($params, $this->uploadData);
         $jsonParams = json_encode($params, JSON_THROW_ON_ERROR, 512);
