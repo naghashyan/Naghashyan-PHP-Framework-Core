@@ -14,10 +14,9 @@
     }
   ],
   "require": {
-    "php": ">=8.0",
-    "smarty/smarty": "~5",
-    "scssphp/scssphp": "^v1.12",
-    "melbahja/http2-pusher": "^1.0"
+    "php": ">=8.2",
+    "smarty/smarty": "^v5.4",
+    "scssphp/scssphp": "^v1.3"
   },
   "autoload": {
     "psr-4": {

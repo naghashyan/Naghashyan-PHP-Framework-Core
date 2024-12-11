@@ -6,9 +6,9 @@
  *
  * @author Levon Naghashyan <levon@naghashyan.com>
  * @site https://naghashyan.com
- * @year 2009-2020
+ * @year 2009-2024
  * @package ngs.framework.dal.dto
- * @version 4.0.0
+ * @version 4.5.1
  *
  * This file is part of the NGS package.
  *
@@ -22,13 +22,12 @@
 namespace ngs\dal\dto;
 
 
-use ngs\util\AnnotationParser;
-
 abstract class AbstractDto
 {
 
-    private $ngs_nullableFields = [];
-    private $ngs_mapArray = [];
+    private array $ngs_nullableFields = [];
+    private ?array $ngs_mapArray = [];
+    private array $ngsDynamicFields = [];
 
 
     public function getNgsMapArray(): ?array
@@ -93,18 +92,27 @@ abstract class AbstractDto
             return '_' . strtolower($m[0]);
         }, self::lowerFirstLetter(substr($m, 3)));
         if ($type === 'set') {
-            $this->$fieldName = $a[0];
-        } else if ($type === 'get') {
-            if (isset($this->$fieldName)) {
-                return $this->$fieldName;
+            if (!property_exists($this, $fieldName)) {
+                $this->ngsDynamicFields[$fieldName] = $a[0];
+                return;
             }
-            return null;
+            $this->$fieldName = $a[0];
+        } else {
+            if ($type === 'get') {
+                if (!property_exists($this, $fieldName) && isset($this->ngsDynamicFields[$fieldName])) {
+                    return $this->ngsDynamicFields[$fieldName];
+                }
+                if (isset($this->$fieldName)) {
+                    return $this->$fieldName;
+                }
+                return null;
+            }
         }
     }
 
-    public function __set($property, $value)
+    public function __set(string $property, mixed $value): void
     {
-        $fieldName = 'set' . preg_replace_callback('/_([a-z0-9])/', function ($property) {
+        $fieldName = 'set' . preg_replace_callback('/_([a-z])/', function ($property) {
                 if (isset($property[1])) {
                     return ucfirst($property[1]);
                 }
@@ -113,12 +121,12 @@ abstract class AbstractDto
         $this->$fieldName($value);
     }
 
+
     public function setNull(string $fieldName): bool
     {
         if (!$this->isExistField($fieldName)) {
             return false;
         }
-
         $this->ngs_nullableFields[] = $fieldName;
         return true;
     }
@@ -171,7 +179,6 @@ abstract class AbstractDto
                 } else {
                     $this->$setterFunction($data);
                 }
-
             }
         }
     }
@@ -195,12 +202,10 @@ abstract class AbstractDto
                 }
                 $getterFunction = 'get' . '' . ucfirst($property->getName());
                 if ($toAssoc) {
-
                     $resultArr[$property->getName()] = $this->$getterFunction();
                 } else {
                     $resultArr[] = $this->$getterFunction();
                 }
-
             }
         } catch (\ReflectionException $exception) {
             return [];
