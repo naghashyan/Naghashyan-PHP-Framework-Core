@@ -48,7 +48,7 @@ To start a new project using the NGS framework, you can use the prebuilt Docker 
 
    services:
      app:
-       image: ngs-php-framework:latest
+       image: ngsadminuser/ngs-php-framework:latest
        container_name: ngs-local
        build:
          args:
