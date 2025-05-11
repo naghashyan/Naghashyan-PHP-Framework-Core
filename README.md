@@ -88,9 +88,18 @@ Instead of manually creating the file, you can include it directly from a shared
 git submodule add https://stash.naghashyan.com/scm/ngs/ngs-docker-compose.git docker-compose
 ```
 
-Then, copy or reference the `docker-compose.yml` provided in the submodule as needed.
+### ⚠️ **Additional Note:**
+
+If you're checking out the main project from Git, the submodule directory will initially be empty. To fetch the contents of the submodule, you must explicitly initialize and update it with the following command:
+
+```bash
+git submodule update --init --recursive
+```
+
+After running this command, the submodule's content will become available within your project's directory structure.
 
 ---
+
 
 ### 🚀 **Extending the Docker Compose configuration**
 
