@@ -94,9 +94,9 @@ Then, copy or reference the `docker-compose.yml` provided in the submodule as ne
 
 ### 🚀 **Extending the Docker Compose configuration**
 
-To customize the configuration specifically for your individual project, you can create a file named `docker-compose.override.yml`. Docker Compose automatically merges it with the main `docker-compose.yml`, allowing you to override or extend any settings.
+To customize the Docker Compose setup specifically for your individual project, create a file named `docker-compose.override.yml` in your project's root directory. Docker Compose automatically merges this file with the main `docker-compose.yml`, allowing you to override or extend any settings.
 
-**Example:** Create `docker-compose.override.yml` to customize your project:
+**Example**: Create `docker-compose.override.yml` to customize your project:
 
 ```yaml
 version: "3.8"
@@ -106,27 +106,44 @@ services:
     ports:
       - "9090:80"           # Override default web port
     environment:
-      - XDEBUG_ENABLED=1    # Enable Xdebug for debugging
-      - MYSQL_DATABASE=my_project_db  # Custom database name
+      MYSQL_PASSWORD: test123   # Override MySQL user password
+      XDEBUG_ENABLED: 1         # Enable Xdebug for debugging
+      MYSQL_DATABASE: my_project_db  # Custom database name
 
 volumes:
   mysql-data:
     name: my_project_mysql_data  # Custom named volume per project
 ```
 
-### 🔧 **Running the combined configuration:**
+### 📌 **Running the combined configuration (PowerShell script):**
 
-Simply run:
+A PowerShell script named `Start-Compose.ps1` is already included in your Docker Compose template repository (`ngsdocker-compose`). This script automatically detects if an override file exists in your project's main directory and runs Docker Compose accordingly.
 
-```bash
-docker-compose up -d
+#### **Executing the PowerShell script:**
+
+Run the script directly from your project root:
+
+```powershell
+.\ngs-docker-compose\start-compose.ps1
 ```
 
-Docker Compose will automatically merge the base file (`docker-compose.yml`) and your override file (`docker-compose.override.yml`). Your customized configuration will be applied.
+This will launch your Docker environment, automatically applying any overrides you've defined.
+
+### 🗑️ **Removing MySQL Volume (PowerShell script):**
+
+A PowerShell script named `Remove-MySQL-Volume.ps1` is also included in the Docker Compose template repository. This script safely removes the Docker volume associated with your project's MySQL data. Use this command if you need to reset your MySQL database:
+
+#### **Executing the PowerShell script to remove MySQL volume:**
+
+Run the script directly from your project root:
+
+```powershell
+.\ngs-docker-compose\remove-mysql-volume.ps1
+```
 
 ---
 
-This approach ensures consistency across all projects using the framework while still allowing for project-specific customizations.
+This structured approach ensures consistency across projects using NGS, providing flexibility for project-specific needs through straightforward customization with Docker Compose overrides and PowerShell automation.
 
 
 3. **Start the Docker environment**
