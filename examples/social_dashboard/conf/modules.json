@@ -1,0 +1,8 @@
+{
+  "default": {
+    "default": {
+      "dir": "sd",
+      "route_file": "conf/routes.json"
+    }
+  }
+}

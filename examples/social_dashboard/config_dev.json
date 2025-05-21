@@ -1,0 +1,11 @@
+{
+  "DB": {
+    "mysql": {
+      "host": "localhost",
+      "name": "social_dashboard",
+      "user": "root",
+      "pass": "",
+      "port": 3306
+    }
+  }
+}
