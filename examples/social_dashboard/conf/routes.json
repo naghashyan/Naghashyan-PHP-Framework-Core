@@ -1,0 +1,24 @@
+{
+  "default": {
+    "action": "sd.loads.dashboard.dashboard",
+    "route": "/"
+  },
+  "login": {
+    "action": "sd.loads.auth.login",
+    "route": "/login"
+  },
+  "do_login": {
+    "action": "sd.actions.auth.login",
+    "method": "post",
+    "route": "/do-login"
+  },
+  "link_profile": {
+    "action": "sd.actions.profile.link",
+    "method": "post",
+    "route": "/profile/link"
+  },
+  "list_profiles": {
+    "action": "sd.loads.profile.profile_list",
+    "route": "/profiles"
+  }
+}
